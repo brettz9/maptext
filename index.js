@@ -66,7 +66,18 @@ function addImageRegion (prevElement) {
         ], outputArea);
         break;
       case 'poly':
-        // Todo: (poly: xy+)
+        jml('div', [
+          ['label', [
+            _('x'),
+            nbsp,
+            ['input', {type: 'number', size: 5}]
+          ]], nbsp2,
+          ['label', [
+            _('y'),
+            nbsp,
+            ['input', {type: 'number', size: 5}]
+          ]]
+        ], outputArea);
         break;
       default:
         break;
@@ -106,9 +117,10 @@ function addImageRegion (prevElement) {
   ]);
   if (prevElement) {
     prevElement.after(li);
-    return;
+  } else {
+    jml(li, $('#imageRegions'));
   }
-  jml(li, $('#imageRegions'));
+  li.firstElementChild.click();
 }
 
 jml('div', [
