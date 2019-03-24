@@ -11,7 +11,7 @@ npm i maptext
 ## Immediate to-dos
 
 0.  Build areas (at least with mouseover to show text)
-0.  Make form serializable and deserializable
+0.  Make form serializable and deserializable at least to/from textarea
 1.  Allow text search with highlight of image regions
 2.  Allow (click/drag) image highlighting of region(s)
     for copy-paste and/or display of text
