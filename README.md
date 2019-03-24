@@ -12,6 +12,7 @@ npm i maptext
 
 0.  Implement poly form
 0.  Build areas (at least with mouseover to show text)
+0.  Make form serializable and deserializable
 1.  Allow text search with highlight of image regions
 2.  Allow (click/drag) image highlighting of region(s)
     for copy-paste and/or display of text
