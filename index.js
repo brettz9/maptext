@@ -16,8 +16,8 @@ document.title = _('MapText demo');
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
-function addImageRegion () {
-  jml('li', [
+function addImageRegion (prevElement) {
+  const li = jml('li', [
     ['select', {$on: {click ({target}) {
       const outputArea = this.nextElementSibling;
       empty(outputArea);
@@ -80,11 +80,17 @@ function addImageRegion () {
         ]],
         ['button', {$on: {click (e) {
           e.preventDefault();
+          addImageRegion(li);
         }}}, [
           _('+')
         ]],
         ['button', {$on: {click (e) {
           e.preventDefault();
+          const imageRegions = $('#imageRegions');
+          if (imageRegions.children.length === 1) {
+            return;
+          }
+          li.remove();
         }}}, [
           _('-')
         ]],
@@ -97,7 +103,12 @@ function addImageRegion () {
       ['option', {value: 'poly'}, [_('Polygon')]]
     ]],
     ['div', []]
-  ], $('#imageRegions'));
+  ]);
+  if (prevElement) {
+    prevElement.after(li);
+    return;
+  }
+  jml(li, $('#imageRegions'));
 }
 
 jml('div', [
@@ -129,23 +140,6 @@ jml('div', [
       ['div', [
         _('Image areas'),
         ['ol', {id: 'imageRegions'}]
-      ]],
-      ['br'],
-      ['button', {$on: {click (e) {
-        e.preventDefault();
-        addImageRegion();
-      }}}, [
-        _('Add image region')
-      ]],
-      ['button', {$on: {click (e) {
-        e.preventDefault();
-        const imageRegions = $('#imageRegions');
-        if (imageRegions.children.length === 1) {
-          return;
-        }
-        imageRegions.lastElementChild.remove();
-      }}}, [
-        _('Remove image region')
       ]]
     ]],
     ['input', {type: 'submit', value: _('Apply')}]
@@ -154,9 +148,3 @@ jml('div', [
 ], body);
 
 addImageRegion();
-
-//      3. Add text
-//
-// Saving options?
-//      1. Local storage (including asking for names?)
-//      2. Downloadable JSON file?

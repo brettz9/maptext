@@ -11,7 +11,6 @@ npm i maptext
 ## Immediate to-dos
 
 0.  Implement poly form
-0.  Ensure inline add/remove work then remove end ones
 0.  Build areas (at least with mouseover to show text)
 1.  Allow text search with highlight of image regions
 2.  Allow (click/drag) image highlighting of region(s)
@@ -22,5 +21,8 @@ npm i maptext
 ## Lower priority to-dos
 
 1.  Allow saving from HTML
+    1.  Local storage (including asking for names?)
+    2.  Downloadable JSON file?
 2.  Add testcafe tests
 3.  Add CLI for generating
+4.  Allow for multiple image maps?
