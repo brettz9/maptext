@@ -1,5 +1,6 @@
 /* eslint-disable require-jsdoc */
 import {jml, body, $, nbsp} from './node_modules/jamilih/dist/jml-es.js';
+import {serialize} from './node_modules/form-serialize/dist/index-es.js';
 
 function _ (s) {
   return s;
@@ -17,11 +18,15 @@ const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
 let polyID = 0;
+let imageRegionID = 0;
 function addImageRegion (prevElement) {
+  imageRegionID++;
+
+  const currentImageRegionID = imageRegionID;
   function makeFrom () {
     return ['span', {class: 'from'}, [_('From:')]];
   }
-  function makePolyXY () {
+  function makePolyXY (currImageRegionID) {
     polyID++;
     const polyDiv = jml('div', {id: 'polyID' + polyID}, [
       polyID === 1
@@ -31,17 +36,23 @@ function addImageRegion (prevElement) {
       ['label', [
         _('x'),
         nbsp,
-        ['input', {type: 'number', size: 5, required: true}]
+        ['input', {
+          name: `${currImageRegionID}-${polyID}_x`,
+          type: 'number', size: 5, required: true
+        }]
       ]], nbsp2,
       ['label', [
         _('y'),
         nbsp,
-        ['input', {type: 'number', size: 5, required: true}]
+        ['input', {
+          name: `${currImageRegionID}-${polyID}_y`,
+          type: 'number', size: 5, required: true
+        }]
       ]],
       nbsp2,
       ['button', {$on: {click (e) {
         e.preventDefault();
-        polyDiv.after(makePolyXY());
+        polyDiv.after(makePolyXY(currImageRegionID));
       }}}, [
         '+'
       ]],
@@ -64,7 +75,7 @@ function addImageRegion (prevElement) {
     return polyDiv;
   }
   const li = jml('li', [
-    ['select', {$on: {click ({target}) {
+    ['select', {name: `${currentImageRegionID}_shape`, $on: {click ({target}) {
       const outputArea = this.nextElementSibling;
       empty(outputArea);
       switch (target.value) {
@@ -73,22 +84,34 @@ function addImageRegion (prevElement) {
           ['label', [
             _('Left x'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_leftx`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2,
           ['label', [
             _('Top y'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_topy`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2,
           ['label', [
             _('Right x'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_rightx`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2,
           ['label', [
             _('Bottom y'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_bottomy`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2
         ], outputArea);
         break;
@@ -97,23 +120,32 @@ function addImageRegion (prevElement) {
           ['label', [
             _('x'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_circlex`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2,
           ['label', [
             _('y'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_circly`,
+              type: 'number', size: 5, required: true
+            }]
           ]], nbsp2,
           ['label', [
             _('r'),
             nbsp,
-            ['input', {type: 'number', size: 5, required: true}]
+            ['input', {
+              name: `${currentImageRegionID}_circler`,
+              type: 'number', size: 5, required: true
+            }]
           ]]
         ], outputArea);
         break;
       case 'poly': {
         const div = jml('div', {class: 'polyDivHolder'}, [
-          makePolyXY()
+          makePolyXY(currentImageRegionID)
         ], outputArea);
         div.querySelector('button').click();
         break;
@@ -124,7 +156,10 @@ function addImageRegion (prevElement) {
         ['div', [
           ['label', [
             _('Text'), nbsp2,
-            ['textarea', {required: true}]
+            ['textarea', {
+              name: `${currentImageRegionID}_text`,
+              required: true
+            }]
           ]]
         ]],
         ['button', {$on: {click (e) {
@@ -163,6 +198,7 @@ function addImageRegion (prevElement) {
 
 jml('div', [
   ['form', {$on: {submit (e) {
+    alert(JSON.stringify(serialize(this, {hash: true})));
     e.preventDefault();
     const preview = $('#preview');
     empty(preview);
