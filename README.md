@@ -17,6 +17,7 @@ npm i maptext
 2.  Allow (click/drag) image highlighting of region(s)
     for copy-paste and/or display of text
 3.  Allow editing coords from image
+4.  (Also begin work on text range selector tool)
 
 ## Lower priority to-dos
 
