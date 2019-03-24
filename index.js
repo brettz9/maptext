@@ -16,7 +16,53 @@ document.title = _('MapText demo');
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
+let polyID = 0;
 function addImageRegion (prevElement) {
+  function makeFrom () {
+    return ['span', {class: 'from'}, [_('From:')]];
+  }
+  function makePolyXY () {
+    polyID++;
+    const polyDiv = jml('div', {id: 'polyID' + polyID}, [
+      polyID === 1
+        ? makeFrom()
+        : ['span', [_('To:')]],
+      nbsp2,
+      ['label', [
+        _('x'),
+        nbsp,
+        ['input', {type: 'number', size: 5, required: true}]
+      ]], nbsp2,
+      ['label', [
+        _('y'),
+        nbsp,
+        ['input', {type: 'number', size: 5, required: true}]
+      ]],
+      nbsp2,
+      ['button', {$on: {click (e) {
+        e.preventDefault();
+        polyDiv.after(makePolyXY());
+      }}}, [
+        '+'
+      ]],
+      ['button', {$on: {click (e) {
+        e.preventDefault();
+        const buttonSets = e.target.parentElement.parentElement;
+        if (buttonSets.children.length <= 2) {
+          return;
+        }
+        const parentDiv = polyDiv.parentElement;
+        polyDiv.remove();
+        const fromOrTo = parentDiv.firstElementChild.firstElementChild;
+        if (fromOrTo.className !== 'from') {
+          fromOrTo.replaceWith(jml(...makeFrom()));
+        }
+      }}}, [
+        '-'
+      ]]
+    ]);
+    return polyDiv;
+  }
   const li = jml('li', [
     ['select', {$on: {click ({target}) {
       const outputArea = this.nextElementSibling;
@@ -27,22 +73,22 @@ function addImageRegion (prevElement) {
           ['label', [
             _('Left x'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2,
           ['label', [
             _('Top y'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2,
           ['label', [
             _('Right x'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2,
           ['label', [
             _('Bottom y'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2
         ], outputArea);
         break;
@@ -51,42 +97,34 @@ function addImageRegion (prevElement) {
           ['label', [
             _('x'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2,
           ['label', [
             _('y'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]], nbsp2,
           ['label', [
             _('r'),
             nbsp,
-            ['input', {type: 'number', size: 5}]
+            ['input', {type: 'number', size: 5, required: true}]
           ]]
         ], outputArea);
         break;
-      case 'poly':
-        jml('div', [
-          ['label', [
-            _('x'),
-            nbsp,
-            ['input', {type: 'number', size: 5}]
-          ]], nbsp2,
-          ['label', [
-            _('y'),
-            nbsp,
-            ['input', {type: 'number', size: 5}]
-          ]]
+      case 'poly': {
+        const div = jml('div', {class: 'polyDivHolder'}, [
+          makePolyXY()
         ], outputArea);
+        div.querySelector('button').click();
         break;
-      default:
+      } default:
         break;
       }
       jml('div', [
         ['div', [
           ['label', [
             _('Text'), nbsp2,
-            ['textarea']
+            ['textarea', {required: true}]
           ]]
         ]],
         ['button', {$on: {click (e) {
@@ -145,7 +183,8 @@ jml('div', [
     ['label', [
       _('Image map URL'), nbsp,
       ['input', {
-        id: 'mapURL', size: 100, value: defaultImageSrc || ''
+        id: 'mapURL', size: 100, required: true,
+        value: defaultImageSrc || ''
       }]
     ]],
     ['fieldset', [
