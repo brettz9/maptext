@@ -17,6 +17,8 @@ document.title = _('MapText demo');
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
+// Todo: Could allow for multiple image maps
+const mapID = 0;
 let polyID = 0;
 let imageRegionID = 0;
 function addImageRegion (prevElement) {
@@ -37,7 +39,7 @@ function addImageRegion (prevElement) {
         _('x'),
         nbsp,
         ['input', {
-          name: `${currImageRegionID}-${polyID}_x`,
+          name: `${currImageRegionID}_xy`,
           type: 'number', size: 5, required: true
         }]
       ]], nbsp2,
@@ -45,7 +47,7 @@ function addImageRegion (prevElement) {
         _('y'),
         nbsp,
         ['input', {
-          name: `${currImageRegionID}-${polyID}_y`,
+          name: `${currImageRegionID}_xy`,
           type: 'number', size: 5, required: true
         }]
       ]],
@@ -129,7 +131,7 @@ function addImageRegion (prevElement) {
             _('y'),
             nbsp,
             ['input', {
-              name: `${currentImageRegionID}_circly`,
+              name: `${currentImageRegionID}_circley`,
               type: 'number', size: 5, required: true
             }]
           ]], nbsp2,
@@ -198,23 +200,48 @@ function addImageRegion (prevElement) {
 
 jml('div', [
   ['form', {$on: {submit (e) {
-    alert(JSON.stringify(serialize(this, {hash: true})));
     e.preventDefault();
+    const formObj = serialize(this, {hash: true});
+    // alert(JSON.stringify(formObj));
+    const formObjKeys = Object.keys(formObj);
+    const shapeIDS = formObjKeys.filter((item) => {
+      return item.endsWith('_shape');
+    });
+
     const preview = $('#preview');
     empty(preview);
-    // Todo: Could allow for multiple image maps
-    const id = 'map1';
+    const id = `map${mapID}`;
     jml('div', [
-      ['map', {name: id}, [
-        ['area', {$on: {mouseover () {
-          //
-        }}}]
-      ]],
+      ['map', {name: id}, shapeIDS.map((shapeID) => {
+        const shape = formObj[shapeID];
+        const setNum = shapeID.slice(0, -('_shape'.length));
+        return ['area', {
+          shape,
+          coords: shape === 'circle'
+            ? ['circlex', 'circley', 'circler'].map((item) => {
+              return formObj[setNum + '_' + item];
+            }).join(',')
+            : shape === 'rect'
+              ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
+                return formObj[setNum + '_' + item];
+              }).join(',')
+              // Poly
+              : formObjKeys.filter((item) => {
+                return item.startsWith(setNum) && item.endsWith('_xy');
+              }).map((item) => {
+                return formObj[item];
+              }).join(','),
+          $on: {mouseover () {
+            alert(formObj[setNum + '_text']);
+          }}
+        }];
+      })],
       ['img', {
         usemap: '#' + id,
         src: $('#mapURL').value || defaultImageSrc
       }]
     ], preview);
+    alert(preview.outerHTML);
   }}}, [
     ['label', [
       _('Image map URL'), nbsp,
