@@ -13,7 +13,8 @@ npm i maptext
 0.  Have mouseover show text on page
 0.  Make form serializable and deserializable at least to/from textarea;
     make text optional by preference
-1.  Allow text search with highlight of image regions
+1.  Allow text search (optionally overriding browser find) with
+    highlight of image regions (single or multiple select)
 2.  Allow (click/drag) image highlighting of region(s)
     for copy-paste and/or display of text
 3.  Allow editing coords from image
