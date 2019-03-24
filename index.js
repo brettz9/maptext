@@ -208,8 +208,8 @@ jml('div', [
       return item.endsWith('_shape');
     });
 
-    const preview = $('#preview');
-    empty(preview);
+    const imagePreview = $('#imagePreview');
+    empty(imagePreview);
     const id = `map${mapID}`;
     jml('div', [
       ['map', {name: id}, shapeIDS.map((shapeID) => {
@@ -232,16 +232,18 @@ jml('div', [
                 return formObj[item];
               }).join(','),
           $on: {mouseover () {
-            alert(formObj[setNum + '_text']);
+            $('#preview').title = formObj[setNum + '_text'];
           }}
         }];
       })],
       ['img', {
+        id: 'preview',
         usemap: '#' + id,
         src: $('#mapURL').value || defaultImageSrc
       }]
-    ], preview);
-    alert(preview.outerHTML);
+    ], imagePreview);
+    $('#exportedText').textContent =
+      imagePreview.firstElementChild.outerHTML;
   }}}, [
     ['label', [
       _('Image map URL'), nbsp,
@@ -258,7 +260,14 @@ jml('div', [
     ]],
     ['input', {type: 'submit', value: _('Apply')}]
   ]],
-  ['section', {id: 'preview'}]
+  ['section', [
+    ['h2', [_('Exported text')]],
+    ['div', {id: 'exportedText'}]
+  ]],
+  ['section', [
+    ['h2', [_('Image preview')]],
+    ['div', {id: 'imagePreview'}]
+  ]]
 ], body);
 
 addImageRegion();
