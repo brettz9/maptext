@@ -21,6 +21,7 @@ npm i maptext
 4.  (Also begin work on text range selector (for coordinates and highlighting text))
 5.  Show preview of image next to coordinates and/or on image
     preview (so load preview as soon as URL entered)
+6.  Demo with RTL text, adding special handling/options if necessary
 
 ## Lower priority to-dos
 
