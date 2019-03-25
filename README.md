@@ -16,7 +16,7 @@ npm i maptext
     highlight of image regions (single or multiple select)
 2.  Allow (click/drag) image highlighting of region(s)
     for copy-paste and/or display of text
-3.  Allow editing coords from image
+3.  Allow adding, removing, or editing coords or text from image
 4.  (Also begin work on text range selector (for coordinates and highlighting text))
 5.  Show preview of image next to coordinates and/or on image
     preview (so load preview as soon as URL entered)
