@@ -301,7 +301,7 @@ jml('div', [
       const img = html.querySelector(
         `img[usemap="#${map.name}"][src]`
       );
-      const areas = map.querySelectorAll('area');
+      const areas = [...map.querySelectorAll('area')];
       if (!map || !areas.length || !img) {
         this.setCustomValidity(!map
           ? _('Missing <map name=> element ')
@@ -316,6 +316,32 @@ jml('div', [
       const formObj = {};
       formObj.name = map.name;
       formObj.mapURL = img.src;
+      areas.forEach(({shape, coords, dataset: {text}}, setNum) => {
+        if (!shape || !coords) {
+          return;
+        }
+        formObj[setNum + '_shape'] = shape;
+        formObj[setNum + '_text'] = text || '';
+        coords = coords.split(/,\s*/u);
+        switch (shape) {
+        default:
+          return;
+        case 'circle':
+          ['circlex', 'circley', 'circler'].forEach((item, i) => {
+            formObj[setNum + '_' + item] = coords[i];
+          });
+          break;
+        case 'rect':
+          ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
+            formObj[setNum + '_' + item] = coords[i];
+          });
+          break;
+        case 'poly':
+          formObj[setNum + '_xy'] = coords;
+          break;
+        }
+      });
+      // alert(JSON.stringify(formObj, null, 2));
       deserialize(form, formObj);
       updateSerializedJSON(formObj);
     }}}]
