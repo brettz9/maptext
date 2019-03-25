@@ -10,6 +10,7 @@ npm i maptext
 
 ## Immediate to-dos
 
+0.  Fix poly when deserializing
 0.  Fix from/to issue when changing shapes
 0.  Make text optional by preference
 1.  Allow text search (optionally overriding browser find) with
