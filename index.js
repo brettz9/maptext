@@ -7,8 +7,8 @@ import {
 import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 
-function _ (s) {
-  return s;
+function _ (s, err) {
+  return s + (err ? ` (${err.message})` : '');
 }
 
 function empty (el) {
@@ -351,7 +351,22 @@ jml('div', [
   ]],
   ['section', {class: 'serialized'}, [
     ['h2', [_('Serialized JSON')]],
-    ['textarea', {id: 'serializedJSON'}]
+    ['textarea', {id: 'serializedJSON', form: form.id, $on: {input () {
+      let formObj;
+      try {
+        formObj = JSON.parse(this.value);
+      } catch (err) {
+        this.setCustomValidity(_('JSON Did not parse', err));
+        this.reportValidity();
+        return;
+      }
+      this.setCustomValidity('');
+      deserialize(form, formObj);
+      // Bad values from JSON not allowed to even be set, so
+      //   this is not activating
+      // this.reportValidity();
+    }}
+    }]
   ]],
   ['section', [
     ['h2', [_('Image preview')]],
