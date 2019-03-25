@@ -2,6 +2,9 @@
 import {jml, body, $, nbsp} from './node_modules/jamilih/dist/jml-es.js';
 import {serialize} from './node_modules/form-serialize/dist/index-es.js';
 
+import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
+import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
+
 function _ (s) {
   return s;
 }
@@ -198,6 +201,9 @@ function addImageRegion (prevElement) {
   li.firstElementChild.click();
 }
 
+(async () => {
+await loadStylesheets('../node_modules/tippy.js/dist/tippy.css');
+
 jml('div', [
   ['form', {$on: {submit (e) {
     e.preventDefault();
@@ -232,7 +238,12 @@ jml('div', [
                 return formObj[item];
               }).join(','),
           $on: {mouseover () {
-            $('#preview').title = formObj[setNum + '_text'];
+            this.dataset.tippyContent = formObj[setNum + '_text'];
+            tippy('[data-tippy-content]', {
+              followCursor: true,
+              distance: 1,
+              placement: 'right'
+            });
           }}
         }];
       })],
@@ -271,3 +282,4 @@ jml('div', [
 ], body);
 
 addImageRegion();
+})();

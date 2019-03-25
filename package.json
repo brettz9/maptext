@@ -47,6 +47,8 @@
   },
   "dependencies": {
     "form-serialize": "https://github.com/brettz9/form-serialize#browser-deserialize-rollup-babel7",
-    "jamilih": "^0.44.0"
+    "jamilih": "^0.44.0",
+    "load-stylesheets": "^0.7.0",
+    "tippy.js": "^3.4.1"
   }
 }
