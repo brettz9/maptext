@@ -1,6 +1,8 @@
 /* eslint-disable require-jsdoc */
 import {jml, body, $, nbsp} from './node_modules/jamilih/dist/jml-es.js';
-import {serialize} from './node_modules/form-serialize/dist/index-es.js';
+import {
+  serialize, deserialize
+} from './node_modules/form-serialize/dist/index-es.js';
 
 import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
@@ -17,13 +19,14 @@ function empty (el) {
 
 // CONFIG
 document.title = _('MapText demo');
+// Todo: Could allow for multiple image maps
+let polyID = 0;
+let imageRegionID = 0;
+const mapID = 0;
+const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
-// Todo: Could allow for multiple image maps
-const mapID = 0;
-let polyID = 0;
-let imageRegionID = 0;
 function addImageRegion (prevElement) {
   imageRegionID++;
 
@@ -80,7 +83,7 @@ function addImageRegion (prevElement) {
     return polyDiv;
   }
   const li = jml('li', [
-    ['select', {name: `${currentImageRegionID}_shape`, $on: {click ({target}) {
+    ['select', {name: `${currentImageRegionID}_shape`, $on: {change ({target}) {
       const outputArea = this.nextElementSibling;
       empty(outputArea);
       switch (target.value) {
@@ -201,79 +204,125 @@ function addImageRegion (prevElement) {
   li.firstElementChild.click();
 }
 
+function updateSerializedJSON (formObj) {
+  $('#serializedJSON').textContent =
+    JSON.stringify(formObj, null, 2);
+}
+
 (async () => {
-await loadStylesheets('../node_modules/tippy.js/dist/tippy.css');
+await loadStylesheets([
+  '../node_modules/tippy.js/dist/tippy.css',
+  './index.css'
+]);
 
-jml('div', [
-  ['form', {$on: {submit (e) {
-    e.preventDefault();
-    const formObj = serialize(this, {hash: true});
-    // alert(JSON.stringify(formObj));
-    const formObjKeys = Object.keys(formObj);
-    const shapeIDS = formObjKeys.filter((item) => {
-      return item.endsWith('_shape');
-    });
+const form = jml('form', {id: 'imageForm', $on: {submit (e) {
+  e.preventDefault();
+  const formObj = serialize(this, {hash: true});
+  const formObjKeys = Object.keys(formObj);
+  const shapeIDS = formObjKeys.filter((item) => {
+    return item.endsWith('_shape');
+  });
 
-    const imagePreview = $('#imagePreview');
-    empty(imagePreview);
-    const id = `map${mapID}`;
-    jml('div', [
-      ['map', {name: id}, shapeIDS.map((shapeID) => {
-        const shape = formObj[shapeID];
-        const setNum = shapeID.slice(0, -('_shape'.length));
-        return ['area', {
-          shape,
-          coords: shape === 'circle'
-            ? ['circlex', 'circley', 'circler'].map((item) => {
+  const imagePreview = $('#imagePreview');
+  empty(imagePreview);
+  const {name} = formObj;
+  jml('div', [
+    ['map', {name}, shapeIDS.map((shapeID) => {
+      const shape = formObj[shapeID];
+      const setNum = shapeID.slice(0, -('_shape'.length));
+      return ['area', {
+        shape,
+        coords: shape === 'circle'
+          ? ['circlex', 'circley', 'circler'].map((item) => {
+            return formObj[setNum + '_' + item];
+          }).join(',')
+          : shape === 'rect'
+            ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
               return formObj[setNum + '_' + item];
             }).join(',')
-            : shape === 'rect'
-              ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
-                return formObj[setNum + '_' + item];
-              }).join(',')
-              // Poly
-              : formObjKeys.filter((item) => {
-                return item.startsWith(setNum) && item.endsWith('_xy');
-              }).map((item) => {
-                return formObj[item];
-              }).join(','),
-          $on: {mouseover () {
-            this.dataset.tippyContent = formObj[setNum + '_text'];
-            tippy('[data-tippy-content]', {
-              followCursor: true,
-              distance: 10,
-              placement: 'right'
-            });
-          }}
-        }];
-      })],
-      ['img', {
-        id: 'preview',
-        usemap: '#' + id,
-        src: $('#mapURL').value || defaultImageSrc
-      }]
-    ], imagePreview);
-    $('#exportedText').textContent =
-      imagePreview.firstElementChild.outerHTML;
-  }}}, [
-    ['label', [
-      _('Image map URL'), nbsp,
-      ['input', {
-        id: 'mapURL', size: 100, required: true,
-        value: defaultImageSrc || ''
-      }]
-    ]],
-    ['fieldset', [
-      ['div', [
-        _('Image areas'),
-        ['ol', {id: 'imageRegions'}]
-      ]]
-    ]],
-    ['input', {type: 'submit', value: _('Apply')}]
+            // Poly
+            : formObjKeys.filter((item) => {
+              return item.startsWith(setNum) && item.endsWith('_xy');
+            }).map((item) => {
+              return formObj[item];
+            }).join(','),
+        $on: {mouseover () {
+          this.dataset.tippyContent = formObj[setNum + '_text'];
+          tippy('[data-tippy-content]', {
+            followCursor: true,
+            distance: 10,
+            placement: 'right'
+          });
+        }}
+      }];
+    })],
+    ['img', {
+      id: 'preview',
+      usemap: '#' + name,
+      src: $('input[name=mapURL]').value || defaultImageSrc
+    }]
+  ], imagePreview);
+  $('#serializedHTML').textContent =
+    imagePreview.firstElementChild.outerHTML;
+  updateSerializedJSON(formObj);
+}}}, [
+  ['label', [
+    _('Image map name'), nbsp2,
+    ['input', {
+      name: 'name', size: 100,
+      value: defaultMapName
+    }]
   ]],
-  ['section', [
-    ['h2', [_('Exported text')]],
-    ['div', {id: 'exportedText'}]
+  ['br'],
+  ['label', [
+    _('Image map URL'), nbsp2,
+    ['input', {
+      name: 'mapURL', size: 100, required: true,
+      value: defaultImageSrc || ''
+    }]
+  ]],
+  ['br'],
+  ['fieldset', [
+    ['div', [
+      _('Image areas'),
+      ['ol', {id: 'imageRegions'}]
+    ]]
+  ]],
+  ['input', {type: 'submit', value: _('Apply')}]
+]);
+
+jml('div', [
+  form,
+  ['section', {class: 'serialized'}, [
+    ['h2', [_('Serialized HTML')]],
+    ['textarea', {id: 'serializedHTML', form: form.id, $on: {input () {
+      const html = new DOMParser().parseFromString(this.value, 'text/html');
+      const map = html.querySelector('map[name]');
+      const img = html.querySelector(
+        `img[usemap="#${map.name}"][src]`
+      );
+      const areas = map.querySelectorAll('area');
+      if (!map || !areas.length || !img) {
+        this.setCustomValidity(!map
+          ? _('Missing <map name=> element ')
+          : (!areas.length)
+            ? _('Missing <area>')
+            : _('Missing matching <img usemap= src=>'));
+        this.reportValidity();
+        return;
+      }
+      this.setCustomValidity('');
+
+      const formObj = {};
+      formObj.name = map.name;
+      formObj.mapURL = img.src;
+      deserialize(form, formObj);
+      updateSerializedJSON(formObj);
+    }}}]
+  ]],
+  ['section', {class: 'serialized'}, [
+    ['h2', [_('Serialized JSON')]],
+    ['textarea', {id: 'serializedJSON'}]
   ]],
   ['section', [
     ['h2', [_('Image preview')]],

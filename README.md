@@ -10,8 +10,9 @@ npm i maptext
 
 ## Immediate to-dos
 
-0.  Make form serializable and deserializable at least to/from textarea of
-    JSON and ideally HTML; make text optional by preference
+0.  Fix from/to issue
+0.  Make text optional by preference
+0.  Make form deserializable from textarea of JSON and ideally HTML
 1.  Allow text search (optionally overriding browser find) with
     highlight of image regions (single or multiple select)
 2.  Allow (click/drag) image highlighting of region(s)

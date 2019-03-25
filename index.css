@@ -1,0 +1,9 @@
+.serialized {
+  float: left;
+  width: 50%;
+}
+
+.serialized textarea {
+  width: 93%;
+  height: 200px;
+}
