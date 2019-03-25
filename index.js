@@ -250,7 +250,7 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
               return formObj[item];
             }).join(','),
         $on: {mouseover () {
-          this.dataset.tippyContent = formObj[setNum + '_text'];
+          this.dataset.tippyContent = this.dataset.text;
           tippy('[data-tippy-content]', {
             followCursor: true,
             distance: 10,
