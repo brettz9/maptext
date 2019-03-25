@@ -27,59 +27,60 @@ const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
+function makeFrom () {
+  return ['span', {class: 'from'}, [_('From:')]];
+}
+function makePolyXY (currImageRegionID) {
+  polyID++;
+  const polyDiv = jml('div', {id: 'polyID' + polyID}, [
+    polyID === 1
+      ? makeFrom()
+      : ['span', [_('To:')]],
+    nbsp2,
+    ['label', [
+      _('x'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true
+      }]
+    ]], nbsp2,
+    ['label', [
+      _('y'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true
+      }]
+    ]],
+    nbsp2,
+    ['button', {class: 'addPoly', $on: {click (e) {
+      e.preventDefault();
+      polyDiv.after(makePolyXY(currImageRegionID));
+    }}}, [
+      '+'
+    ]],
+    ['button', {class: 'removePoly', $on: {click (e) {
+      e.preventDefault();
+      const buttonSets = e.target.parentElement.parentElement;
+      if (buttonSets.children.length <= 2) {
+        return;
+      }
+      const parentDiv = polyDiv.parentElement;
+      polyDiv.remove();
+      const fromOrTo = parentDiv.firstElementChild.firstElementChild;
+      if (fromOrTo.className !== 'from') {
+        fromOrTo.replaceWith(jml(...makeFrom()));
+      }
+    }}}, [
+      '-'
+    ]]
+  ]);
+  return polyDiv;
+}
+
 function addImageRegion (imageRegionID, prevElement) {
   const currentImageRegionID = imageRegionID;
-  function makeFrom () {
-    return ['span', {class: 'from'}, [_('From:')]];
-  }
-  function makePolyXY (currImageRegionID) {
-    polyID++;
-    const polyDiv = jml('div', {id: 'polyID' + polyID}, [
-      polyID === 1
-        ? makeFrom()
-        : ['span', [_('To:')]],
-      nbsp2,
-      ['label', [
-        _('x'),
-        nbsp,
-        ['input', {
-          name: `${currImageRegionID}_xy`,
-          type: 'number', size: 5, required: true
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('y'),
-        nbsp,
-        ['input', {
-          name: `${currImageRegionID}_xy`,
-          type: 'number', size: 5, required: true
-        }]
-      ]],
-      nbsp2,
-      ['button', {class: 'addPoly', $on: {click (e) {
-        e.preventDefault();
-        polyDiv.after(makePolyXY(currImageRegionID));
-      }}}, [
-        '+'
-      ]],
-      ['button', {class: 'removePoly', $on: {click (e) {
-        e.preventDefault();
-        const buttonSets = e.target.parentElement.parentElement;
-        if (buttonSets.children.length <= 2) {
-          return;
-        }
-        const parentDiv = polyDiv.parentElement;
-        polyDiv.remove();
-        const fromOrTo = parentDiv.firstElementChild.firstElementChild;
-        if (fromOrTo.className !== 'from') {
-          fromOrTo.replaceWith(jml(...makeFrom()));
-        }
-      }}}, [
-        '-'
-      ]]
-    ]);
-    return polyDiv;
-  }
   const li = jml('li', [
     ['select', {name: `${currentImageRegionID}_shape`, $on: {change ({target}) {
       const outputArea = this.nextElementSibling;
@@ -225,6 +226,13 @@ function deserializeForm (form, formObj) {
       shapeSelector.name = key; // Number in key may differ
       shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
       shapeSelector.dispatchEvent(new Event('change'));
+      if (shape === 'poly') {
+        let polySets = formObj[currID + '_xy'].length / 2;
+        while (polySets > 2) { // Always have at least 2
+          $('.polyDivHolder').append(makePolyXY(currID));
+          polySets--;
+        }
+      }
       if (currID > highestID) {
         highestID = currID;
       }
