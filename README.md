@@ -10,7 +10,6 @@ npm i maptext
 
 ## Immediate to-dos
 
-0.  Have mouseover show text on page
 0.  Make form serializable and deserializable at least to/from textarea;
     make text optional by preference
 1.  Allow text search (optionally overriding browser find) with
