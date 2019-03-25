@@ -21,15 +21,13 @@ function empty (el) {
 document.title = _('MapText demo');
 // Todo: Could allow for multiple image maps
 let polyID = 0;
-let imageRegionID = 0;
+let imgRegionID = 0;
 const mapID = 0;
 const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
-function addImageRegion (prevElement) {
-  imageRegionID++;
-
+function addImageRegion (imageRegionID, prevElement) {
   const currentImageRegionID = imageRegionID;
   function makeFrom () {
     return ['span', {class: 'from'}, [_('From:')]];
@@ -58,13 +56,13 @@ function addImageRegion (prevElement) {
         }]
       ]],
       nbsp2,
-      ['button', {$on: {click (e) {
+      ['button', {class: 'addPoly', $on: {click (e) {
         e.preventDefault();
         polyDiv.after(makePolyXY(currImageRegionID));
       }}}, [
         '+'
       ]],
-      ['button', {$on: {click (e) {
+      ['button', {class: 'removePoly', $on: {click (e) {
         e.preventDefault();
         const buttonSets = e.target.parentElement.parentElement;
         if (buttonSets.children.length <= 2) {
@@ -155,7 +153,7 @@ function addImageRegion (prevElement) {
         const div = jml('div', {class: 'polyDivHolder'}, [
           makePolyXY(currentImageRegionID)
         ], outputArea);
-        div.querySelector('button').click();
+        div.querySelector('button.addPoly').click();
         break;
       } default:
         break;
@@ -170,13 +168,13 @@ function addImageRegion (prevElement) {
             }]
           ]]
         ]],
-        ['button', {$on: {click (e) {
+        ['button', {class: 'addRegion', $on: {click (e) {
           e.preventDefault();
-          addImageRegion(li);
+          addImageRegion(imgRegionID++, li);
         }}}, [
           _('+')
         ]],
-        ['button', {$on: {click (e) {
+        ['button', {class: 'removeRegion', $on: {click (e) {
           e.preventDefault();
           const imageRegions = $('#imageRegions');
           if (imageRegions.children.length === 1) {
@@ -201,11 +199,11 @@ function addImageRegion (prevElement) {
   } else {
     jml(li, $('#imageRegions'));
   }
-  li.firstElementChild.click();
+  li.firstElementChild.dispatchEvent(new Event('change'));
 }
 
 function updateSerializedJSON (formObj) {
-  $('#serializedJSON').textContent =
+  $('#serializedJSON').value =
     JSON.stringify(formObj, null, 2);
 }
 
@@ -217,6 +215,7 @@ await loadStylesheets([
 
 const form = jml('form', {id: 'imageForm', $on: {submit (e) {
   e.preventDefault();
+  // To try again, we reset invalid forms, e.g., from previous bad JSON
   const formObj = serialize(this, {hash: true});
   const formObjKeys = Object.keys(formObj);
   const shapeIDS = formObjKeys.filter((item) => {
@@ -265,7 +264,7 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
       src: $('input[name=mapURL]').value || defaultImageSrc
     }]
   ], imagePreview);
-  $('#serializedHTML').textContent =
+  $('#serializedHTML').value =
     imagePreview.firstElementChild.outerHTML;
   updateSerializedJSON(formObj);
 }}}, [
@@ -291,7 +290,11 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
       ['ol', {id: 'imageRegions'}]
     ]]
   ]],
-  ['input', {type: 'submit', value: _('Apply')}]
+  ['input', {type: 'submit', value: _('Apply'), $on: {click () {
+    [...form.elements].forEach((ctrl) => {
+      ctrl.setCustomValidity('');
+    });
+  }}}]
 ]);
 
 jml('div', [
@@ -361,7 +364,33 @@ jml('div', [
         return;
       }
       this.setCustomValidity('');
-      deserialize(form, formObj);
+
+      const imageRegions = $('#imageRegions');
+      empty(imageRegions);
+      let highestID = -1;
+      Object.entries(formObj).forEach(([key, shape]) => {
+        if (key.endsWith('_shape')) {
+          const currID = parseInt(key.slice(0, -('_shape'.length)));
+          addImageRegion(currID);
+          const lastRegion = imageRegions.lastElementChild;
+          const shapeSelector = lastRegion.querySelector('select');
+          shapeSelector.name = key; // Number in key may differ
+          shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
+          shapeSelector.dispatchEvent(new Event('change'));
+          if (currID > highestID) {
+            highestID = currID;
+          }
+        }
+      });
+      imgRegionID = highestID;
+      try {
+        deserialize(form, formObj);
+      } catch (err) {
+        this.setCustomValidity(_('Could not deserialize', err));
+        this.reportValidity();
+        return;
+      }
+      this.setCustomValidity('');
       // Bad values from JSON not allowed to even be set, so
       //   this is not activating
       // this.reportValidity();
@@ -374,5 +403,5 @@ jml('div', [
   ]]
 ], body);
 
-addImageRegion();
+addImageRegion(imgRegionID++);
 })();

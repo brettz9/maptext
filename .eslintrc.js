@@ -3,7 +3,10 @@ module.exports = {
         "browser": true,
         "es6": true
     },
-    "extends": ["ash-nazg/sauron-node"],
+    "settings": {
+        "polyfills": ["object-entries"]
+    },
+    "extends": ["ash-nazg/sauron"],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
