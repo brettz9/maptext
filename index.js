@@ -202,9 +202,46 @@ function addImageRegion (imageRegionID, prevElement) {
   li.firstElementChild.dispatchEvent(new Event('change'));
 }
 
+function updateSerializedHTML () {
+  $('#serializedHTML').value =
+    $('#imagePreview').firstElementChild.outerHTML;
+}
+
 function updateSerializedJSON (formObj) {
   $('#serializedJSON').value =
     JSON.stringify(formObj, null, 2);
+}
+
+function deserializeForm (form, formObj) {
+  const imageRegions = $('#imageRegions');
+  empty(imageRegions);
+  let highestID = -1;
+  Object.entries(formObj).forEach(([key, shape]) => {
+    if (key.endsWith('_shape')) {
+      const currID = parseInt(key.slice(0, -('_shape'.length)));
+      addImageRegion(currID);
+      const lastRegion = imageRegions.lastElementChild;
+      const shapeSelector = lastRegion.querySelector('select');
+      shapeSelector.name = key; // Number in key may differ
+      shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
+      shapeSelector.dispatchEvent(new Event('change'));
+      if (currID > highestID) {
+        highestID = currID;
+      }
+    }
+  });
+  imgRegionID = highestID + 1;
+  try {
+    deserialize(form, formObj);
+  } catch (err) {
+    this.setCustomValidity(_('Could not deserialize', err));
+    this.reportValidity();
+    return;
+  }
+  this.setCustomValidity('');
+  // Bad values from JSON not allowed to even be set, so
+  //   this is not activating
+  // this.reportValidity();
 }
 
 (async () => {
@@ -213,10 +250,7 @@ await loadStylesheets([
   './index.css'
 ]);
 
-const form = jml('form', {id: 'imageForm', $on: {submit (e) {
-  e.preventDefault();
-  // To try again, we reset invalid forms, e.g., from previous bad JSON
-  const formObj = serialize(this, {hash: true});
+function formToPreview (formObj) {
   const formObjKeys = Object.keys(formObj);
   const shapeIDS = formObjKeys.filter((item) => {
     return item.endsWith('_shape');
@@ -264,8 +298,13 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
       src: $('input[name=mapURL]').value || defaultImageSrc
     }]
   ], imagePreview);
-  $('#serializedHTML').value =
-    imagePreview.firstElementChild.outerHTML;
+}
+
+const form = jml('form', {id: 'imageForm', $on: {submit (e) {
+  e.preventDefault();
+  const formObj = serialize(this, {hash: true});
+  formToPreview(formObj);
+  updateSerializedHTML();
   updateSerializedJSON(formObj);
 }}}, [
   ['label', [
@@ -291,6 +330,7 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
     ]]
   ]],
   ['input', {type: 'submit', value: _('Apply'), $on: {click () {
+    // To try again, we reset invalid forms, e.g., from previous bad JSON
     [...form.elements].forEach((ctrl) => {
       ctrl.setCustomValidity('');
     });
@@ -348,8 +388,9 @@ jml('div', [
         }
       });
       // alert(JSON.stringify(formObj, null, 2));
-      deserialize(form, formObj);
+      deserializeForm.call(this, form, formObj);
       updateSerializedJSON(formObj);
+      formToPreview(formObj);
     }}}]
   ]],
   ['section', {class: 'serialized'}, [
@@ -365,35 +406,9 @@ jml('div', [
       }
       this.setCustomValidity('');
 
-      const imageRegions = $('#imageRegions');
-      empty(imageRegions);
-      let highestID = -1;
-      Object.entries(formObj).forEach(([key, shape]) => {
-        if (key.endsWith('_shape')) {
-          const currID = parseInt(key.slice(0, -('_shape'.length)));
-          addImageRegion(currID);
-          const lastRegion = imageRegions.lastElementChild;
-          const shapeSelector = lastRegion.querySelector('select');
-          shapeSelector.name = key; // Number in key may differ
-          shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
-          shapeSelector.dispatchEvent(new Event('change'));
-          if (currID > highestID) {
-            highestID = currID;
-          }
-        }
-      });
-      imgRegionID = highestID;
-      try {
-        deserialize(form, formObj);
-      } catch (err) {
-        this.setCustomValidity(_('Could not deserialize', err));
-        this.reportValidity();
-        return;
-      }
-      this.setCustomValidity('');
-      // Bad values from JSON not allowed to even be set, so
-      //   this is not activating
-      // this.reportValidity();
+      deserializeForm.call(this, form, formObj);
+      formToPreview(formObj);
+      updateSerializedHTML();
     }}
     }]
   ]],
