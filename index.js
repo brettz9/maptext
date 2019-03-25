@@ -232,6 +232,9 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
       const setNum = shapeID.slice(0, -('_shape'.length));
       return ['area', {
         shape,
+        dataset: {
+          text: formObj[setNum + '_text']
+        },
         coords: shape === 'circle'
           ? ['circlex', 'circley', 'circler'].map((item) => {
             return formObj[setNum + '_' + item];
