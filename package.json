@@ -1,6 +1,6 @@
 {
   "name": "maptext",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Associate text to image regions for text search and within-image copy-paste",
   "main": "index.js",
   "scripts": {
