@@ -241,7 +241,7 @@ jml('div', [
             this.dataset.tippyContent = formObj[setNum + '_text'];
             tippy('[data-tippy-content]', {
               followCursor: true,
-              distance: 1,
+              distance: 10,
               placement: 'right'
             });
           }}
