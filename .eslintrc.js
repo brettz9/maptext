@@ -4,7 +4,11 @@ module.exports = {
         "es6": true
     },
     "settings": {
-        "polyfills": ["object-entries"]
+        "polyfills": [
+            "DOMParser",
+            "JSON",
+            "Object.entries", "Object.keys"
+        ]
     },
     "extends": ["ash-nazg/sauron"],
     "globals": {
