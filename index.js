@@ -7,9 +7,12 @@ import {
 import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 
+// Todo: i18nize these
 function _ (s, err) {
   return s + (err ? ` (${err.message})` : '');
 }
+document.documentElement.lang = 'en-US';
+document.documentElement.dir = 'ltr';
 
 function empty (el) {
   while (el.firstChild) {
@@ -82,113 +85,116 @@ function makePolyXY (currImageRegionID) {
 function addImageRegion (imageRegionID, prevElement) {
   const currentImageRegionID = imageRegionID;
   const li = jml('li', [
-    ['select', {name: `${currentImageRegionID}_shape`, $on: {change ({target}) {
-      const outputArea = this.nextElementSibling;
-      empty(outputArea);
-      switch (target.value) {
-      case 'rect':
+    ['select', {
+      name: `${currentImageRegionID}_shape`,
+      'aria-label': _('Shape'),
+      $on: {change ({target}) {
+        const outputArea = this.nextElementSibling;
+        empty(outputArea);
+        switch (target.value) {
+        case 'rect':
+          jml('div', [
+            ['label', [
+              _('Left x'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_leftx`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2,
+            ['label', [
+              _('Top y'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_topy`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2,
+            ['label', [
+              _('Right x'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_rightx`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2,
+            ['label', [
+              _('Bottom y'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_bottomy`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2
+          ], outputArea);
+          break;
+        case 'circle':
+          jml('div', [
+            ['label', [
+              _('x'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_circlex`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2,
+            ['label', [
+              _('y'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_circley`,
+                type: 'number', size: 5, required: true
+              }]
+            ]], nbsp2,
+            ['label', [
+              _('r'),
+              nbsp,
+              ['input', {
+                name: `${currentImageRegionID}_circler`,
+                type: 'number', size: 5, required: true
+              }]
+            ]]
+          ], outputArea);
+          break;
+        case 'poly': {
+          const div = jml('div', {class: 'polyDivHolder'}, [
+            makePolyXY(currentImageRegionID)
+          ], outputArea);
+          div.querySelector('button.addPoly').click();
+          break;
+        } default:
+          break;
+        }
         jml('div', [
-          ['label', [
-            _('Left x'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_leftx`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2,
-          ['label', [
-            _('Top y'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_topy`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2,
-          ['label', [
-            _('Right x'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_rightx`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2,
-          ['label', [
-            _('Bottom y'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_bottomy`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2
+          ['div', [
+            ['label', [
+              _('Text'), nbsp2,
+              ['textarea', {
+                name: `${currentImageRegionID}_text`,
+                required: true
+              }]
+            ]]
+          ]],
+          ['button', {class: 'addRegion', $on: {click (e) {
+            e.preventDefault();
+            addImageRegion(imgRegionID++, li);
+          }}}, [
+            _('+')
+          ]],
+          ['button', {class: 'removeRegion', $on: {click (e) {
+            e.preventDefault();
+            const imageRegions = $('#imageRegions');
+            if (imageRegions.children.length === 1) {
+              return;
+            }
+            li.remove();
+          }}}, [
+            _('-')
+          ]],
+          ['br'],
+          ['br']
         ], outputArea);
-        break;
-      case 'circle':
-        jml('div', [
-          ['label', [
-            _('x'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_circlex`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2,
-          ['label', [
-            _('y'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_circley`,
-              type: 'number', size: 5, required: true
-            }]
-          ]], nbsp2,
-          ['label', [
-            _('r'),
-            nbsp,
-            ['input', {
-              name: `${currentImageRegionID}_circler`,
-              type: 'number', size: 5, required: true
-            }]
-          ]]
-        ], outputArea);
-        break;
-      case 'poly': {
-        const div = jml('div', {class: 'polyDivHolder'}, [
-          makePolyXY(currentImageRegionID)
-        ], outputArea);
-        div.querySelector('button.addPoly').click();
-        break;
-      } default:
-        break;
-      }
-      jml('div', [
-        ['div', [
-          ['label', [
-            _('Text'), nbsp2,
-            ['textarea', {
-              name: `${currentImageRegionID}_text`,
-              required: true
-            }]
-          ]]
-        ]],
-        ['button', {class: 'addRegion', $on: {click (e) {
-          e.preventDefault();
-          addImageRegion(imgRegionID++, li);
-        }}}, [
-          _('+')
-        ]],
-        ['button', {class: 'removeRegion', $on: {click (e) {
-          e.preventDefault();
-          const imageRegions = $('#imageRegions');
-          if (imageRegions.children.length === 1) {
-            return;
-          }
-          li.remove();
-        }}}, [
-          _('-')
-        ]],
-        ['br'],
-        ['br']
-      ], outputArea);
-    }}}, [
+      }}}, [
       ['option', {value: 'rect'}, [_('Rectangle')]],
       ['option', {value: 'circle'}, [_('Circle')]],
       ['option', {value: 'poly'}, [_('Polygon')]]
@@ -349,82 +355,93 @@ jml('div', [
   form,
   ['section', {class: 'serialized'}, [
     ['h2', [_('Serialized HTML')]],
-    ['textarea', {id: 'serializedHTML', form: form.id, $on: {input () {
-      const html = new DOMParser().parseFromString(this.value, 'text/html');
-      const map = html.querySelector('map[name]');
-      const img = html.querySelector(
-        `img[usemap="#${map.name}"][src]`
-      );
-      const areas = [...map.querySelectorAll('area')];
-      if (!map || !areas.length || !img) {
-        this.setCustomValidity(!map
-          ? _('Missing <map name=> element ')
-          : (!areas.length)
-            ? _('Missing <area>')
-            : _('Missing matching <img usemap= src=>'));
-        this.reportValidity();
-        return;
-      }
-      this.setCustomValidity('');
+    ['textarea', {
+      id: 'serializedHTML',
+      form: form.id,
+      'aria-label': _('Serialized HTML'),
+      $on: {input () {
+        const html = new DOMParser().parseFromString(this.value, 'text/html');
+        const map = html.querySelector('map[name]');
+        const img = html.querySelector(
+          `img[usemap="#${map.name}"][src]`
+        );
+        const areas = [...map.querySelectorAll('area')];
+        if (!map || !areas.length || !img) {
+          this.setCustomValidity(!map
+            ? _('Missing <map name=> element ')
+            : (!areas.length)
+              ? _('Missing <area>')
+              : _('Missing matching <img usemap= src=>'));
+          this.reportValidity();
+          return;
+        }
+        this.setCustomValidity('');
 
-      const formObj = {};
-      formObj.name = map.name;
-      formObj.mapURL = img.src;
-      areas.forEach(({shape, coords, dataset: {text}}, setNum) => {
-        if (!shape || !coords) {
-          return;
-        }
-        formObj[setNum + '_shape'] = shape;
-        formObj[setNum + '_text'] = text || '';
-        coords = coords.split(/,\s*/u);
-        switch (shape) {
-        default:
-          return;
-        case 'circle':
-          ['circlex', 'circley', 'circler'].forEach((item, i) => {
-            formObj[setNum + '_' + item] = coords[i];
-          });
-          break;
-        case 'rect':
-          ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-            formObj[setNum + '_' + item] = coords[i];
-          });
-          break;
-        case 'poly':
-          formObj[setNum + '_xy'] = coords;
-          break;
-        }
-      });
-      // alert(JSON.stringify(formObj, null, 2));
-      deserializeForm.call(this, form, formObj);
-      updateSerializedJSON(formObj);
-      formToPreview(formObj);
-    }}}]
+        const formObj = {};
+        formObj.name = map.name;
+        formObj.mapURL = img.src;
+        areas.forEach(({shape, coords, dataset: {text}}, setNum) => {
+          if (!shape || !coords) {
+            return;
+          }
+          formObj[setNum + '_shape'] = shape;
+          formObj[setNum + '_text'] = text || '';
+          coords = coords.split(/,\s*/u);
+          switch (shape) {
+          default:
+            return;
+          case 'circle':
+            ['circlex', 'circley', 'circler'].forEach((item, i) => {
+              formObj[setNum + '_' + item] = coords[i];
+            });
+            break;
+          case 'rect':
+            ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
+              formObj[setNum + '_' + item] = coords[i];
+            });
+            break;
+          case 'poly':
+            formObj[setNum + '_xy'] = coords;
+            break;
+          }
+        });
+        // alert(JSON.stringify(formObj, null, 2));
+        deserializeForm.call(this, form, formObj);
+        updateSerializedJSON(formObj);
+        formToPreview(formObj);
+      }}
+    }]
   ]],
   ['section', {class: 'serialized'}, [
     ['h2', [_('Serialized JSON')]],
-    ['textarea', {id: 'serializedJSON', form: form.id, $on: {input () {
-      let formObj;
-      try {
-        formObj = JSON.parse(this.value);
-      } catch (err) {
-        this.setCustomValidity(_('JSON Did not parse', err));
-        this.reportValidity();
-        return;
-      }
-      this.setCustomValidity('');
+    ['textarea', {
+      id: 'serializedJSON',
+      form: form.id,
+      'aria-label': _('Serialized JSON'),
+      $on: {input () {
+        let formObj;
+        try {
+          formObj = JSON.parse(this.value);
+        } catch (err) {
+          this.setCustomValidity(_('JSON Did not parse', err));
+          this.reportValidity();
+          return;
+        }
+        this.setCustomValidity('');
 
-      deserializeForm.call(this, form, formObj);
-      formToPreview(formObj);
-      updateSerializedHTML();
-    }}
+        deserializeForm.call(this, form, formObj);
+        formToPreview(formObj);
+        updateSerializedHTML();
+      }}
     }]
   ]],
   ['section', [
     ['h2', [_('Image preview')]],
     ['div', {id: 'imagePreview'}]
   ]]
-], body);
+], jml('div', {
+  role: 'main' // For Axe tests (Accessbility)
+}, body));
 
 addImageRegion(imgRegionID++);
 })();

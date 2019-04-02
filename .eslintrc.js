@@ -7,10 +7,12 @@ module.exports = {
         "polyfills": [
             "DOMParser",
             "JSON",
-            "Object.entries", "Object.keys"
+            "Object.assign",
+            "Object.entries",
+            "Object.keys"
         ]
     },
-    "extends": ["ash-nazg/sauron"],
+    "extends": ["ash-nazg/sauron", "plugin:testcafe/recommended"],
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"

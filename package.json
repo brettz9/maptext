@@ -7,7 +7,7 @@
     "open": "opn http://localhost:8050/ && npm run start",
     "start": "static -p 8050",
     "eslint": "eslint .",
-    "test": "npm run eslint && testcafe"
+    "test": "npm run eslint && testcafe chrome test/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,9 @@
   ],
   "author": "Brett Zamir",
   "contributors": [],
-  "browserslist": ["cover 100%"],
+  "browserslist": [
+    "cover 100%"
+  ],
   "license": "MIT",
   "engines": {},
   "bugs": {
@@ -30,6 +32,7 @@
   "homepage": "https://github.com/brettz9/maptext#readme",
   "devDependencies": {
     "@mysticatea/eslint-plugin": "^9.0.1",
+    "axe-testcafe": "^1.1.0",
     "eslint": "^5.16.0",
     "eslint-config-ash-nazg": "^1.0.2",
     "eslint-config-standard": "^12.0.0",
@@ -41,6 +44,7 @@
     "eslint-plugin-no-use-extend-native": "^0.4.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-testcafe": "^0.2.1",
     "eslint-plugin-unicorn": "^8.0.1",
     "node-static": "^0.7.11",
     "opn-cli": "^4.0.0",
