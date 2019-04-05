@@ -2,7 +2,8 @@
 
 ## ?
 
-- npm: Update eslint-config-ash-nazg and devDeps; add `browserslist`
+- npm: Update `eslint-config-ash-nazg` and devDeps; add `browserslist`
+- npm: Update devDeps and add deps: `imagemaps`/`jquery` for expected usage
 
 ## 0.1.0
 

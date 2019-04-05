@@ -4,6 +4,9 @@ import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
 
+// import {jqueryImageMaps} from './node_modules/imagemaps/dist/index.esm.js';
+// jqueryImageMaps($);
+
 import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 
