@@ -7,6 +7,7 @@
     "open": "opn http://localhost:8050/ && npm run start",
     "start": "static -p 8050",
     "eslint": "eslint .",
+    "rollup": "rollup -c",
     "test": "npm run eslint && testcafe chrome test/**/*.js"
   },
   "repository": {
@@ -48,6 +49,8 @@
     "eslint-plugin-unicorn": "^8.0.1",
     "node-static": "^0.7.11",
     "opn-cli": "^4.0.0",
+    "rollup": "^1.9.0",
+    "rollup-plugin-node-resolve": "^4.1.0",
     "testcafe": "^1.1.1"
   },
   "dependencies": {
@@ -56,6 +59,6 @@
     "jamilih": "^0.44.0",
     "jquery": "^3.3.1",
     "load-stylesheets": "^0.7.0",
-    "tippy.js": "^3.4.1"
+    "tippy.js": "^4.2.1"
   }
 }

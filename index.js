@@ -7,7 +7,7 @@ import {
 // import {jqueryImageMaps} from './node_modules/imagemaps/dist/index.esm.js';
 // jqueryImageMaps($);
 
-import tippy from './node_modules/tippy.js/dist/esm/tippy.js';
+import tippy from './external/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 
 // Todo: i18nize these
@@ -263,7 +263,6 @@ function deserializeForm (form, formObj) {
 
 (async () => {
 await loadStylesheets([
-  '../node_modules/tippy.js/dist/tippy.css',
   './index.css'
 ]);
 
