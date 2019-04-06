@@ -6,7 +6,7 @@ import {Selector} from 'testcafe';
 fixture`TestCafe UI tests`
   .page`http://localhost:8050/`;
 
-test('Speech Tester: Get sounds starting', async (t) => {
+test('Main application: Has name input', async (t) => {
   const nameInputSelector = Selector('input[name="name"]');
   await t.expect(
     nameInputSelector.exists
