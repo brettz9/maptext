@@ -1,6 +1,6 @@
 /* globals jQuery */
 /* eslint-disable require-jsdoc */
-import {jml, body, $, nbsp} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, body, nbsp} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
@@ -11,19 +11,7 @@ import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 // Todo: Switch to npm version
 import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
 
-const $J = jqueryImageMaps(jQuery);
-$J('._image_maps').imageMaps({
-  isEditMode: true,
-  shape: 'rect',
-  shapeStyle: {
-    fill: '#ffffff',
-    stroke: 'red',
-    'stroke-width': 2
-  },
-  onSelect (e, data) {
-    console.log(data); // eslint-disable-line no-console
-  }
-});
+const $ = jqueryImageMaps(jQuery);
 
 // Todo: i18nize these
 function _ (s, err) {
@@ -201,7 +189,7 @@ function addImageRegion (imageRegionID, prevElement) {
           ]],
           ['button', {class: 'removeRegion', $on: {click (e) {
             e.preventDefault();
-            const imageRegions = $('#imageRegions');
+            const imageRegions = $('#imageRegions')[0];
             if (imageRegions.children.length === 1) {
               return;
             }
@@ -222,23 +210,23 @@ function addImageRegion (imageRegionID, prevElement) {
   if (prevElement) {
     prevElement.after(li);
   } else {
-    jml(li, $('#imageRegions'));
+    jml(li, $('#imageRegions')[0]);
   }
   li.firstElementChild.dispatchEvent(new Event('change'));
 }
 
 function updateSerializedHTML () {
-  $('#serializedHTML').value =
-    $('#imagePreview').firstElementChild.outerHTML;
+  $('#serializedHTML')[0].value =
+    $('#imagePreview')[0].firstElementChild.outerHTML;
 }
 
 function updateSerializedJSON (formObj) {
-  $('#serializedJSON').value =
+  $('#serializedJSON')[0].value =
     JSON.stringify(formObj, null, 2);
 }
 
 function deserializeForm (form, formObj) {
-  const imageRegions = $('#imageRegions');
+  const imageRegions = $('#imageRegions')[0];
   empty(imageRegions);
   let highestID = -1;
   Object.entries(formObj).forEach(([key, shape]) => {
@@ -253,7 +241,7 @@ function deserializeForm (form, formObj) {
       if (shape === 'poly') {
         let polySets = formObj[currID + '_xy'].length / 2;
         while (polySets > 2) { // Always have at least 2
-          $('.polyDivHolder').append(makePolyXY(currID));
+          $('.polyDivHolder')[0].append(makePolyXY(currID));
           polySets--;
         }
       }
@@ -287,10 +275,16 @@ function formToPreview (formObj) {
     return item.endsWith('_shape');
   });
 
-  const imagePreview = $('#imagePreview');
+  const imagePreview = $('#imagePreview')[0];
   empty(imagePreview);
   const {name} = formObj;
   jml('div', [
+    ['div', [
+      ['a', {
+        href: '#',
+        id: 'rect'
+      }, [_('Add rectangle')]]
+    ]],
     ['map', {name}, shapeIDS.map((shapeID) => {
       const shape = formObj[shapeID];
       const setNum = shapeID.slice(0, -('_shape'.length));
@@ -325,10 +319,41 @@ function formToPreview (formObj) {
     })],
     ['img', {
       id: 'preview',
+      alt: _('Selected image for map'),
       usemap: '#' + name,
-      src: $('input[name=mapURL]').value || defaultImageSrc
+      src: $('input[name=mapURL]')[0].value || (
+        defaultImageSrc.startsWith('http')
+          ? defaultImageSrc
+          : location.href + '/' + defaultImageSrc
+      ),
+      $on: {
+        // Todo: We could scale using this:
+        load () {
+          // this.naturalWidth, this.naturalHeight
+        }
+      }
     }]
   ], imagePreview);
+  $('#rect')[0].addEventListener('click', function (e) {
+    e.preventDefault();
+    $('#preview').setShapeStyle({
+      fill: $('a.color.selected').data('color'),
+      stroke: $('a.color.selected').data('color'),
+      'stroke-width': 2
+    }).addShape(null, $('#mapURL').val(), 'rect');
+  });
+  $('#preview').imageMaps({
+    isEditMode: true,
+    shape: 'rect',
+    shapeStyle: {
+      fill: '#ffffff',
+      stroke: 'red',
+      'stroke-width': 2
+    },
+    onSelect (e, data) {
+      console.log(data); // eslint-disable-line no-console
+    }
+  });
 }
 
 const form = jml('form', {id: 'imageForm', $on: {submit (e) {
@@ -368,9 +393,9 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
   }}}]
 ]);
 
-const imageHeightWidthRatio = 1001 / 1024;
-const width = 450; // 1024;
-const height = width * imageHeightWidthRatio;
+// const imageHeightWidthRatio = 1001 / 1024;
+// const width = 450; // 1024;
+// const height = width * imageHeightWidthRatio;
 
 jml('div', [
   form,
@@ -463,13 +488,6 @@ jml('div', [
 ], jml('div', {
   role: 'main' // For Axe tests (Accessbility)
 }, [
-  ['img', {
-    alt: _('Handwriting of Shoghi Effendi'),
-    width,
-    height,
-    src: 'Handwriting_of_Shoghi_Effendi_1919-1.jpg',
-    class: '_image_maps_view'
-  }]
 ], body));
 
 addImageRegion(imgRegionID++);

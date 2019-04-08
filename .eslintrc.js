@@ -8,6 +8,7 @@ module.exports = {
             "console",
             "DOMParser",
             "JSON",
+            "location.href",
             "Object.assign",
             "Object.entries",
             "Object.keys"
