@@ -1,14 +1,29 @@
+/* globals jQuery */
 /* eslint-disable require-jsdoc */
 import {jml, body, $, nbsp} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
 
-// import {jqueryImageMaps} from './node_modules/imagemaps/dist/index.esm.js';
-// jqueryImageMaps($);
-
 import tippy from './external/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
+
+// Todo: Switch to npm version
+import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
+
+const $J = jqueryImageMaps(jQuery);
+$J('._image_maps').imageMaps({
+  isEditMode: true,
+  shape: 'rect',
+  shapeStyle: {
+    fill: '#ffffff',
+    stroke: 'red',
+    'stroke-width': 2
+  },
+  onSelect (e, data) {
+    console.log(data); // eslint-disable-line no-console
+  }
+});
 
 // Todo: i18nize these
 function _ (s, err) {
@@ -353,6 +368,10 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
   }}}]
 ]);
 
+const imageHeightWidthRatio = 1001 / 1024;
+const width = 450; // 1024;
+const height = width * imageHeightWidthRatio;
+
 jml('div', [
   form,
   ['section', {class: 'serialized'}, [
@@ -443,7 +462,15 @@ jml('div', [
   ]]
 ], jml('div', {
   role: 'main' // For Axe tests (Accessbility)
-}, body));
+}, [
+  ['img', {
+    alt: _('Handwriting of Shoghi Effendi'),
+    width,
+    height,
+    src: 'Handwriting_of_Shoghi_Effendi_1919-1.jpg',
+    class: '_image_maps_view'
+  }]
+], body));
 
 addImageRegion(imgRegionID++);
 })();

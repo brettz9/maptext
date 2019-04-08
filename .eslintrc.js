@@ -5,6 +5,7 @@ module.exports = {
     },
     "settings": {
         "polyfills": [
+            "console",
             "DOMParser",
             "JSON",
             "Object.assign",

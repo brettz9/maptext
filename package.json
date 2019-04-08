@@ -54,6 +54,7 @@
     "testcafe": "^1.1.1"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.4.3",
     "form-serialize": "https://github.com/brettz9/form-serialize#browser-deserialize-rollup-babel7",
     "imagemaps": "^1.0.0",
     "jamilih": "^0.44.0",
