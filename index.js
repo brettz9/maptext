@@ -51,7 +51,7 @@ function makePolyXY (currImageRegionID) {
       nbsp,
       ['input', {
         name: `${currImageRegionID}_xy`,
-        type: 'number', size: 5, required: true
+        type: 'number', size: 5, required: true, value: 1
       }]
     ]], nbsp2,
     ['label', [
@@ -59,7 +59,7 @@ function makePolyXY (currImageRegionID) {
       nbsp,
       ['input', {
         name: `${currImageRegionID}_xy`,
-        type: 'number', size: 5, required: true
+        type: 'number', size: 5, required: true, value: 1
       }]
     ]],
     nbsp2,
@@ -105,7 +105,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_leftx`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2,
             ['label', [
@@ -113,7 +113,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_topy`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2,
             ['label', [
@@ -121,7 +121,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_rightx`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2,
             ['label', [
@@ -129,7 +129,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_bottomy`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2
           ], outputArea);
@@ -141,7 +141,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_circlex`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2,
             ['label', [
@@ -149,7 +149,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_circley`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 1
               }]
             ]], nbsp2,
             ['label', [
@@ -157,7 +157,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_circler`,
-                type: 'number', size: 5, required: true
+                type: 'number', size: 5, required: true, value: 30
               }]
             ]]
           ], outputArea);
@@ -282,9 +282,21 @@ function formToPreview (formObj) {
     ['div', [
       ['a', {
         href: '#',
-        id: 'rect'
-      }, [_('Add rectangle')]]
+        id: 'rect',
+        class: 'btn'
+      }, [_('Add rectangle')]],
+      ['a', {
+        href: '#',
+        id: 'remove',
+        class: 'btn'
+      }, [_('Remove shape')]],
+      ['a', {
+        href: '#',
+        id: 'remove-all',
+        class: 'btn'
+      }, [_('Remove all shapes')]]
     ]],
+    ['br'],
     ['map', {name}, shapeIDS.map((shapeID) => {
       const shape = formObj[shapeID];
       const setNum = shapeID.slice(0, -('_shape'.length));
@@ -342,6 +354,15 @@ function formToPreview (formObj) {
       'stroke-width': 2
     }).addShape(null, $('#mapURL').val(), 'rect');
   });
+  $('#remove')[0].addEventListener('click', function (e) {
+    e.preventDefault();
+    $('#preview').removeShape();
+  });
+  $('#remove-all')[0].addEventListener('click', function (e) {
+    e.preventDefault();
+    $('#preview').removeAllShapes();
+  });
+
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
