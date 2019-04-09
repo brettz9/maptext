@@ -121,7 +121,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_rightx`,
-                type: 'number', size: 5, required: true, value: 1
+                type: 'number', size: 5, required: true, value: 100
               }]
             ]], nbsp2,
             ['label', [
@@ -129,7 +129,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_bottomy`,
-                type: 'number', size: 5, required: true, value: 1
+                type: 'number', size: 5, required: true, value: 100
               }]
             ]], nbsp2
           ], outputArea);
@@ -290,11 +290,12 @@ function setEllipse (coords = [100, 100, 50, 50]) {
 }
 
 function updateViews (type, formObj, form, formControl) {
-  if (type !== 'map') {
-    formToPreview(formObj);
-  }
   if (type !== 'form') {
     deserializeForm.call(formControl, form, formObj);
+  }
+  formToPreview(formObj); // Sets preview
+  if (type !== 'map') {
+    updateMap(formObj);
   }
   if (type !== 'html') {
     updateSerializedHTML();
@@ -302,6 +303,10 @@ function updateViews (type, formObj, form, formControl) {
   if (type !== 'json') {
     updateSerializedJSON(formObj);
   }
+}
+
+function updateMap (formObj) {
+  $('#preview').removeAllShapes();
 }
 
 function formToPreview (formObj) {
@@ -347,9 +352,7 @@ function formToPreview (formObj) {
       const setNum = shapeID.slice(0, -('_shape'.length));
       return ['area', {
         shape,
-        dataset: {
-          text: formObj[setNum + '_text']
-        },
+        alt: formObj[setNum + '_text'],
         coords: shape === 'circle'
           ? ['circlex', 'circley', 'circler'].map((item) => {
             return formObj[setNum + '_' + item];
@@ -365,7 +368,7 @@ function formToPreview (formObj) {
               return formObj[item];
             }).join(','),
         $on: {mouseover () {
-          this.dataset.tippyContent = this.dataset.text;
+          this.dataset.tippyContent = this.alt;
           tippy('[data-tippy-content]', {
             followCursor: true,
             distance: 10,
