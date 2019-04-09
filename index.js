@@ -269,6 +269,41 @@ await loadStylesheets([
   './index.css'
 ]);
 
+const shapeStrokeFillOptions = {
+  fill: $('a.color.selected').data('color'),
+  stroke: $('a.color.selected').data('color'),
+  'stroke-width': 2
+};
+function setShape (shape, coords) {
+  $('#preview').setShapeStyle(shapeStrokeFillOptions).addShape(
+    coords, $('#mapURL').val(), shape
+  );
+}
+function setRect (coords = [10, 20, 100, 100]) {
+  return setShape('rect', coords);
+}
+function setCircle (coords = [100, 100, 50]) {
+  return setShape('circle', coords);
+}
+function setEllipse (coords = [100, 100, 50, 50]) {
+  return setShape('ellipse', coords);
+}
+
+function updateViews (type, formObj, form, formControl) {
+  if (type !== 'map') {
+    formToPreview(formObj);
+  }
+  if (type !== 'form') {
+    deserializeForm.call(formControl, form, formObj);
+  }
+  if (type !== 'html') {
+    updateSerializedHTML();
+  }
+  if (type !== 'json') {
+    updateSerializedJSON(formObj);
+  }
+}
+
 function formToPreview (formObj) {
   const formObjKeys = Object.keys(formObj);
   const shapeIDS = formObjKeys.filter((item) => {
@@ -358,27 +393,15 @@ function formToPreview (formObj) {
   ], imagePreview);
   $('#rect').on('click', function (e) {
     e.preventDefault();
-    $('#preview').setShapeStyle({
-      fill: $('a.color.selected').data('color'),
-      stroke: $('a.color.selected').data('color'),
-      'stroke-width': 2
-    }).addShape([10, 20, 100, 100], $('#mapURL').val(), 'rect');
+    setRect();
   });
   $('#circle').on('click', function (e) {
     e.preventDefault();
-    $('#preview').setShapeStyle({
-      fill: $('a.color.selected').data('color'),
-      stroke: $('a.color.selected').data('color'),
-      'stroke-width': 2
-    }).addShape([100, 100, 50], $('#mapURL').val(), 'circle');
+    setCircle();
   });
   $('#ellipse').on('click', function (e) {
     e.preventDefault();
-    $('#preview').setShapeStyle({
-      fill: $('a.color.selected').data('color'),
-      stroke: $('a.color.selected').data('color'),
-      'stroke-width': 2
-    }).addShape([100, 100, 50, 50], $('#mapURL').val(), 'ellipse');
+    setEllipse();
   });
   $('#remove').on('click', function (e) {
     e.preventDefault();
@@ -406,9 +429,7 @@ function formToPreview (formObj) {
 const form = jml('form', {id: 'imageForm', $on: {submit (e) {
   e.preventDefault();
   const formObj = serialize(this, {hash: true});
-  formToPreview(formObj);
-  updateSerializedHTML();
-  updateSerializedJSON(formObj);
+  updateViews('form', formObj);
 }}}, [
   ['label', [
     _('Image map name'), nbsp2,
@@ -499,9 +520,7 @@ jml('div', [
           }
         });
         // alert(JSON.stringify(formObj, null, 2));
-        deserializeForm.call(this, form, formObj);
-        updateSerializedJSON(formObj);
-        formToPreview(formObj);
+        updateViews('html', formObj, form, this);
       }}
     }]
   ]],
@@ -522,9 +541,7 @@ jml('div', [
         }
         this.setCustomValidity('');
 
-        deserializeForm.call(this, form, formObj);
-        formToPreview(formObj);
-        updateSerializedHTML();
+        updateViews('json', formObj, form, this);
       }}
     }]
   ]],
