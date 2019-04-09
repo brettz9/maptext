@@ -346,19 +346,19 @@ function formToPreview (formObj) {
       }
     }]
   ], imagePreview);
-  $('#rect')[0].addEventListener('click', function (e) {
+  $('#rect').on('click', function (e) {
     e.preventDefault();
     $('#preview').setShapeStyle({
       fill: $('a.color.selected').data('color'),
       stroke: $('a.color.selected').data('color'),
       'stroke-width': 2
-    }).addShape(null, $('#mapURL').val(), 'rect');
+    }).addShape([10, 20, 100, 100], $('#mapURL').val(), 'rect');
   });
-  $('#remove')[0].addEventListener('click', function (e) {
+  $('#remove').on('click', function (e) {
     e.preventDefault();
     $('#preview').removeShape();
   });
-  $('#remove-all')[0].addEventListener('click', function (e) {
+  $('#remove-all').on('click', function (e) {
     e.preventDefault();
     $('#preview').removeAllShapes();
   });
