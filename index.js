@@ -287,6 +287,16 @@ function formToPreview (formObj) {
       }, [_('Add rectangle')]],
       ['a', {
         href: '#',
+        id: 'circle',
+        class: 'btn'
+      }, [_('Add circle')]],
+      ['a', {
+        href: '#',
+        id: 'ellipse',
+        class: 'btn'
+      }, [_('Add ellipse')]],
+      ['a', {
+        href: '#',
         id: 'remove',
         class: 'btn'
       }, [_('Remove shape')]],
@@ -353,6 +363,22 @@ function formToPreview (formObj) {
       stroke: $('a.color.selected').data('color'),
       'stroke-width': 2
     }).addShape([10, 20, 100, 100], $('#mapURL').val(), 'rect');
+  });
+  $('#circle').on('click', function (e) {
+    e.preventDefault();
+    $('#preview').setShapeStyle({
+      fill: $('a.color.selected').data('color'),
+      stroke: $('a.color.selected').data('color'),
+      'stroke-width': 2
+    }).addShape([100, 100, 50], $('#mapURL').val(), 'circle');
+  });
+  $('#ellipse').on('click', function (e) {
+    e.preventDefault();
+    $('#preview').setShapeStyle({
+      fill: $('a.color.selected').data('color'),
+      stroke: $('a.color.selected').data('color'),
+      'stroke-width': 2
+    }).addShape([100, 100, 50, 50], $('#mapURL').val(), 'ellipse');
   });
   $('#remove').on('click', function (e) {
     e.preventDefault();
