@@ -289,6 +289,8 @@ function setEllipse (coords = [100, 100, 50, 50]) {
   return setShape('ellipse', coords);
 }
 
+// Todo: We could use OOP with polymorphic methods instead,
+//   avoiding its own instance method
 function updateViews (type, formObj, form, formControl) {
   if (type !== 'form') {
     deserializeForm.call(formControl, form, formObj);
@@ -307,14 +309,38 @@ function updateViews (type, formObj, form, formControl) {
 
 function updateMap (formObj) {
   $('#preview').removeAllShapes();
+  // const {name} = formObj; // Todo: Attach to map somehow
 }
 
-function formToPreview (formObj) {
+function mapImageMapFormObject (formObj, handler) {
   const formObjKeys = Object.keys(formObj);
   const shapeIDS = formObjKeys.filter((item) => {
     return item.endsWith('_shape');
   });
 
+  return shapeIDS.map((shapeID) => {
+    const shape = formObj[shapeID];
+    const setNum = shapeID.slice(0, -('_shape'.length));
+    const alt = formObj[setNum + '_text'];
+    const coords = shape === 'circle'
+      ? ['circlex', 'circley', 'circler'].map((item) => {
+        return formObj[setNum + '_' + item];
+      }).join(',')
+      : shape === 'rect'
+        ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
+          return formObj[setNum + '_' + item];
+        }).join(',')
+        // Poly
+        : formObjKeys.filter((item) => {
+          return item.startsWith(setNum) && item.endsWith('_xy');
+        }).map((item) => {
+          return formObj[item];
+        }).join(',');
+    return handler({shape, alt, coords});
+  });
+}
+
+function formToPreview (formObj) {
   const imagePreview = $('#imagePreview')[0];
   empty(imagePreview);
   const {name} = formObj;
@@ -347,26 +373,11 @@ function formToPreview (formObj) {
       }, [_('Remove all shapes')]]
     ]],
     ['br'],
-    ['map', {name}, shapeIDS.map((shapeID) => {
-      const shape = formObj[shapeID];
-      const setNum = shapeID.slice(0, -('_shape'.length));
+    ['map', {name}, mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
       return ['area', {
         shape,
-        alt: formObj[setNum + '_text'],
-        coords: shape === 'circle'
-          ? ['circlex', 'circley', 'circler'].map((item) => {
-            return formObj[setNum + '_' + item];
-          }).join(',')
-          : shape === 'rect'
-            ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
-              return formObj[setNum + '_' + item];
-            }).join(',')
-            // Poly
-            : formObjKeys.filter((item) => {
-              return item.startsWith(setNum) && item.endsWith('_xy');
-            }).map((item) => {
-              return formObj[item];
-            }).join(','),
+        alt,
+        coords,
         $on: {mouseover () {
           this.dataset.tippyContent = this.alt;
           tippy('[data-tippy-content]', {
