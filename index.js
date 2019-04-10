@@ -121,7 +121,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_rightx`,
-                type: 'number', size: 5, required: true, value: 100
+                type: 'number', size: 5, required: true, value: 300
               }]
             ]], nbsp2,
             ['label', [
@@ -129,7 +129,7 @@ function addImageRegion (imageRegionID, prevElement) {
               nbsp,
               ['input', {
                 name: `${currentImageRegionID}_bottomy`,
-                type: 'number', size: 5, required: true, value: 100
+                type: 'number', size: 5, required: true, value: 300
               }]
             ]], nbsp2
           ], outputArea);
@@ -279,7 +279,7 @@ function setShape (shape, coords) {
     coords, $('#mapURL').val(), shape
   );
 }
-function setRect (coords = [10, 20, 100, 100]) {
+function setRect (coords = [10, 20, 300, 300]) {
   return setShape('rect', coords);
 }
 function setCircle (coords = [100, 100, 50]) {
@@ -310,6 +310,9 @@ function updateViews (type, formObj, form, formControl) {
 function updateMap (formObj) {
   $('#preview').removeAllShapes();
   // const {name} = formObj; // Todo: Attach to map somehow
+  mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
+    setShape(shape, coords);
+  });
 }
 
 function mapImageMapFormObject (formObj, handler) {
@@ -325,17 +328,17 @@ function mapImageMapFormObject (formObj, handler) {
     const coords = shape === 'circle'
       ? ['circlex', 'circley', 'circler'].map((item) => {
         return formObj[setNum + '_' + item];
-      }).join(',')
+      })
       : shape === 'rect'
         ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
           return formObj[setNum + '_' + item];
-        }).join(',')
+        })
         // Poly
         : formObjKeys.filter((item) => {
           return item.startsWith(setNum) && item.endsWith('_xy');
         }).map((item) => {
           return formObj[item];
-        }).join(',');
+        });
     return handler({shape, alt, coords});
   });
 }
@@ -377,7 +380,7 @@ function formToPreview (formObj) {
       return ['area', {
         shape,
         alt,
-        coords,
+        coords: coords.join(','),
         $on: {mouseover () {
           this.dataset.tippyContent = this.alt;
           tippy('[data-tippy-content]', {
