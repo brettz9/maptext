@@ -275,9 +275,14 @@ const shapeStrokeFillOptions = {
   'stroke-width': 2
 };
 function setShape (shape, coords) {
-  $('#preview').setShapeStyle(shapeStrokeFillOptions).addShape(
-    coords, $('#mapURL').val(), shape
-  );
+  // Not sure why the timeout is necessary, but without it,
+  //   the shape that is set is regularly hidden (especially
+  //   when following `removeAllShapes`?)
+  setTimeout(() => {
+    $('#preview').setShapeStyle(shapeStrokeFillOptions).addShape(
+      coords, $('#mapURL').val(), shape
+    );
+  });
 }
 function setRect (coords = [10, 20, 300, 300]) {
   return setShape('rect', coords);
@@ -310,13 +315,8 @@ function updateViews (type, formObj, form, formControl) {
 function updateMap (formObj) {
   $('#preview').removeAllShapes();
   // const {name} = formObj; // Todo: Attach to map somehow
-  // Not sure why the timeout is necessary, but without it (and
-  //   following `removeAllShapes`), the shape that is set will
-  //   be hidden
-  setTimeout(() => {
-    mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      setShape(shape, coords);
-    });
+  mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
+    setShape(shape, coords);
   });
 }
 
