@@ -274,6 +274,7 @@ const shapeStrokeFillOptions = {
   stroke: $('a.color.selected').data('color'),
   'stroke-width': 2
 };
+
 function setShape (shape, coords) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
@@ -296,6 +297,16 @@ function setEllipse (coords = [100, 100, 50, 50]) {
 
 // Todo: We could use OOP with polymorphic methods instead,
 //   avoiding its own instance method
+/**
+ *
+ * @param {"form"|"map"|"html"|"json"} type
+ * @param {PlainObject} formObj
+ * @param {HTMLFormElement} [form] Form on which to report errors in
+ *   form-building. Not needed if this is a change to the whole form.
+ * @param {HTMLElement} [formControl] Control on which to report errors in
+ *   form-building. Not needed if this is a change to the whole form.
+ * @returns {void}
+ */
 function updateViews (type, formObj, form, formControl) {
   if (type !== 'form') {
     deserializeForm.call(formControl, form, formObj);
@@ -444,10 +455,68 @@ function formToPreview (formObj) {
       stroke: 'red',
       'stroke-width': 2
     },
-    // onClick (e, targetAreaHref) {},
+    onClick (e, targetAreaHref) {
+      // eslint-disable-next-line no-console
+      console.log('click-targetAreaHref', targetAreaHref);
+    },
     // onMouseDown (e, shapeType, coords) {},
+    // We could use this but probably too aggressive
     // onMouseMove (e, shapeType, movedCoords) {},
-    // onMouseUp (e, shapeType, updatedCoords) {},
+    onMouseUp (e, shapeType, updatedCoords) {
+      const targetEl = $(e.target);
+      const index = targetEl.attr('data-index');
+      const shapeInfo = this.getShapeInfo(index);
+      // eslint-disable-next-line no-console
+      console.log('updatedCoords', updatedCoords, shapeInfo);
+
+      // Todo: Also run updates when we add or remove a shape
+      /*
+      // Adapt for map coords here
+      const formObj = {};
+      formObj.name = map.name;
+      formObj.mapURL = img.src;
+      areas.forEach(({shape, coords, alt}, setNum) => {
+        if (!shape || !coords) {
+          return;
+        }
+        formObj[setNum + '_shape'] = shape;
+        formObj[setNum + '_text'] = alt || '';
+        coords = coords.split(/,\s* */ /* /u);
+        switch (shape) {
+        default:
+          return;
+        case 'circle':
+          ['circlex', 'circley', 'circler'].forEach((item, i) => {
+            formObj[setNum + '_' + item] = coords[i];
+          });
+          break;
+        case 'rect':
+          ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
+            formObj[setNum + '_' + item] = coords[i];
+          });
+          break;
+        case 'poly':
+          formObj[setNum + '_xy'] = coords;
+          break;
+        }
+      });
+      */
+
+      updateViews('map', formObj, form, {
+        reportValidity () {
+          if (this.$message) {
+            alert(this.$message); // eslint-disable-line no-alert
+          }
+        },
+        setCustomValidity (msg) {
+          if (!msg) {
+            delete this.$message;
+            return;
+          }
+          this.$message = msg;
+        }
+      });
+    },
     onSelect (e, data) {
       console.log(data); // eslint-disable-line no-console
     }
