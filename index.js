@@ -516,12 +516,12 @@ jml('div', [
         const formObj = {};
         formObj.name = map.name;
         formObj.mapURL = img.src;
-        areas.forEach(({shape, coords, dataset: {text}}, setNum) => {
+        areas.forEach(({shape, coords, alt}, setNum) => {
           if (!shape || !coords) {
             return;
           }
           formObj[setNum + '_shape'] = shape;
-          formObj[setNum + '_text'] = text || '';
+          formObj[setNum + '_text'] = alt || '';
           coords = coords.split(/,\s*/u);
           switch (shape) {
           default:
