@@ -310,8 +310,13 @@ function updateViews (type, formObj, form, formControl) {
 function updateMap (formObj) {
   $('#preview').removeAllShapes();
   // const {name} = formObj; // Todo: Attach to map somehow
-  mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-    setShape(shape, coords);
+  // Not sure why the timeout is necessary, but without it (and
+  //   following `removeAllShapes`), the shape that is set will
+  //   be hidden
+  setTimeout(() => {
+    mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
+      setShape(shape, coords);
+    });
   });
 }
 
