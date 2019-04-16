@@ -10,24 +10,28 @@ npm i maptext
 
 ## Immediate to-dos
 
-0. Fix from/to issue when changing shapes
-0. Make text optional by preference
+0. Fix **from/to issue** when changing shapes
+0. Make **text optional** by preference
 
-0. Have added and removed shapes and repositioning (need
-    reposition listeners and removal listeners?) reflected in
+0. Listen for **added/removed/repositioned shapes** reflected in
     form/HTML/JSON
-0. View map
-0. Zooming
+0. **View map**
+0. **Zooming**
 
-1. Allow text search (optionally overriding browser find) with
-    highlight of image regions (single or multiple select)
+1. Allow **highlighted text search** (optionally overriding browser
+    find) with highlight of image regions (single or multiple select)
 2. Allow (click/drag) image highlighting of region(s)
-    for copy-paste and/or display of text
+    for **copy-paste** and/or display of text
 3. Allow adding, removing, or editing coords or text from image
-4. (Also begin work on text range selector (for coordinates and highlighting text))
-5. Show preview of image next to coordinates and/or on image
+
+## Medium priority to-dos
+
+1. **Demo with RTL and Chinese text**, adding special
+    handling/options if necessary
+2. (Also begin work on **text range selector** (for coordinates and
+    highlighting text))
+3. Show **preview of image next to coordinates** and/or on image
     preview (so load preview as soon as URL entered)
-6. Demo with RTL and Chinese text, adding special handling/options if necessary
 
 ## Lower priority to-dos
 
