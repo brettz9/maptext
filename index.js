@@ -465,42 +465,15 @@ function formToPreview (formObj) {
     onMouseUp (e, shapeType, updatedCoords) {
       const targetEl = $(e.target);
       const index = targetEl.attr('data-index');
-      const shapeInfo = this.getShapeInfo(index);
-      // eslint-disable-next-line no-console
-      console.log('updatedCoords', updatedCoords, shapeInfo);
+      const {type: shape} = this.getShapeInfo(index);
 
-      // Todo: Also run updates when we add or remove a shape
-      /*
-      // Adapt for map coords here
-      const formObj = {};
-      formObj.name = map.name;
-      formObj.mapURL = img.src;
-      areas.forEach(({shape, coords, alt}, setNum) => {
-        if (!shape || !coords) {
-          return;
-        }
-        formObj[setNum + '_shape'] = shape;
-        formObj[setNum + '_text'] = alt || '';
-        coords = coords.split(/,\s* */ /* /u);
-        switch (shape) {
-        default:
-          return;
-        case 'circle':
-          ['circlex', 'circley', 'circler'].forEach((item, i) => {
-            formObj[setNum + '_' + item] = coords[i];
-          });
-          break;
-        case 'rect':
-          ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-            formObj[setNum + '_' + item] = coords[i];
-          });
-          break;
-        case 'poly':
-          formObj[setNum + '_xy'] = coords;
-          break;
-        }
-      });
-      */
+      // Won't change shape (and we don't change text here),
+      //   so we only worry about coords (and only for the moved
+      //   element)
+      // eslint-disable-next-line no-console
+      console.log('updatedCoords', updatedCoords);
+
+      setFormObjCoords(formObj, shape, index, updatedCoords);
 
       updateViews('map', formObj, form, {
         reportValidity () {
@@ -562,6 +535,26 @@ const form = jml('form', {id: 'imageForm', $on: {submit (e) {
 // const width = 450; // 1024;
 // const height = width * imageHeightWidthRatio;
 
+function setFormObjCoords (formObj, shape, setNum, coords) {
+  switch (shape) {
+  default:
+    return;
+  case 'circle':
+    ['circlex', 'circley', 'circler'].forEach((item, i) => {
+      formObj[setNum + '_' + item] = coords[i];
+    });
+    break;
+  case 'rect':
+    ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
+      formObj[setNum + '_' + item] = coords[i];
+    });
+    break;
+  case 'poly':
+    formObj[setNum + '_xy'] = coords;
+    break;
+  }
+}
+
 jml('div', [
   form,
   ['section', {class: 'serialized'}, [
@@ -598,23 +591,7 @@ jml('div', [
           formObj[setNum + '_shape'] = shape;
           formObj[setNum + '_text'] = alt || '';
           coords = coords.split(/,\s*/u);
-          switch (shape) {
-          default:
-            return;
-          case 'circle':
-            ['circlex', 'circley', 'circler'].forEach((item, i) => {
-              formObj[setNum + '_' + item] = coords[i];
-            });
-            break;
-          case 'rect':
-            ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-              formObj[setNum + '_' + item] = coords[i];
-            });
-            break;
-          case 'poly':
-            formObj[setNum + '_xy'] = coords;
-            break;
-          }
+          setFormObjCoords(formObj, shape, setNum, coords);
         });
         // alert(JSON.stringify(formObj, null, 2));
         updateViews('html', formObj, form, this);

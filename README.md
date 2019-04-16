@@ -12,6 +12,7 @@ npm i maptext
 
 0. Fix **from/to issue** when changing shapes
 0. Make **text optional** by preference
+0. Figure out why **shape disappears** after repositioning updates views
 
 0. Listen for **added/removed/repositioned shapes** reflected in
     form/HTML/JSON
