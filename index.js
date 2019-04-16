@@ -314,9 +314,11 @@ function updateViews (type, formObj, form, formControl) {
 
 function updateMap (formObj) {
   $('#preview').removeAllShapes();
-  // const {name} = formObj; // Todo: Attach to map somehow
-  mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-    setShape(shape, coords);
+  setTimeout(() => {
+    // const {name} = formObj; // Todo: Attach to map somehow
+    mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
+      setShape(shape, coords);
+    });
   });
 }
 
@@ -442,6 +444,10 @@ function formToPreview (formObj) {
       stroke: 'red',
       'stroke-width': 2
     },
+    // onClick (e, targetAreaHref) {},
+    // onMouseDown (e, shapeType, coords) {},
+    // onMouseMove (e, shapeType, movedCoords) {},
+    // onMouseUp (e, shapeType, updatedCoords) {},
     onSelect (e, data) {
       console.log(data); // eslint-disable-line no-console
     }

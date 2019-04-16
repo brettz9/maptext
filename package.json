@@ -8,6 +8,7 @@
     "start": "static -p 8050",
     "eslint": "eslint .",
     "rollup": "rollup -c",
+    "copy-im": "cp -a ../imagemaps/dist/. node_modules/imagemaps/dist/",
     "test": "npm run eslint && testcafe chrome test/**/*.js"
   },
   "repository": {
