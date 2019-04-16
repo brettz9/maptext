@@ -13,9 +13,9 @@ npm i maptext
 0. Fix from/to issue when changing shapes
 0. Make text optional by preference
 
-0. Have changes to form/HTML/JSON set shapes on map
-0. Have added shapes and repositioning (need reposition listeners and removal listeners?)
-    reflected in form/HTML/JSON
+0. Have added and removed shapes and repositioning (need
+    reposition listeners and removal listeners?) reflected in
+    form/HTML/JSON
 0. View map
 0. Zooming
 
