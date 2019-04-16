@@ -217,7 +217,7 @@ function addImageRegion (imageRegionID, prevElement) {
 
 function updateSerializedHTML () {
   $('#serializedHTML')[0].value =
-    $('#imagePreview')[0].firstElementChild.outerHTML;
+    $('#imagePreviewHolder')[0].firstElementChild.outerHTML;
 }
 
 function updateSerializedJSON (formObj) {
@@ -311,7 +311,7 @@ function updateViews (type, formObj, form, formControl) {
   if (type !== 'form') {
     deserializeForm.call(formControl, form, formObj);
   }
-  formToPreview(formObj); // Sets preview
+  type !== 'map' && formToPreview(formObj); // Sets preview
   if (type !== 'map') {
     updateMap(formObj);
   }
@@ -363,37 +363,8 @@ function mapImageMapFormObject (formObj, handler) {
 
 function formToPreview (formObj) {
   const imagePreview = $('#imagePreview')[0];
-  empty(imagePreview);
   const {name} = formObj;
-  jml('div', [
-    ['div', [
-      ['a', {
-        href: '#',
-        id: 'rect',
-        class: 'btn'
-      }, [_('Add rectangle')]],
-      ['a', {
-        href: '#',
-        id: 'circle',
-        class: 'btn'
-      }, [_('Add circle')]],
-      ['a', {
-        href: '#',
-        id: 'ellipse',
-        class: 'btn'
-      }, [_('Add ellipse')]],
-      ['a', {
-        href: '#',
-        id: 'remove',
-        class: 'btn'
-      }, [_('Remove shape')]],
-      ['a', {
-        href: '#',
-        id: 'remove-all',
-        class: 'btn'
-      }, [_('Remove all shapes')]]
-    ]],
-    ['br'],
+  imagePreview.replaceWith(jml('div', {id: 'imagePreview'}, [
     ['map', {name}, mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
       return ['area', {
         shape,
@@ -425,28 +396,7 @@ function formToPreview (formObj) {
         }
       }
     }]
-  ], imagePreview);
-  $('#rect').on('click', function (e) {
-    e.preventDefault();
-    setRect();
-  });
-  $('#circle').on('click', function (e) {
-    e.preventDefault();
-    setCircle();
-  });
-  $('#ellipse').on('click', function (e) {
-    e.preventDefault();
-    setEllipse();
-  });
-  $('#remove').on('click', function (e) {
-    e.preventDefault();
-    $('#preview').removeShape();
-  });
-  $('#remove-all').on('click', function (e) {
-    e.preventDefault();
-    $('#preview').removeAllShapes();
-  });
-
+  ]));
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
@@ -621,12 +571,65 @@ jml('div', [
   ]],
   ['section', [
     ['h2', [_('Image preview')]],
-    ['div', {id: 'imagePreview'}]
+    ['div', [
+      ['div', [
+        ['a', {
+          href: '#',
+          id: 'rect',
+          class: 'btn'
+        }, [_('Add rectangle')]],
+        ['a', {
+          href: '#',
+          id: 'circle',
+          class: 'btn'
+        }, [_('Add circle')]],
+        ['a', {
+          href: '#',
+          id: 'ellipse',
+          class: 'btn'
+        }, [_('Add ellipse')]],
+        ['a', {
+          href: '#',
+          id: 'remove',
+          class: 'btn'
+        }, [_('Remove shape')]],
+        ['a', {
+          href: '#',
+          id: 'remove-all',
+          class: 'btn'
+        }, [_('Remove all shapes')]]
+      ]],
+      ['br'],
+      ['div', {id: 'imagePreviewHolder'}, [
+        ['div', {id: 'imagePreview'}]
+      ]]
+    ]]
   ]]
 ], jml('div', {
   role: 'main' // For Axe tests (Accessbility)
 }, [
 ], body));
+
+$('#rect').on('click', function (e) {
+  e.preventDefault();
+  setRect();
+});
+$('#circle').on('click', function (e) {
+  e.preventDefault();
+  setCircle();
+});
+$('#ellipse').on('click', function (e) {
+  e.preventDefault();
+  setEllipse();
+});
+$('#remove').on('click', function (e) {
+  e.preventDefault();
+  $('#preview').removeShape();
+});
+$('#remove-all').on('click', function (e) {
+  e.preventDefault();
+  $('#preview').removeAllShapes();
+});
 
 addImageRegion(imgRegionID++);
 })();
