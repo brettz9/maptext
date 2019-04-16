@@ -428,7 +428,8 @@ function formToPreview (formObj) {
       updateViews('map', formObj, form, {
         reportValidity () {
           if (this.$message) {
-            alert(this.$message); // eslint-disable-line no-alert
+            // alert(this.$message); // eslint-disable-line no-alert
+            console.log('alert:', this.$message); // eslint-disable-line no-console, max-len
           }
         },
         setCustomValidity (msg) {
