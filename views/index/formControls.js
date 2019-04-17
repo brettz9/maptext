@@ -37,11 +37,6 @@ export const mainForm = ({defaultMapName, defaultImageSrc, behaviors}) => {
   return form;
 };
 
-export const makeFrom = () => {
-  return ['span', {class: 'from'}, [_('From:')]];
-};
-export const makeTo = () => ['span', [_('To:')]];
-
 export const formShapeSelection = ({currentImageRegionID, behaviors}) => {
   return jml('li', [
     ['select', {
@@ -129,6 +124,47 @@ export const formControlsPoly = ({
   return jml('div', {class: 'polyDivHolder'}, [
     behaviors.makePolyXY()
   ], outputArea);
+};
+
+export const makeFrom = () => {
+  return ['span', {class: 'from'}, [_('From:')]];
+};
+export const makeTo = () => ['span', [_('To:')]];
+
+export const polyXYDiv = ({polyID, currImageRegionID, behaviors}) => {
+  return jml('div', {id: 'polyID' + polyID}, [
+    polyID === 1
+      ? makeFrom()
+      : makeTo(),
+    nbsp2,
+    ['label', [
+      _('x'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true, value: 1
+      }]
+    ]], nbsp2,
+    ['label', [
+      _('y'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true, value: 1
+      }]
+    ]],
+    nbsp2,
+    ['button', {class: 'addPoly', $on: {
+      click: behaviors.addPolyClick
+    }}, [
+      '+'
+    ]],
+    ['button', {class: 'removePoly', $on: {
+      click: behaviors.removePolyClick
+    }}, [
+      '-'
+    ]]
+  ]);
 };
 
 export const formText = ({
