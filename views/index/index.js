@@ -2,13 +2,39 @@ import {jml, body} from '../../node_modules/jamilih/dist/jml-es.js';
 import _ from '../../external/i18n/i18n.js';
 
 export {
+  mainForm,
   formControlsRect, formControlsCircle, formControlsPoly,
   formText, makeFrom, makeTo
 } from './formControls.js';
 
-export const mainRole = () => jml('div', {
+const mainRole = () => jml('div', {
   role: 'main' // For Axe tests (Accessbility)
 }, body);
+
+export const main = ({form, behaviors}) => {
+  jml('div', [
+    form,
+    ['section', {class: 'serialized'}, [
+      ['h2', [_('Serialized HTML')]],
+      ['textarea', {
+        id: 'serializedHTML',
+        form: form.id,
+        'aria-label': _('Serialized HTML'),
+        $on: {input: behaviors.serializedHTMLInput}
+      }]
+    ]],
+    ['section', {class: 'serialized'}, [
+      ['h2', [_('Serialized JSON')]],
+      ['textarea', {
+        id: 'serializedJSON',
+        form: form.id,
+        'aria-label': _('Serialized JSON'),
+        $on: {input: behaviors.serializedJSONInput}
+      }]
+    ]],
+    imagePreviewContainer({behaviors})
+  ], mainRole());
+};
 
 export const imagePreviewContainer = ({behaviors}) => ['section', [
   ['h2', [_('Image preview')]],

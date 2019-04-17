@@ -3,13 +3,47 @@ import _ from '../../external/i18n/i18n.js';
 
 const nbsp2 = nbsp.repeat(2);
 
+export const mainForm = ({defaultMapName, defaultImageSrc, behaviors}) => {
+  const form = jml('form', {
+    id: 'imageForm',
+    $on: {submit: behaviors.imageFormSubmit}
+  }, [
+    ['label', [
+      _('Image map name'), nbsp2,
+      ['input', {
+        name: 'name', size: 100,
+        value: defaultMapName
+      }]
+    ]],
+    ['br'],
+    ['label', [
+      _('Image map URL'), nbsp2,
+      ['input', {
+        name: 'mapURL', size: 100, required: true,
+        value: defaultImageSrc
+      }]
+    ]],
+    ['br'],
+    ['fieldset', [
+      ['div', [
+        _('Image areas'),
+        ['ol', {id: 'imageRegions'}]
+      ]]
+    ]],
+    ['input', {type: 'submit', value: _('Apply'), $on: {
+      click: behaviors.submitFormClick
+    }}]
+  ]);
+  return form;
+};
+
 export const makeFrom = () => {
   return ['span', {class: 'from'}, [_('From:')]];
 };
 export const makeTo = () => ['span', [_('To:')]];
 
 export const formControlsRect = ({currentImageRegionID, outputArea}) => {
-  jml('div', [
+  return jml('div', [
     ['label', [
       _('Left x'),
       nbsp,
@@ -86,7 +120,7 @@ export const formText = ({
   imgRegionID, currentImageRegionID, outputArea,
   behaviors
 }) => {
-  jml('div', [
+  return jml('div', [
     ['div', [
       ['label', [
         _('Text'), nbsp2,

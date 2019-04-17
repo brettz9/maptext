@@ -348,40 +348,23 @@ function formToPreview (formObj) {
   });
 }
 
-const form = jml('form', {id: 'imageForm', $on: {submit (e) {
-  e.preventDefault();
-  const formObj = serialize(this, {hash: true});
-  updateViews('form', formObj);
-}}}, [
-  ['label', [
-    _('Image map name'), nbsp2,
-    ['input', {
-      name: 'name', size: 100,
-      value: defaultMapName
-    }]
-  ]],
-  ['br'],
-  ['label', [
-    _('Image map URL'), nbsp2,
-    ['input', {
-      name: 'mapURL', size: 100, required: true,
-      value: defaultImageSrc || ''
-    }]
-  ]],
-  ['br'],
-  ['fieldset', [
-    ['div', [
-      _('Image areas'),
-      ['ol', {id: 'imageRegions'}]
-    ]]
-  ]],
-  ['input', {type: 'submit', value: _('Apply'), $on: {click () {
-    // To try again, we reset invalid forms, e.g., from previous bad JSON
-    [...form.elements].forEach((ctrl) => {
-      ctrl.setCustomValidity('');
-    });
-  }}}]
-]);
+const form = Views.mainForm({
+  defaultMapName,
+  defaultImageSrc: defaultImageSrc || '',
+  behaviors: {
+    imageFormSubmit (e) {
+      e.preventDefault();
+      const formObj = serialize(this, {hash: true});
+      updateViews('form', formObj);
+    },
+    submitFormClick () {
+      // To try again, we reset invalid forms, e.g., from previous bad JSON
+      [...form.elements].forEach((ctrl) => {
+        ctrl.setCustomValidity('');
+      });
+    }
+  }
+});
 
 // const imageHeightWidthRatio = 1001 / 1024;
 // const width = 450; // 1024;
@@ -407,95 +390,77 @@ function setFormObjCoords (formObj, shape, setNum, coords) {
   }
 }
 
-jml('div', [
+Views.main({
   form,
-  ['section', {class: 'serialized'}, [
-    ['h2', [_('Serialized HTML')]],
-    ['textarea', {
-      id: 'serializedHTML',
-      form: form.id,
-      'aria-label': _('Serialized HTML'),
-      $on: {input () {
-        const html = new DOMParser().parseFromString(this.value, 'text/html');
-        const map = html.querySelector('map[name]');
-        const img = html.querySelector(
-          `img[usemap="#${map.name}"][src]`
-        );
-        const areas = [...map.querySelectorAll('area')];
-        if (!map || !areas.length || !img) {
-          this.setCustomValidity(!map
-            ? _('Missing <map name=> element ')
-            : (!areas.length)
-              ? _('Missing <area>')
-              : _('Missing matching <img usemap= src=>'));
-          this.reportValidity();
-          return;
-        }
-        this.setCustomValidity('');
-
-        const formObj = {};
-        formObj.name = map.name;
-        formObj.mapURL = img.src;
-        areas.forEach(({shape, coords, alt}, setNum) => {
-          if (!shape || !coords) {
-            return;
-          }
-          formObj[setNum + '_shape'] = shape;
-          formObj[setNum + '_text'] = alt || '';
-          coords = coords.split(/,\s*/u);
-          setFormObjCoords(formObj, shape, setNum, coords);
-        });
-        // alert(JSON.stringify(formObj, null, 2));
-        updateViews('html', formObj, form, this);
-      }}
-    }]
-  ]],
-  ['section', {class: 'serialized'}, [
-    ['h2', [_('Serialized JSON')]],
-    ['textarea', {
-      id: 'serializedJSON',
-      form: form.id,
-      'aria-label': _('Serialized JSON'),
-      $on: {input () {
-        let formObj;
-        try {
-          formObj = JSON.parse(this.value);
-        } catch (err) {
-          this.setCustomValidity(_('JSON Did not parse', err));
-          this.reportValidity();
-          return;
-        }
-        this.setCustomValidity('');
-
-        updateViews('json', formObj, form, this);
-      }}
-    }]
-  ]],
-  Views.imagePreviewContainer({
-    behaviors: {
-      rectClick (e) {
-        e.preventDefault();
-        setRect();
-      },
-      circleClick (e) {
-        e.preventDefault();
-        setCircle();
-      },
-      ellipseClick (e) {
-        e.preventDefault();
-        setEllipse();
-      },
-      removeClick (e) {
-        e.preventDefault();
-        $('#preview').removeShape();
-      },
-      removeAllClick (e) {
-        e.preventDefault();
-        $('#preview').removeAllShapes();
+  behaviors: {
+    serializedHTMLInput () {
+      const html = new DOMParser().parseFromString(this.value, 'text/html');
+      const map = html.querySelector('map[name]');
+      const img = html.querySelector(
+        `img[usemap="#${map.name}"][src]`
+      );
+      const areas = [...map.querySelectorAll('area')];
+      if (!map || !areas.length || !img) {
+        this.setCustomValidity(!map
+          ? _('Missing <map name=> element ')
+          : (!areas.length)
+            ? _('Missing <area>')
+            : _('Missing matching <img usemap= src=>'));
+        this.reportValidity();
+        return;
       }
+      this.setCustomValidity('');
+
+      const formObj = {};
+      formObj.name = map.name;
+      formObj.mapURL = img.src;
+      areas.forEach(({shape, coords, alt}, setNum) => {
+        if (!shape || !coords) {
+          return;
+        }
+        formObj[setNum + '_shape'] = shape;
+        formObj[setNum + '_text'] = alt || '';
+        coords = coords.split(/,\s*/u);
+        setFormObjCoords(formObj, shape, setNum, coords);
+      });
+      // alert(JSON.stringify(formObj, null, 2));
+      updateViews('html', formObj, form, this);
+    },
+    serializedJSONInput () {
+      let formObj;
+      try {
+        formObj = JSON.parse(this.value);
+      } catch (err) {
+        this.setCustomValidity(_('JSON Did not parse', err));
+        this.reportValidity();
+        return;
+      }
+      this.setCustomValidity('');
+
+      updateViews('json', formObj, form, this);
+    },
+    rectClick (e) {
+      e.preventDefault();
+      setRect();
+    },
+    circleClick (e) {
+      e.preventDefault();
+      setCircle();
+    },
+    ellipseClick (e) {
+      e.preventDefault();
+      setEllipse();
+    },
+    removeClick (e) {
+      e.preventDefault();
+      $('#preview').removeShape();
+    },
+    removeAllClick (e) {
+      e.preventDefault();
+      $('#preview').removeAllShapes();
     }
-  })
-], Views.mainRole());
+  }
+});
 
 addImageRegion(imgRegionID++);
 })();
