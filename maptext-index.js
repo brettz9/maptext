@@ -193,7 +193,7 @@ function updateMap (formObj) {
   setTimeout(() => {
     // const {name} = formObj; // Todo: Attach to map somehow
     mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      ImageMaps.addShape(shape, coords);
+      ImageMaps.addShape(shape, {coords});
     });
   });
 }
@@ -226,24 +226,33 @@ function mapImageMapFormObject (formObj, handler) {
   });
 }
 
-function setFormObjCoords (setNum, shape, coords, formObj) {
+function setFormObjCoords ({index, shape, coords, text, formObj}) {
+  formObj[index + '_shape'] = shape;
+  formObj[index + '_text'] = text;
   switch (shape) {
   default:
     return;
   case 'circle':
     ['circlex', 'circley', 'circler'].forEach((item, i) => {
-      formObj[setNum + '_' + item] = coords[i];
+      formObj[index + '_' + item] = coords[i];
     });
     break;
   case 'rect':
     ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-      formObj[setNum + '_' + item] = coords[i];
+      formObj[index + '_' + item] = coords[i];
     });
     break;
   case 'poly':
-    formObj[setNum + '_xy'] = coords;
+    formObj[index + '_xy'] = coords;
     break;
   }
+}
+
+function setFormObjCoordsAndUpdateViewForMap ({
+  index, shape, coords, text, formObj, formControl
+}) {
+  setFormObjCoords({index, shape, coords, text, formObj});
+  updateViews('map', formObj, formControl);
 }
 
 function formToPreview (formObj) {
@@ -283,7 +292,7 @@ function formToPreview (formObj) {
     'stroke-width': 2
   });
   ImageMaps.setImageMaps({formObj, sharedBehaviors: {
-    setFormObjCoords, updateViews
+    setFormObjCoordsAndUpdateViewForMap
   }});
 }
 
@@ -339,14 +348,12 @@ Views.main({
         name: map.name,
         mapURL: img.src
       };
-      areas.forEach(({shape, coords, alt}, setNum) => {
+      areas.forEach(({shape, coords, alt}, index) => {
         if (!shape || !coords) {
           return;
         }
-        formObj[setNum + '_shape'] = shape;
-        formObj[setNum + '_text'] = alt || '';
         coords = coords.split(/,\s*/u);
-        setFormObjCoords(setNum, shape, coords, formObj);
+        setFormObjCoords({index, shape, coords, text: alt || '', formObj});
       });
       // alert(JSON.stringify(formObj, null, 2));
       updateViews('html', formObj, this);
@@ -366,15 +373,21 @@ Views.main({
     },
     rectClick (e) {
       e.preventDefault();
-      ImageMaps.addRect();
+      ImageMaps.addRect({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
     },
     circleClick (e) {
       e.preventDefault();
-      ImageMaps.addCircle();
+      ImageMaps.addCircle({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
     },
     ellipseClick (e) {
       e.preventDefault();
-      ImageMaps.addEllipse();
+      ImageMaps.addEllipse({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
     },
     removeClick (e) {
       e.preventDefault();

@@ -23,13 +23,13 @@ const mockFormForValidation = {
   }
 };
 
-let _shapeStrokeFillOptions;
+let _shapeStrokeFillOptions, _formObj;
 
 export function setShapeStrokeFillOptions (shapeStrokeFillOptions) {
   _shapeStrokeFillOptions = shapeStrokeFillOptions;
 }
 
-export function addShape (shape, coords) {
+export function addShape (shape, {sharedBehaviors, coords}) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
@@ -37,16 +37,38 @@ export function addShape (shape, coords) {
     $('#preview').setShapeStyle(_shapeStrokeFillOptions).addShape(
       coords, $('input[name=mapURL]')[0].value, shape
     );
+    if (sharedBehaviors) {
+      const newIndex = parseInt(
+        $('#preview').imageMaps().shapeEl.data('index')
+      );
+      sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+        index: newIndex,
+        shape,
+        coords,
+        text: '',
+        formObj: _formObj,
+        formControl: mockFormForValidation
+      });
+    }
   });
 }
-export function addRect (coords = [10, 20, 300, 300]) {
-  return addShape('rect', coords);
+export function addRect ({
+  sharedBehaviors,
+  coords = [10, 20, 300, 300]
+}) {
+  return addShape('rect', {sharedBehaviors, coords});
 }
-export function addCircle (coords = [100, 100, 50]) {
-  return addShape('circle', coords);
+export function addCircle ({
+  sharedBehaviors,
+  coords = [100, 100, 50]
+}) {
+  return addShape('circle', {sharedBehaviors, coords});
 }
-export function addEllipse (coords = [100, 100, 50, 50]) {
-  return addShape('ellipse', coords);
+export function addEllipse ({
+  sharedBehaviors,
+  coords = [100, 100, 50, 50]
+}) {
+  return addShape('ellipse', {sharedBehaviors, coords});
 }
 export function removeAllShapes () {
   $('#preview').removeAllShapes();
@@ -56,6 +78,7 @@ export function removeShape () {
 }
 
 export function setImageMaps ({formObj, sharedBehaviors}) {
+  _formObj = formObj;
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
@@ -76,9 +99,14 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
       // eslint-disable-next-line no-console
       console.log('updatedCoords', updatedCoords);
 
-      sharedBehaviors.setFormObjCoords(index, shape, updatedCoords, formObj);
-
-      sharedBehaviors.updateViews('map', formObj, mockFormForValidation);
+      sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+        index,
+        shape,
+        coords: updatedCoords,
+        text: formObj[index + '_text'],
+        formObj,
+        formControl: mockFormForValidation
+      });
     },
     onSelect (e, data) {
       console.log(data); // eslint-disable-line no-console
