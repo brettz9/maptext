@@ -45,8 +45,9 @@ export const formShapeSelection = ({currentImageRegionID, behaviors}) => {
       $on: {change: behaviors.shapeSelectionChange}
     }, [
       ['option', {value: 'rect'}, [_('Rectangle')]],
-      ['option', {value: 'circle'}, [_('Circle')]],
-      ['option', {value: 'poly'}, [_('Polygon')]]
+      ['option', {value: 'circle'}, [_('Circle')]]
+      // Todo: https://github.com/naver/image-maps/issues/9
+      // ['option', {value: 'poly'}, [_('Polygon')]]
     ]],
     ['div']
   ]);
