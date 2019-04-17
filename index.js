@@ -5,15 +5,17 @@ import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
 
-import tippy from './external/tippy.js';
+import tippy from './external/tippy.js/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 
 // Todo: Switch to npm version
 import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
 
+import * as Views from './views/index/index.js';
+
 const $ = jqueryImageMaps(jQuery);
 
-// Todo: i18nize these
+// Todo: Move to own class
 function _ (s, err) {
   return s + (err ? ` (${err.message})` : '');
 }
@@ -36,15 +38,12 @@ const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 const nbsp2 = nbsp.repeat(2);
 
-function makeFrom () {
-  return ['span', {class: 'from'}, [_('From:')]];
-}
 function makePolyXY (currImageRegionID) {
   polyID++;
   const polyDiv = jml('div', {id: 'polyID' + polyID}, [
     polyID === 1
-      ? makeFrom()
-      : ['span', [_('To:')]],
+      ? Views.makeFrom()
+      : Views.makeTo(),
     nbsp2,
     ['label', [
       _('x'),
@@ -79,7 +78,7 @@ function makePolyXY (currImageRegionID) {
       polyDiv.remove();
       const fromOrTo = parentDiv.firstElementChild.firstElementChild;
       if (fromOrTo.className !== 'from') {
-        fromOrTo.replaceWith(jml(...makeFrom()));
+        fromOrTo.replaceWith(jml(...Views.makeFrom()));
       }
     }}}, [
       '-'
@@ -99,74 +98,15 @@ function addImageRegion (imageRegionID, prevElement) {
         empty(outputArea);
         switch (target.value) {
         case 'rect':
-          jml('div', [
-            ['label', [
-              _('Left x'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_leftx`,
-                type: 'number', size: 5, required: true, value: 1
-              }]
-            ]], nbsp2,
-            ['label', [
-              _('Top y'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_topy`,
-                type: 'number', size: 5, required: true, value: 1
-              }]
-            ]], nbsp2,
-            ['label', [
-              _('Right x'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_rightx`,
-                type: 'number', size: 5, required: true, value: 300
-              }]
-            ]], nbsp2,
-            ['label', [
-              _('Bottom y'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_bottomy`,
-                type: 'number', size: 5, required: true, value: 300
-              }]
-            ]], nbsp2
-          ], outputArea);
+          Views.formControlsRect({currentImageRegionID, outputArea});
           break;
         case 'circle':
-          jml('div', [
-            ['label', [
-              _('x'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_circlex`,
-                type: 'number', size: 5, required: true, value: 1
-              }]
-            ]], nbsp2,
-            ['label', [
-              _('y'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_circley`,
-                type: 'number', size: 5, required: true, value: 1
-              }]
-            ]], nbsp2,
-            ['label', [
-              _('r'),
-              nbsp,
-              ['input', {
-                name: `${currentImageRegionID}_circler`,
-                type: 'number', size: 5, required: true, value: 30
-              }]
-            ]]
-          ], outputArea);
+          Views.formControlsCircle({currentImageRegionID, outputArea});
           break;
         case 'poly': {
-          const div = jml('div', {class: 'polyDivHolder'}, [
-            makePolyXY(currentImageRegionID)
-          ], outputArea);
-          div.querySelector('button.addPoly').click();
+          Views.formControlsPoly({
+            currentImageRegionID, outputArea, makePolyXY
+          });
           break;
         } default:
           break;
@@ -570,42 +510,7 @@ jml('div', [
       }}
     }]
   ]],
-  ['section', [
-    ['h2', [_('Image preview')]],
-    ['div', [
-      ['div', [
-        ['a', {
-          href: '#',
-          id: 'rect',
-          class: 'btn'
-        }, [_('Add rectangle')]],
-        ['a', {
-          href: '#',
-          id: 'circle',
-          class: 'btn'
-        }, [_('Add circle')]],
-        ['a', {
-          href: '#',
-          id: 'ellipse',
-          class: 'btn'
-        }, [_('Add ellipse')]],
-        ['a', {
-          href: '#',
-          id: 'remove',
-          class: 'btn'
-        }, [_('Remove shape')]],
-        ['a', {
-          href: '#',
-          id: 'remove-all',
-          class: 'btn'
-        }, [_('Remove all shapes')]]
-      ]],
-      ['br'],
-      ['div', {id: 'imagePreviewHolder'}, [
-        ['div', {id: 'imagePreview'}]
-      ]]
-    ]]
-  ]]
+  Views.imagePreviewContainer()
 ], jml('div', {
   role: 'main' // For Axe tests (Accessbility)
 }, [
