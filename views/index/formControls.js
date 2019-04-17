@@ -124,10 +124,10 @@ export const formControlsCircle = ({currentImageRegionID, outputArea}) => {
 };
 
 export const formControlsPoly = ({
-  currentImageRegionID, outputArea, behaviors
+  outputArea, behaviors
 }) => {
   return jml('div', {class: 'polyDivHolder'}, [
-    behaviors.makePolyXY(currentImageRegionID)
+    behaviors.makePolyXY()
   ], outputArea);
 };
 

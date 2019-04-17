@@ -77,8 +77,12 @@ function addImageRegion (imageRegionID, prevElement) {
           break;
         case 'poly': {
           const div = Views.formControlsPoly({
-            currentImageRegionID, outputArea, li,
-            behaviors: {makePolyXY}
+            outputArea, li,
+            behaviors: {
+              makePolyXY () {
+                makePolyXY(currentImageRegionID);
+              }
+            }
           });
           div.querySelector('button.addPoly').click();
           break;
