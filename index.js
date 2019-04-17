@@ -1,34 +1,26 @@
-/* globals jQuery */
+/* globals $ */
 /* eslint-disable require-jsdoc */
-import {jml, body, nbsp} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, nbsp} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
 
 import tippy from './external/tippy.js/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
-
 // Todo: Switch to npm version
-import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
+import _ from './external/i18n/i18n.js';
+import {empty} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/index.js';
-
-const $ = jqueryImageMaps(jQuery);
-
-// Todo: Move to own class
-function _ (s, err) {
-  return s + (err ? ` (${err.message})` : '');
-}
-document.documentElement.lang = 'en-US';
-document.documentElement.dir = 'ltr';
-
-function empty (el) {
-  while (el.firstChild) {
-    el.firstChild.remove();
-  }
-}
+import {
+  setRect, setCircle, setEllipse,
+  setShape, setShapeStrokeFillOptions
+} from './behaviors/behaviors.js';
 
 // CONFIG
+// Todo: Detect locale, etc.
+document.documentElement.lang = 'en-US';
+document.documentElement.dir = 'ltr';
 document.title = _('MapText demo');
 // Todo: Could allow for multiple image maps
 let polyID = 0;
@@ -36,6 +28,13 @@ let imgRegionID = 0;
 const mapID = 0;
 const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
+
+setShapeStrokeFillOptions({
+  fill: $('a.color.selected').data('color'),
+  stroke: $('a.color.selected').data('color'),
+  'stroke-width': 2
+});
+
 const nbsp2 = nbsp.repeat(2);
 
 function makePolyXY (currImageRegionID) {
@@ -105,41 +104,19 @@ function addImageRegion (imageRegionID, prevElement) {
           break;
         case 'poly': {
           Views.formControlsPoly({
-            currentImageRegionID, outputArea, makePolyXY
+            currentImageRegionID, outputArea, li,
+            behaviors: {makePolyXY}
           });
           break;
         } default:
           break;
         }
-        jml('div', [
-          ['div', [
-            ['label', [
-              _('Text'), nbsp2,
-              ['textarea', {
-                name: `${currentImageRegionID}_text`,
-                required: true
-              }]
-            ]]
-          ]],
-          ['button', {class: 'addRegion', $on: {click (e) {
-            e.preventDefault();
-            addImageRegion(imgRegionID++, li);
-          }}}, [
-            _('+')
-          ]],
-          ['button', {class: 'removeRegion', $on: {click (e) {
-            e.preventDefault();
-            const imageRegions = $('#imageRegions')[0];
-            if (imageRegions.children.length === 1) {
-              return;
-            }
-            li.remove();
-          }}}, [
-            _('-')
-          ]],
-          ['br'],
-          ['br']
-        ], outputArea);
+        Views.formText({
+          currentImageRegionID, imgRegionID, outputArea,
+          behaviors: {addImageRegion, $},
+          // Todo: Import within the template file (or add to behaviors if not)?
+          $
+        });
       }}}, [
       ['option', {value: 'rect'}, [_('Rectangle')]],
       ['option', {value: 'circle'}, [_('Circle')]],
@@ -208,32 +185,6 @@ function deserializeForm (form, formObj) {
 await loadStylesheets([
   './index.css'
 ]);
-
-const shapeStrokeFillOptions = {
-  fill: $('a.color.selected').data('color'),
-  stroke: $('a.color.selected').data('color'),
-  'stroke-width': 2
-};
-
-function setShape (shape, coords) {
-  // Not sure why the timeout is necessary, but without it,
-  //   the shape that is set is regularly hidden (especially
-  //   when following `removeAllShapes`?)
-  setTimeout(() => {
-    $('#preview').setShapeStyle(shapeStrokeFillOptions).addShape(
-      coords, $('#mapURL').val(), shape
-    );
-  });
-}
-function setRect (coords = [10, 20, 300, 300]) {
-  return setShape('rect', coords);
-}
-function setCircle (coords = [100, 100, 50]) {
-  return setShape('circle', coords);
-}
-function setEllipse (coords = [100, 100, 50, 50]) {
-  return setShape('ellipse', coords);
-}
 
 // Todo: We could use OOP with polymorphic methods instead,
 //   avoiding its own instance method
@@ -304,39 +255,29 @@ function mapImageMapFormObject (formObj, handler) {
 function formToPreview (formObj) {
   const imagePreview = $('#imagePreview')[0];
   const {name} = formObj;
-  imagePreview.replaceWith(jml('div', {id: 'imagePreview'}, [
-    ['map', {name}, mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      return ['area', {
-        shape,
-        alt,
-        coords: coords.join(','),
-        $on: {mouseover () {
+  imagePreview.replaceWith(
+    Views.imagePreview({
+      name,
+      src: $('input[name=mapURL]')[0].value || (
+        defaultImageSrc.startsWith('http')
+          ? defaultImageSrc
+          : location.href + '/' + defaultImageSrc
+      ),
+      behaviors: {
+        mapImageMapFormObject (handler) {
+          mapImageMapFormObject(formObj, handler);
+        },
+        mouseover () {
           this.dataset.tippyContent = this.alt;
           tippy('[data-tippy-content]', {
             followCursor: true,
             distance: 10,
             placement: 'right'
           });
-        }}
-      }];
-    })],
-    ['img', {
-      id: 'preview',
-      alt: _('Selected image for map'),
-      usemap: '#' + name,
-      src: $('input[name=mapURL]')[0].value || (
-        defaultImageSrc.startsWith('http')
-          ? defaultImageSrc
-          : location.href + '/' + defaultImageSrc
-      ),
-      $on: {
-        // Todo: We could scale using this:
-        load () {
-          // this.naturalWidth, this.naturalHeight
         }
       }
-    }]
-  ]));
+    })
+  );
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
@@ -510,32 +451,29 @@ jml('div', [
       }}
     }]
   ]],
-  Views.imagePreviewContainer()
-], jml('div', {
-  role: 'main' // For Axe tests (Accessbility)
-}, [
-], body));
-
-$('#rect').on('click', function (e) {
-  e.preventDefault();
-  setRect();
-});
-$('#circle').on('click', function (e) {
-  e.preventDefault();
-  setCircle();
-});
-$('#ellipse').on('click', function (e) {
-  e.preventDefault();
-  setEllipse();
-});
-$('#remove').on('click', function (e) {
-  e.preventDefault();
-  $('#preview').removeShape();
-});
-$('#remove-all').on('click', function (e) {
-  e.preventDefault();
-  $('#preview').removeAllShapes();
-});
+  Views.imagePreviewContainer({
+    rectClick (e) {
+      e.preventDefault();
+      setRect();
+    },
+    circleClick (e) {
+      e.preventDefault();
+      setCircle();
+    },
+    ellipseClick (e) {
+      e.preventDefault();
+      setEllipse();
+    },
+    removeClick (e) {
+      e.preventDefault();
+      $('#preview').removeShape();
+    },
+    removeAllClick (e) {
+      e.preventDefault();
+      $('#preview').removeAllShapes();
+    }
+  })
+], Views.mainRole());
 
 addImageRegion(imgRegionID++);
 })();

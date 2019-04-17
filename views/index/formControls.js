@@ -1,8 +1,16 @@
+/* globals jQuery */
 import {jml, nbsp} from '../../node_modules/jamilih/dist/jml-es.js';
-
+import jqueryImageMaps from '../../node_modules/imagemaps/dist/index.esm.js';
 import _ from '../../external/i18n/i18n.js';
 
+const $ = jqueryImageMaps(jQuery);
+
 const nbsp2 = nbsp.repeat(2);
+
+export const makeFrom = () => {
+  return ['span', {class: 'from'}, [_('From:')]];
+};
+export const makeTo = () => ['span', [_('To:')]];
 
 export const formControlsRect = ({currentImageRegionID, outputArea}) => {
   jml('div', [
@@ -71,10 +79,45 @@ export const formControlsCircle = ({currentImageRegionID, outputArea}) => {
 };
 
 export const formControlsPoly = ({
-  currentImageRegionID, outputArea, makePolyXY
+  currentImageRegionID, outputArea, behaviors
 }) => {
   const div = jml('div', {class: 'polyDivHolder'}, [
-    makePolyXY(currentImageRegionID)
+    behaviors.makePolyXY(currentImageRegionID)
   ], outputArea);
   div.querySelector('button.addPoly').click();
+};
+
+export const formText = ({
+  imgRegionID, currentImageRegionID, outputArea, li,
+  behaviors
+}) => {
+  jml('div', [
+    ['div', [
+      ['label', [
+        _('Text'), nbsp2,
+        ['textarea', {
+          name: `${currentImageRegionID}_text`,
+          required: true
+        }]
+      ]]
+    ]],
+    ['button', {class: 'addRegion', $on: {click (e) {
+      e.preventDefault();
+      behaviors.addImageRegion(imgRegionID++, li);
+    }}}, [
+      _('+')
+    ]],
+    ['button', {class: 'removeRegion', $on: {click (e) {
+      e.preventDefault();
+      const imageRegions = $('#imageRegions')[0];
+      if (imageRegions.children.length === 1) {
+        return;
+      }
+      li.remove();
+    }}}, [
+      _('-')
+    ]],
+    ['br'],
+    ['br']
+  ], outputArea);
 };
