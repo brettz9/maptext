@@ -85,7 +85,7 @@ function addImageRegion (imageRegionID, prevElement) {
           break;
         }
         Views.formText({
-          currentImageRegionID, imgRegionID, outputArea,
+          currentImageRegionID, outputArea,
           behaviors: {
             addImageRegionClick (e) {
               e.preventDefault();
@@ -186,6 +186,7 @@ function updateViews (type, formObj, formControl) {
   if (type !== 'json') {
     updateSerializedJSON(formObj);
   }
+  ImageMaps.setFormObj(formObj);
 }
 
 function updateMap (formObj) {
@@ -226,10 +227,12 @@ function mapImageMapFormObject (formObj, handler) {
   });
 }
 
-function setFormObjCoords ({index, shape, coords, text, formObj}) {
+function setFormObjCoords ({
+  index, shape, coords, text, formObj, oldShapeToDelete
+}) {
   formObj[index + '_shape'] = shape;
   formObj[index + '_text'] = text;
-  switch (shape) {
+  switch (shape || oldShapeToDelete) {
   default:
     return;
   case 'circle':
@@ -249,9 +252,9 @@ function setFormObjCoords ({index, shape, coords, text, formObj}) {
 }
 
 function setFormObjCoordsAndUpdateViewForMap ({
-  index, shape, coords, text, formObj, formControl
+  index, shape, coords, text, formObj, formControl, oldShapeToDelete
 }) {
-  setFormObjCoords({index, shape, coords, text, formObj});
+  setFormObjCoords({index, shape, coords, text, formObj, oldShapeToDelete});
   updateViews('map', formObj, formControl);
 }
 
@@ -385,7 +388,11 @@ Views.main({
     },
     removeClick (e) {
       e.preventDefault();
-      ImageMaps.removeShape();
+      ImageMaps.removeShape({
+        sharedBehaviors: {
+          setFormObjCoordsAndUpdateViewForMap
+        }
+      });
     },
     removeAllClick (e) {
       e.preventDefault();

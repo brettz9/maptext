@@ -169,7 +169,7 @@ export const polyXYDiv = ({polyID, currImageRegionID, behaviors}) => {
 };
 
 export const formText = ({
-  imgRegionID, currentImageRegionID, outputArea,
+  currentImageRegionID, outputArea,
   behaviors
 }) => {
   return jml('div', [
@@ -182,12 +182,16 @@ export const formText = ({
         }]
       ]]
     ]],
-    ['button', {class: 'addRegion', $on: {
+    ['button', {class: 'addRegion', dataset: {
+      regionId: currentImageRegionID
+    }, $on: {
       click: behaviors.addImageRegionClick
     }}, [
       _('+')
     ]],
-    ['button', {class: 'removeRegion', $on: {
+    ['button', {class: 'removeRegion', dataset: {
+      regionId: currentImageRegionID
+    }, $on: {
       click: behaviors.removeImageRegionClick
     }}, [
       _('-')

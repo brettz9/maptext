@@ -25,6 +25,10 @@ const mockFormForValidation = {
 
 let _shapeStrokeFillOptions, _formObj;
 
+export const setFormObj = (formObj) => {
+  _formObj = formObj;
+};
+
 export function setShapeStrokeFillOptions (shapeStrokeFillOptions) {
   _shapeStrokeFillOptions = shapeStrokeFillOptions;
 }
@@ -67,10 +71,10 @@ export function addCircle ({
 export function removeAllShapes ({sharedBehaviors} = {}) {
   $('#preview').removeAllShapes();
 
-  _formObj = {
+  setFormObj({
     name: _formObj.name,
     mapURL: _formObj.mapURL
-  };
+  });
   if (sharedBehaviors) {
     // Reset to default empty rect shape
     sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
@@ -83,12 +87,39 @@ export function removeAllShapes ({sharedBehaviors} = {}) {
     });
   }
 }
-export function removeShape () {
+export function removeShape ({sharedBehaviors} = {}) {
+  const imageMaps = $('#preview').imageMaps();
+  if (imageMaps.svgEl.find('._shape_face').length <= 1) {
+    // Follow this routine instead which will at least set
+    //   a single empty rect set rather than removing the form
+    removeAllShapes({sharedBehaviors});
+    return;
+  }
+
+  const oldIndex = parseInt(
+    imageMaps.shapeEl.data('index')
+  );
+  const {
+    type: oldShapeToDelete
+  } = $('#preview').imageMaps().getShapeInfo(oldIndex);
+
   $('#preview').removeShape();
+  sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+    index: oldIndex,
+    shape: undefined,
+    oldShapeToDelete,
+    coords: [],
+    text: undefined,
+    formObj: _formObj,
+    formControl: mockFormForValidation
+  });
+  $(`.removeRegion[data-region-id=${oldIndex}]`)[0].dispatchEvent(
+    new Event('click')
+  );
 }
 
 export function setImageMaps ({formObj, sharedBehaviors}) {
-  _formObj = formObj;
+  setFormObj(formObj);
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
