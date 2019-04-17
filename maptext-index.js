@@ -114,7 +114,7 @@ function addImageRegion (imageRegionID, prevElement) {
 
 function updateSerializedHTML () {
   $('#serializedHTML').value =
-    $('#imagePreviewHolder').firstElementChild.outerHTML;
+    $('#imagePreview').outerHTML;
 }
 
 function updateSerializedJSON (formObj) {
