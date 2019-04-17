@@ -64,8 +64,24 @@ export function addCircle ({
 }) {
   return addShape('circle', {sharedBehaviors, coords});
 }
-export function removeAllShapes () {
+export function removeAllShapes ({sharedBehaviors} = {}) {
   $('#preview').removeAllShapes();
+
+  _formObj = {
+    name: _formObj.name,
+    mapURL: _formObj.mapURL
+  };
+  if (sharedBehaviors) {
+    // Reset to default empty rect shape
+    sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+      index: 0,
+      shape: 'rect',
+      coords: ['', '', '', ''],
+      text: '',
+      formObj: _formObj,
+      formControl: mockFormForValidation
+    });
+  }
 }
 export function removeShape () {
   $('#preview').removeShape();

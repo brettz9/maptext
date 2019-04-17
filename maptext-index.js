@@ -389,7 +389,9 @@ Views.main({
     },
     removeAllClick (e) {
       e.preventDefault();
-      ImageMaps.removeAllShapes();
+      ImageMaps.removeAllShapes({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
     }
   }
 });
