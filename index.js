@@ -1,18 +1,18 @@
 /* globals jQuery */
 /* eslint-disable require-jsdoc */
-import {jml, nbsp} from './node_modules/jamilih/dist/jml-es.js';
+import {jml} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
 import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
 
 import tippy from './external/tippy.js/tippy.js';
-import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
 // Todo: Switch to npm version
 import _ from './external/i18n/i18n.js';
 import {empty} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/index.js';
+import * as Styles from './styles/index.js';
 import {
   setRect, setCircle, setEllipse,
   setShape, setShapeStrokeFillOptions
@@ -21,10 +21,10 @@ import {
 const $ = jqueryImageMaps(jQuery);
 
 // CONFIG
-// Todo: Detect locale, etc.
+// Todo: Detect locale and set this in such a utility, etc.
 document.documentElement.lang = 'en-US';
 document.documentElement.dir = 'ltr';
-document.title = _('MapText demo');
+
 // Todo: Could allow for multiple image maps
 let polyID = 0;
 let imgRegionID = 0;
@@ -32,70 +32,42 @@ const mapID = 0;
 const defaultMapName = `map${mapID}`;
 const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 
-setShapeStrokeFillOptions({
-  fill: $('a.color.selected').data('color'),
-  stroke: $('a.color.selected').data('color'),
-  'stroke-width': 2
-});
-
-const nbsp2 = nbsp.repeat(2);
+let form;
 
 function makePolyXY (currImageRegionID) {
   polyID++;
-  const polyDiv = jml('div', {id: 'polyID' + polyID}, [
-    polyID === 1
-      ? Views.makeFrom()
-      : Views.makeTo(),
-    nbsp2,
-    ['label', [
-      _('x'),
-      nbsp,
-      ['input', {
-        name: `${currImageRegionID}_xy`,
-        type: 'number', size: 5, required: true, value: 1
-      }]
-    ]], nbsp2,
-    ['label', [
-      _('y'),
-      nbsp,
-      ['input', {
-        name: `${currImageRegionID}_xy`,
-        type: 'number', size: 5, required: true, value: 1
-      }]
-    ]],
-    nbsp2,
-    ['button', {class: 'addPoly', $on: {click (e) {
-      e.preventDefault();
-      polyDiv.after(makePolyXY(currImageRegionID));
-    }}}, [
-      '+'
-    ]],
-    ['button', {class: 'removePoly', $on: {click (e) {
-      e.preventDefault();
-      const buttonSets = e.target.parentElement.parentElement;
-      if (buttonSets.children.length <= 2) {
-        return;
+  const polyDiv = Views.polyXYDiv({
+    polyID,
+    currImageRegionID,
+    behaviors: {
+      addPolyClick (e) {
+        e.preventDefault();
+        polyDiv.after(makePolyXY(currImageRegionID));
+      },
+      removePolyClick (e) {
+        e.preventDefault();
+        const buttonSets = e.target.parentElement.parentElement;
+        if (buttonSets.children.length <= 2) {
+          return;
+        }
+        const parentDiv = polyDiv.parentElement;
+        polyDiv.remove();
+        const fromOrTo = parentDiv.firstElementChild.firstElementChild;
+        if (fromOrTo.className !== 'from') {
+          fromOrTo.replaceWith(jml(...Views.makeFrom()));
+        }
       }
-      const parentDiv = polyDiv.parentElement;
-      polyDiv.remove();
-      const fromOrTo = parentDiv.firstElementChild.firstElementChild;
-      if (fromOrTo.className !== 'from') {
-        fromOrTo.replaceWith(jml(...Views.makeFrom()));
-      }
-    }}}, [
-      '-'
-    ]]
-  ]);
+    }
+  });
   return polyDiv;
 }
 
 function addImageRegion (imageRegionID, prevElement) {
   const currentImageRegionID = imageRegionID;
-  const li = jml('li', [
-    ['select', {
-      name: `${currentImageRegionID}_shape`,
-      'aria-label': _('Shape'),
-      $on: {change ({target}) {
+  const li = Views.formShapeSelection({
+    currentImageRegionID,
+    behaviors: {
+      shapeSelectionChange ({target}) {
         const outputArea = this.nextElementSibling;
         empty(outputArea);
         switch (target.value) {
@@ -132,13 +104,9 @@ function addImageRegion (imageRegionID, prevElement) {
             }
           }
         });
-      }}}, [
-      ['option', {value: 'rect'}, [_('Rectangle')]],
-      ['option', {value: 'circle'}, [_('Circle')]],
-      ['option', {value: 'poly'}, [_('Polygon')]]
-    ]],
-    ['div', []]
-  ]);
+      }
+    }
+  });
   if (prevElement) {
     prevElement.after(li);
   } else {
@@ -157,29 +125,30 @@ function updateSerializedJSON (formObj) {
     JSON.stringify(formObj, null, 2);
 }
 
-function deserializeForm (form, formObj) {
+function deserializeForm (formObj) {
   const imageRegions = $('#imageRegions')[0];
   empty(imageRegions);
   let highestID = -1;
   Object.entries(formObj).forEach(([key, shape]) => {
-    if (key.endsWith('_shape')) {
-      const currID = parseInt(key.slice(0, -('_shape'.length)));
-      addImageRegion(currID);
-      const lastRegion = imageRegions.lastElementChild;
-      const shapeSelector = lastRegion.querySelector('select');
-      shapeSelector.name = key; // Number in key may differ
-      shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
-      shapeSelector.dispatchEvent(new Event('change'));
-      if (shape === 'poly') {
-        let polySets = formObj[currID + '_xy'].length / 2;
-        while (polySets > 2) { // Always have at least 2
-          $('.polyDivHolder')[0].append(makePolyXY(currID));
-          polySets--;
-        }
+    if (!key.endsWith('_shape')) {
+      return;
+    }
+    const currID = parseInt(key.slice(0, -('_shape'.length)));
+    addImageRegion(currID);
+    const lastRegion = imageRegions.lastElementChild;
+    const shapeSelector = lastRegion.querySelector('select');
+    shapeSelector.name = key; // Number in key may differ
+    shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
+    shapeSelector.dispatchEvent(new Event('change'));
+    if (shape === 'poly') {
+      let polySets = formObj[currID + '_xy'].length / 2;
+      while (polySets > 2) { // Always have at least 2
+        $('.polyDivHolder')[0].append(makePolyXY(currID));
+        polySets--;
       }
-      if (currID > highestID) {
-        highestID = currID;
-      }
+    }
+    if (currID > highestID) {
+      highestID = currID;
     }
   });
   imgRegionID = highestID + 1;
@@ -196,26 +165,19 @@ function deserializeForm (form, formObj) {
   // this.reportValidity();
 }
 
-(async () => {
-await loadStylesheets([
-  './index.css'
-]);
-
 // Todo: We could use OOP with polymorphic methods instead,
 //   avoiding its own instance method
 /**
  *
  * @param {"form"|"map"|"html"|"json"} type
  * @param {PlainObject} formObj
- * @param {HTMLFormElement} [form] Form on which to report errors in
- *   form-building. Not needed if this is a change to the whole form.
  * @param {HTMLElement} [formControl] Control on which to report errors in
  *   form-building. Not needed if this is a change to the whole form.
  * @returns {void}
  */
-function updateViews (type, formObj, form, formControl) {
+function updateViews (type, formObj, formControl) {
   if (type !== 'form') {
-    deserializeForm.call(formControl, form, formObj);
+    deserializeForm.call(formControl, formObj);
   }
   type !== 'map' && formToPreview(formObj); // Sets preview
   if (type !== 'map') {
@@ -267,6 +229,26 @@ function mapImageMapFormObject (formObj, handler) {
   });
 }
 
+function setFormObjCoords (formObj, shape, setNum, coords) {
+  switch (shape) {
+  default:
+    return;
+  case 'circle':
+    ['circlex', 'circley', 'circler'].forEach((item, i) => {
+      formObj[setNum + '_' + item] = coords[i];
+    });
+    break;
+  case 'rect':
+    ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
+      formObj[setNum + '_' + item] = coords[i];
+    });
+    break;
+  case 'poly':
+    formObj[setNum + '_xy'] = coords;
+    break;
+  }
+}
+
 function formToPreview (formObj) {
   const imagePreview = $('#imagePreview')[0];
   const {name} = formObj;
@@ -298,14 +280,15 @@ function formToPreview (formObj) {
       }
     })
   );
+  setShapeStrokeFillOptions({
+    fill: '#ffffff',
+    stroke: 'red',
+    'stroke-width': 2
+  });
   $('#preview').imageMaps({
     isEditMode: true,
     shape: 'rect',
-    shapeStyle: {
-      fill: '#ffffff',
-      stroke: 'red',
-      'stroke-width': 2
-    },
+    shapeStyle: Styles.shapeStyle,
     onClick (e, targetAreaHref) {
       // eslint-disable-next-line no-console
       console.log('click-targetAreaHref', targetAreaHref);
@@ -326,7 +309,7 @@ function formToPreview (formObj) {
 
       setFormObjCoords(formObj, shape, index, updatedCoords);
 
-      updateViews('map', formObj, form, {
+      updateViews('map', formObj, {
         reportValidity () {
           if (this.$message) {
             // alert(this.$message); // eslint-disable-line no-alert
@@ -348,7 +331,12 @@ function formToPreview (formObj) {
   });
 }
 
-const form = Views.mainForm({
+document.title = Views.title();
+
+(async () => {
+await Styles.load();
+
+form = Views.mainForm({
   defaultMapName,
   defaultImageSrc: defaultImageSrc || '',
   behaviors: {
@@ -369,26 +357,6 @@ const form = Views.mainForm({
 // const imageHeightWidthRatio = 1001 / 1024;
 // const width = 450; // 1024;
 // const height = width * imageHeightWidthRatio;
-
-function setFormObjCoords (formObj, shape, setNum, coords) {
-  switch (shape) {
-  default:
-    return;
-  case 'circle':
-    ['circlex', 'circley', 'circler'].forEach((item, i) => {
-      formObj[setNum + '_' + item] = coords[i];
-    });
-    break;
-  case 'rect':
-    ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-      formObj[setNum + '_' + item] = coords[i];
-    });
-    break;
-  case 'poly':
-    formObj[setNum + '_xy'] = coords;
-    break;
-  }
-}
 
 Views.main({
   form,
@@ -424,7 +392,7 @@ Views.main({
         setFormObjCoords(formObj, shape, setNum, coords);
       });
       // alert(JSON.stringify(formObj, null, 2));
-      updateViews('html', formObj, form, this);
+      updateViews('html', formObj, this);
     },
     serializedJSONInput () {
       let formObj;
@@ -437,7 +405,7 @@ Views.main({
       }
       this.setCustomValidity('');
 
-      updateViews('json', formObj, form, this);
+      updateViews('json', formObj, this);
     },
     rectClick (e) {
       e.preventDefault();

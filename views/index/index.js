@@ -1,11 +1,17 @@
-import {jml, body} from '../../node_modules/jamilih/dist/jml-es.js';
+import {jml, body, nbsp} from '../../node_modules/jamilih/dist/jml-es.js';
 import _ from '../../external/i18n/i18n.js';
 
+import {makeFrom, makeTo} from './formControls.js';
+
 export {
-  mainForm,
+  mainForm, formShapeSelection,
   formControlsRect, formControlsCircle, formControlsPoly,
-  formText, makeFrom, makeTo
+  formText, makeFrom
 } from './formControls.js';
+
+const nbsp2 = nbsp.repeat(2);
+
+export const title = () => _('MapText demo');
 
 const mainRole = () => jml('div', {
   role: 'main' // For Axe tests (Accessbility)
@@ -34,6 +40,42 @@ export const main = ({form, behaviors}) => {
     ]],
     imagePreviewContainer({behaviors})
   ], mainRole());
+};
+
+export const polyXYDiv = ({polyID, currImageRegionID, behaviors}) => {
+  return jml('div', {id: 'polyID' + polyID}, [
+    polyID === 1
+      ? makeFrom()
+      : makeTo(),
+    nbsp2,
+    ['label', [
+      _('x'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true, value: 1
+      }]
+    ]], nbsp2,
+    ['label', [
+      _('y'),
+      nbsp,
+      ['input', {
+        name: `${currImageRegionID}_xy`,
+        type: 'number', size: 5, required: true, value: 1
+      }]
+    ]],
+    nbsp2,
+    ['button', {class: 'addPoly', $on: {
+      click: behaviors.addPolyClick
+    }}, [
+      '+'
+    ]],
+    ['button', {class: 'removePoly', $on: {
+      click: behaviors.removePolyClick
+    }}, [
+      '-'
+    ]]
+  ]);
 };
 
 export const imagePreviewContainer = ({behaviors}) => ['section', [

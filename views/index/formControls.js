@@ -42,6 +42,21 @@ export const makeFrom = () => {
 };
 export const makeTo = () => ['span', [_('To:')]];
 
+export const formShapeSelection = ({currentImageRegionID, behaviors}) => {
+  return jml('li', [
+    ['select', {
+      name: `${currentImageRegionID}_shape`,
+      'aria-label': _('Shape'),
+      $on: {change: behaviors.shapeSelectionChange}
+    }, [
+      ['option', {value: 'rect'}, [_('Rectangle')]],
+      ['option', {value: 'circle'}, [_('Circle')]],
+      ['option', {value: 'poly'}, [_('Polygon')]]
+    ]],
+    ['div']
+  ]);
+};
+
 export const formControlsRect = ({currentImageRegionID, outputArea}) => {
   return jml('div', [
     ['label', [
