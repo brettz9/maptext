@@ -1,9 +1,10 @@
-/* globals $ */
+/* globals jQuery */
 /* eslint-disable require-jsdoc */
 import {jml, nbsp} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
+import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
 
 import tippy from './external/tippy.js/tippy.js';
 import loadStylesheets from './node_modules/load-stylesheets/dist/index-es.js';
@@ -16,6 +17,8 @@ import {
   setRect, setCircle, setEllipse,
   setShape, setShapeStrokeFillOptions
 } from './behaviors/behaviors.js';
+
+const $ = jqueryImageMaps(jQuery);
 
 // CONFIG
 // Todo: Detect locale, etc.
@@ -103,19 +106,31 @@ function addImageRegion (imageRegionID, prevElement) {
           Views.formControlsCircle({currentImageRegionID, outputArea});
           break;
         case 'poly': {
-          Views.formControlsPoly({
+          const div = Views.formControlsPoly({
             currentImageRegionID, outputArea, li,
             behaviors: {makePolyXY}
           });
+          div.querySelector('button.addPoly').click();
           break;
         } default:
           break;
         }
         Views.formText({
           currentImageRegionID, imgRegionID, outputArea,
-          behaviors: {addImageRegion, $},
-          // Todo: Import within the template file (or add to behaviors if not)?
-          $
+          behaviors: {
+            addImageRegionClick (e) {
+              e.preventDefault();
+              addImageRegion(imgRegionID++, li);
+            },
+            removeImageRegionClick (e) {
+              e.preventDefault();
+              const imageRegions = $('#imageRegions')[0];
+              if (imageRegions.children.length === 1) {
+                return;
+              }
+              li.remove();
+            }
+          }
         });
       }}}, [
       ['option', {value: 'rect'}, [_('Rectangle')]],
@@ -265,7 +280,12 @@ function formToPreview (formObj) {
       ),
       behaviors: {
         mapImageMapFormObject (handler) {
-          mapImageMapFormObject(formObj, handler);
+          mapImageMapFormObject(formObj, ({coords, ...args}) => {
+            handler({
+              ...args,
+              coords: coords.join(',')
+            });
+          });
         },
         mouseover () {
           this.dataset.tippyContent = this.alt;

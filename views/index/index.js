@@ -58,7 +58,7 @@ export const imagePreview = ({behaviors, src, name}) => {
       return ['area', {
         shape,
         alt,
-        coords: coords.join(','),
+        coords,
         $on: {mouseover: behaviors.mouseover}
       }];
     })],
