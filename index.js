@@ -452,25 +452,27 @@ jml('div', [
     }]
   ]],
   Views.imagePreviewContainer({
-    rectClick (e) {
-      e.preventDefault();
-      setRect();
-    },
-    circleClick (e) {
-      e.preventDefault();
-      setCircle();
-    },
-    ellipseClick (e) {
-      e.preventDefault();
-      setEllipse();
-    },
-    removeClick (e) {
-      e.preventDefault();
-      $('#preview').removeShape();
-    },
-    removeAllClick (e) {
-      e.preventDefault();
-      $('#preview').removeAllShapes();
+    behaviors: {
+      rectClick (e) {
+        e.preventDefault();
+        setRect();
+      },
+      circleClick (e) {
+        e.preventDefault();
+        setCircle();
+      },
+      ellipseClick (e) {
+        e.preventDefault();
+        setEllipse();
+      },
+      removeClick (e) {
+        e.preventDefault();
+        $('#preview').removeShape();
+      },
+      removeAllClick (e) {
+        e.preventDefault();
+        $('#preview').removeAllShapes();
+      }
     }
   })
 ], Views.mainRole());
