@@ -11,12 +11,7 @@ import {empty} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/index.js';
 import * as Styles from './styles/index.js';
-import {
-  setImageMaps,
-  setRect, setCircle, setEllipse,
-  setShape, setShapeStrokeFillOptions,
-  removeShape, removeAllShapes
-} from './behaviors/jqueryImageMaps.js';
+import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 
 // CONFIG
 // Todo: Detect locale and set this in such a utility, etc.
@@ -194,11 +189,11 @@ function updateViews (type, formObj, formControl) {
 }
 
 function updateMap (formObj) {
-  removeAllShapes();
+  ImageMaps.removeAllShapes();
   setTimeout(() => {
     // const {name} = formObj; // Todo: Attach to map somehow
     mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      setShape(shape, coords);
+      ImageMaps.setShape(shape, coords);
     });
   });
 }
@@ -282,12 +277,12 @@ function formToPreview (formObj) {
       }
     })
   );
-  setShapeStrokeFillOptions({
+  ImageMaps.setShapeStrokeFillOptions({
     fill: '#ffffff',
     stroke: 'red',
     'stroke-width': 2
   });
-  setImageMaps({formObj, sharedBehaviors: {
+  ImageMaps.setImageMaps({formObj, sharedBehaviors: {
     setFormObjCoords, updateViews
   }});
 }
@@ -370,23 +365,23 @@ Views.main({
     },
     rectClick (e) {
       e.preventDefault();
-      setRect();
+      ImageMaps.setRect();
     },
     circleClick (e) {
       e.preventDefault();
-      setCircle();
+      ImageMaps.setCircle();
     },
     ellipseClick (e) {
       e.preventDefault();
-      setEllipse();
+      ImageMaps.setEllipse();
     },
     removeClick (e) {
       e.preventDefault();
-      removeShape();
+      ImageMaps.removeShape();
     },
     removeAllClick (e) {
       e.preventDefault();
-      removeAllShapes();
+      ImageMaps.removeAllShapes();
     }
   }
 });
