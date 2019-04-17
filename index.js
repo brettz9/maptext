@@ -1,10 +1,8 @@
-/* globals jQuery */
 /* eslint-disable require-jsdoc */
-import {jml} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, $} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialize/dist/index-es.js';
-import jqueryImageMaps from './node_modules/imagemaps/dist/index.esm.js';
 
 import tippy from './external/tippy.js/tippy.js';
 // Todo: Switch to npm version
@@ -14,11 +12,11 @@ import {empty} from './external/dom-behaviors/dom-behaviors.js';
 import * as Views from './views/index/index.js';
 import * as Styles from './styles/index.js';
 import {
+  setImageMaps,
   setRect, setCircle, setEllipse,
-  setShape, setShapeStrokeFillOptions
-} from './behaviors/behaviors.js';
-
-const $ = jqueryImageMaps(jQuery);
+  setShape, setShapeStrokeFillOptions,
+  removeShape, removeAllShapes
+} from './behaviors/jqueryImageMaps.js';
 
 // CONFIG
 // Todo: Detect locale and set this in such a utility, etc.
@@ -96,7 +94,7 @@ function addImageRegion (imageRegionID, prevElement) {
             },
             removeImageRegionClick (e) {
               e.preventDefault();
-              const imageRegions = $('#imageRegions')[0];
+              const imageRegions = $('#imageRegions');
               if (imageRegions.children.length === 1) {
                 return;
               }
@@ -110,23 +108,23 @@ function addImageRegion (imageRegionID, prevElement) {
   if (prevElement) {
     prevElement.after(li);
   } else {
-    jml(li, $('#imageRegions')[0]);
+    jml(li, $('#imageRegions'));
   }
   li.firstElementChild.dispatchEvent(new Event('change'));
 }
 
 function updateSerializedHTML () {
-  $('#serializedHTML')[0].value =
-    $('#imagePreviewHolder')[0].firstElementChild.outerHTML;
+  $('#serializedHTML').value =
+    $('#imagePreviewHolder').firstElementChild.outerHTML;
 }
 
 function updateSerializedJSON (formObj) {
-  $('#serializedJSON')[0].value =
+  $('#serializedJSON').value =
     JSON.stringify(formObj, null, 2);
 }
 
 function deserializeForm (formObj) {
-  const imageRegions = $('#imageRegions')[0];
+  const imageRegions = $('#imageRegions');
   empty(imageRegions);
   let highestID = -1;
   Object.entries(formObj).forEach(([key, shape]) => {
@@ -143,7 +141,7 @@ function deserializeForm (formObj) {
     if (shape === 'poly') {
       let polySets = formObj[currID + '_xy'].length / 2;
       while (polySets > 2) { // Always have at least 2
-        $('.polyDivHolder')[0].append(makePolyXY(currID));
+        $('.polyDivHolder').append(makePolyXY(currID));
         polySets--;
       }
     }
@@ -192,7 +190,7 @@ function updateViews (type, formObj, formControl) {
 }
 
 function updateMap (formObj) {
-  $('#preview').removeAllShapes();
+  removeAllShapes();
   setTimeout(() => {
     // const {name} = formObj; // Todo: Attach to map somehow
     mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
@@ -250,12 +248,12 @@ function setFormObjCoords (formObj, shape, setNum, coords) {
 }
 
 function formToPreview (formObj) {
-  const imagePreview = $('#imagePreview')[0];
+  const imagePreview = $('#imagePreview');
   const {name} = formObj;
   imagePreview.replaceWith(
     Views.imagePreview({
       name,
-      src: $('input[name=mapURL]')[0].value || (
+      src: $('input[name=mapURL]').value || (
         defaultImageSrc.startsWith('http')
           ? defaultImageSrc
           : location.href + '/' + defaultImageSrc
@@ -285,50 +283,9 @@ function formToPreview (formObj) {
     stroke: 'red',
     'stroke-width': 2
   });
-  $('#preview').imageMaps({
-    isEditMode: true,
-    shape: 'rect',
-    shapeStyle: Styles.shapeStyle,
-    onClick (e, targetAreaHref) {
-      // eslint-disable-next-line no-console
-      console.log('click-targetAreaHref', targetAreaHref);
-    },
-    // onMouseDown (e, shapeType, coords) {},
-    // We could use this but probably too aggressive
-    // onMouseMove (e, shapeType, movedCoords) {},
-    onMouseUp (e, shapeType, updatedCoords) {
-      const targetEl = $(e.target);
-      const index = targetEl.attr('data-index');
-      const {type: shape} = this.getShapeInfo(index);
-
-      // Won't change shape (and we don't change text here),
-      //   so we only worry about coords (and only for the moved
-      //   element)
-      // eslint-disable-next-line no-console
-      console.log('updatedCoords', updatedCoords);
-
-      setFormObjCoords(formObj, shape, index, updatedCoords);
-
-      updateViews('map', formObj, {
-        reportValidity () {
-          if (this.$message) {
-            // alert(this.$message); // eslint-disable-line no-alert
-            console.log('alert:', this.$message); // eslint-disable-line no-console, max-len
-          }
-        },
-        setCustomValidity (msg) {
-          if (!msg) {
-            delete this.$message;
-            return;
-          }
-          this.$message = msg;
-        }
-      });
-    },
-    onSelect (e, data) {
-      console.log(data); // eslint-disable-line no-console
-    }
-  });
+  setImageMaps({formObj, sharedBehaviors: {
+    setFormObjCoords, updateViews
+  }});
 }
 
 document.title = Views.title();
@@ -421,11 +378,11 @@ Views.main({
     },
     removeClick (e) {
       e.preventDefault();
-      $('#preview').removeShape();
+      removeShape();
     },
     removeAllClick (e) {
       e.preventDefault();
-      $('#preview').removeAllShapes();
+      removeAllShapes();
     }
   }
 });
