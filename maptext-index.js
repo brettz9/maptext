@@ -193,7 +193,7 @@ function updateMap (formObj) {
   setTimeout(() => {
     // const {name} = formObj; // Todo: Attach to map somehow
     mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      ImageMaps.setShape(shape, coords);
+      ImageMaps.addShape(shape, coords);
     });
   });
 }
@@ -366,15 +366,15 @@ Views.main({
     },
     rectClick (e) {
       e.preventDefault();
-      ImageMaps.setRect();
+      ImageMaps.addRect();
     },
     circleClick (e) {
       e.preventDefault();
-      ImageMaps.setCircle();
+      ImageMaps.addCircle();
     },
     ellipseClick (e) {
       e.preventDefault();
-      ImageMaps.setEllipse();
+      ImageMaps.addEllipse();
     },
     removeClick (e) {
       e.preventDefault();

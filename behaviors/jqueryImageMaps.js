@@ -29,7 +29,7 @@ export function setShapeStrokeFillOptions (shapeStrokeFillOptions) {
   _shapeStrokeFillOptions = shapeStrokeFillOptions;
 }
 
-export function setShape (shape, coords) {
+export function addShape (shape, coords) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
@@ -39,14 +39,14 @@ export function setShape (shape, coords) {
     );
   });
 }
-export function setRect (coords = [10, 20, 300, 300]) {
-  return setShape('rect', coords);
+export function addRect (coords = [10, 20, 300, 300]) {
+  return addShape('rect', coords);
 }
-export function setCircle (coords = [100, 100, 50]) {
-  return setShape('circle', coords);
+export function addCircle (coords = [100, 100, 50]) {
+  return addShape('circle', coords);
 }
-export function setEllipse (coords = [100, 100, 50, 50]) {
-  return setShape('ellipse', coords);
+export function addEllipse (coords = [100, 100, 50, 50]) {
+  return addShape('ellipse', coords);
 }
 export function removeAllShapes () {
   $('#preview').removeAllShapes();
