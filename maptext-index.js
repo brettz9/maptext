@@ -9,7 +9,7 @@ import tippy from './external/tippy.js/tippy.js';
 import _ from './external/i18n/i18n.js';
 import {empty} from './external/dom-behaviors/dom-behaviors.js';
 
-import * as Views from './views/index/index.js';
+import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 
@@ -335,9 +335,10 @@ Views.main({
       }
       this.setCustomValidity('');
 
-      const formObj = {};
-      formObj.name = map.name;
-      formObj.mapURL = img.src;
+      const formObj = {
+        name: map.name,
+        mapURL: img.src
+      };
       areas.forEach(({shape, coords, alt}, setNum) => {
         if (!shape || !coords) {
           return;

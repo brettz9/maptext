@@ -5,7 +5,7 @@ export {
   mainForm, formShapeSelection, polyXYDiv,
   formControlsRect, formControlsCircle, formControlsPoly,
   formText, makeFrom
-} from './formControls.js';
+} from './view-formControls.js';
 
 export const title = () => _('MapText demo');
 
