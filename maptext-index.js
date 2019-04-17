@@ -383,12 +383,6 @@ Views.main({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
-    ellipseClick (e) {
-      e.preventDefault();
-      ImageMaps.addEllipse({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-    },
     removeClick (e) {
       e.preventDefault();
       ImageMaps.removeShape();

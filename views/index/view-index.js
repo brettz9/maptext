@@ -56,12 +56,6 @@ export const imagePreviewContainer = ({behaviors}) => ['section', [
       }, [_('Add circle')]],
       ['a', {
         href: '#',
-        id: 'ellipse',
-        class: 'btn',
-        $on: {click: behaviors.ellipseClick}
-      }, [_('Add ellipse')]],
-      ['a', {
-        href: '#',
         id: 'remove',
         class: 'btn',
         $on: {click: behaviors.removeClick}

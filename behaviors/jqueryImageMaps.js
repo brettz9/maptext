@@ -64,12 +64,6 @@ export function addCircle ({
 }) {
   return addShape('circle', {sharedBehaviors, coords});
 }
-export function addEllipse ({
-  sharedBehaviors,
-  coords = [100, 100, 50, 50]
-}) {
-  return addShape('ellipse', {sharedBehaviors, coords});
-}
 export function removeAllShapes () {
   $('#preview').removeAllShapes();
 }
