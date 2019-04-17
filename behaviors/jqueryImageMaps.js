@@ -7,6 +7,22 @@ import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
 
 const $ = jqueryImageMaps(jQuery);
 
+const mockFormForValidation = {
+  reportValidity () {
+    if (this.$message) {
+      // alert(this.$message); // eslint-disable-line no-alert
+      console.log('alert:', this.$message); // eslint-disable-line no-console, max-len
+    }
+  },
+  setCustomValidity (msg) {
+    if (!msg) {
+      delete this.$message;
+      return;
+    }
+    this.$message = msg;
+  }
+};
+
 let _shapeStrokeFillOptions;
 
 export function setShapeStrokeFillOptions (shapeStrokeFillOptions) {
@@ -62,23 +78,9 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
       // eslint-disable-next-line no-console
       console.log('updatedCoords', updatedCoords);
 
-      sharedBehaviors.setFormObjCoords(formObj, shape, index, updatedCoords);
+      sharedBehaviors.setFormObjCoords(index, shape, updatedCoords, formObj);
 
-      sharedBehaviors.updateViews('map', formObj, {
-        reportValidity () {
-          if (this.$message) {
-            // alert(this.$message); // eslint-disable-line no-alert
-            console.log('alert:', this.$message); // eslint-disable-line no-console, max-len
-          }
-        },
-        setCustomValidity (msg) {
-          if (!msg) {
-            delete this.$message;
-            return;
-          }
-          this.$message = msg;
-        }
-      });
+      sharedBehaviors.updateViews('map', formObj, mockFormForValidation);
     },
     onSelect (e, data) {
       console.log(data); // eslint-disable-line no-console

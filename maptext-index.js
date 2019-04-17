@@ -226,7 +226,7 @@ function mapImageMapFormObject (formObj, handler) {
   });
 }
 
-function setFormObjCoords (formObj, shape, setNum, coords) {
+function setFormObjCoords (setNum, shape, coords, formObj) {
   switch (shape) {
   default:
     return;
@@ -346,7 +346,7 @@ Views.main({
         formObj[setNum + '_shape'] = shape;
         formObj[setNum + '_text'] = alt || '';
         coords = coords.split(/,\s*/u);
-        setFormObjCoords(formObj, shape, setNum, coords);
+        setFormObjCoords(setNum, shape, coords, formObj);
       });
       // alert(JSON.stringify(formObj, null, 2));
       updateViews('html', formObj, this);
