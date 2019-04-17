@@ -13,33 +13,33 @@ const nbsp2 = nbsp.repeat(2);
 
 export const title = () => _('MapText demo');
 
-const mainRole = () => jml('div', {
-  role: 'main' // For Axe tests (Accessbility)
-}, body);
-
 export const main = ({form, behaviors}) => {
-  jml('div', [
-    form,
-    ['section', {class: 'serialized'}, [
-      ['h2', [_('Serialized HTML')]],
-      ['textarea', {
-        id: 'serializedHTML',
-        form: form.id,
-        'aria-label': _('Serialized HTML'),
-        $on: {input: behaviors.serializedHTMLInput}
-      }]
-    ]],
-    ['section', {class: 'serialized'}, [
-      ['h2', [_('Serialized JSON')]],
-      ['textarea', {
-        id: 'serializedJSON',
-        form: form.id,
-        'aria-label': _('Serialized JSON'),
-        $on: {input: behaviors.serializedJSONInput}
-      }]
-    ]],
-    imagePreviewContainer({behaviors})
-  ], mainRole());
+  return jml('div', {
+    role: 'main' // For Axe tests (Accessbility)
+  }, [
+    ['div', [
+      form,
+      ['section', {class: 'serialized'}, [
+        ['h2', [_('Serialized HTML')]],
+        ['textarea', {
+          id: 'serializedHTML',
+          form: form.id,
+          'aria-label': _('Serialized HTML'),
+          $on: {input: behaviors.serializedHTMLInput}
+        }]
+      ]],
+      ['section', {class: 'serialized'}, [
+        ['h2', [_('Serialized JSON')]],
+        ['textarea', {
+          id: 'serializedJSON',
+          form: form.id,
+          'aria-label': _('Serialized JSON'),
+          $on: {input: behaviors.serializedJSONInput}
+        }]
+      ]],
+      imagePreviewContainer({behaviors})
+    ]]
+  ], body);
 };
 
 export const polyXYDiv = ({polyID, currImageRegionID, behaviors}) => {
