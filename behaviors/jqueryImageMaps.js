@@ -67,9 +67,7 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
     // onMouseDown (e, shapeType, coords) {},
     // We could use this but probably too aggressive
     // onMouseMove (e, shapeType, movedCoords) {},
-    onMouseUp (e, shapeType, updatedCoords) {
-      const targetEl = e.target;
-      const {index} = targetEl.dataset;
+    onMouseUp ({target: {dataset: {index}}}, shapeType, updatedCoords) {
       const {type: shape} = this.getShapeInfo(index);
 
       // Won't change shape (and we don't change text here),
