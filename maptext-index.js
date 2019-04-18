@@ -2,7 +2,7 @@
 import {jml, $} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
-} from './node_modules/form-serialize/dist/index-es.js';
+} from './node_modules/form-serialization/dist/index-es.js';
 
 import tippy from './external/tippy.js/tippy.js';
 // Todo: Switch to npm version
