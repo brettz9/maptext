@@ -10,7 +10,6 @@ npm i maptext
 
 ## Immediate to-dos
 
-0. Make **text optional** by preference
 0. Figure out why **shape disappears** after repositioning updates views;
     why is **serializedHTML not updating** as before when form/JSON changed?
 

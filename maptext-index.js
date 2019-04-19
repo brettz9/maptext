@@ -1,5 +1,5 @@
 /* eslint-disable require-jsdoc */
-import {jml, $, body} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, $, $$, body} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialization/dist/index-es.js';
@@ -12,6 +12,12 @@ import {empty} from './external/dom-behaviors/dom-behaviors.js';
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
+
+import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
+
+const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
+  requireText: true
+}});
 
 // CONFIG
 // Todo: Could allow for multiple image maps
@@ -84,6 +90,7 @@ function addImageRegion (imageRegionID, prevElement) {
           break;
         }
         Views.formText({
+          requireText,
           currentImageRegionID, outputArea,
           behaviors: {
             addImageRegionClick (e) {
@@ -303,13 +310,24 @@ function formToPreview (formObj) {
 
 document.title = Views.title();
 
+let requireText;
 (async () => {
 await Styles.load();
+
+requireText = await prefs.getPref('requireText');
 
 form = Views.mainForm({
   defaultMapName,
   defaultImageSrc: defaultImageSrc || '',
+  initialPrefs: {requireText},
   behaviors: {
+    async requireText () {
+      const newValue = this.checked;
+      $$('.requireText').forEach((textarea) => {
+        textarea.required = newValue;
+      });
+      await prefs.setPref('requireText', newValue);
+    },
     imageFormSubmit (e) {
       e.preventDefault();
       const formObj = serialize(this, {hash: true});

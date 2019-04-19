@@ -61,6 +61,7 @@
     "jamilih": "^0.44.0",
     "jquery": "^3.4.0",
     "load-stylesheets": "^0.7.0",
+    "simple-prefs": "^0.1.0",
     "tippy.js": "^4.2.1"
   }
 }

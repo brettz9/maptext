@@ -37,3 +37,12 @@ input[type=text],
 input[type=number] {
     height: 24px;
 }
+
+div.imageRegions, .preferences {
+  float: left;
+  width: 50%;
+}
+
+.imageRegions > h2, h2.preferences {
+  font-size: 20px;
+}

@@ -3,7 +3,9 @@ import _ from '../../external/i18n/i18n.js';
 
 const nbsp2 = nbsp.repeat(2);
 
-export const mainForm = ({defaultMapName, defaultImageSrc, behaviors}) => {
+export const mainForm = ({
+  defaultMapName, initialPrefs, defaultImageSrc, behaviors
+}) => {
   const form = jml('form', {
     id: 'imageForm',
     $on: {submit: behaviors.imageFormSubmit}
@@ -26,8 +28,23 @@ export const mainForm = ({defaultMapName, defaultImageSrc, behaviors}) => {
     ['br'],
     ['fieldset', [
       ['div', [
-        _('Image areas'),
-        ['ol', {id: 'imageRegions'}]
+        ['div', {class: 'imageRegions'}, [
+          ['h2', [_('Image areas')]],
+          ['ol', {id: 'imageRegions'}]
+        ]],
+        ['div', [
+          ['h2', {class: 'preferences'}, [_('Preferences')]],
+          ['label', [
+            ['input', {
+              type: 'checkbox',
+              checked: initialPrefs.requireText,
+              $on: {
+                click: behaviors.requireText
+              }
+            }], nbsp2,
+            _('Require text')
+          ]]
+        ]]
       ]]
     ]],
     ['input', {type: 'submit', value: _('Apply'), $on: {
@@ -171,6 +188,7 @@ export const polyXYDiv = ({from, currImageRegionID, behaviors}) => {
 
 export const formText = ({
   currentImageRegionID, outputArea,
+  requireText,
   behaviors
 }) => {
   return jml('div', [
@@ -178,8 +196,9 @@ export const formText = ({
       ['label', [
         _('Text'), nbsp2,
         ['textarea', {
+          class: 'requireText',
           name: `${currentImageRegionID}_text`,
-          required: true
+          required: requireText
         }]
       ]]
     ]],
