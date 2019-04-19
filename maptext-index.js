@@ -407,7 +407,7 @@ addImageRegion(imgRegionID++);
 
 body.addEventListener('keydown', (e) => {
   if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
-    console.log('Find');
+    // console.log('Find');
     e.preventDefault();
   }
 });
