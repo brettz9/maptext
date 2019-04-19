@@ -411,7 +411,10 @@ body.addEventListener('keydown', (e) => {
     // console.log('Find');
     // Add magnifying glass next to control (and type=search for
     //   clear-results button?)
+    // Left-facing:
     // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
+    // Or for right-facing:
+    // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
     e.preventDefault();
   }
 });
