@@ -20,7 +20,6 @@ npm i maptext
     find) with highlight of image regions (single or multiple select)
 2. Allow (click/drag) image highlighting of region(s)
     for **copy-paste** and/or display of text
-3. Allow adding, removing, or editing coords or text from image
 
 ## Medium priority to-dos
 
