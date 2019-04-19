@@ -1,5 +1,5 @@
 /* eslint-disable require-jsdoc */
-import {jml, $} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, $, body} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './node_modules/form-serialization/dist/index-es.js';
@@ -404,4 +404,11 @@ Views.main({
 });
 
 addImageRegion(imgRegionID++);
+
+body.addEventListener('keydown', (e) => {
+  if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
+    console.log('Find');
+    e.preventDefault();
+  }
+});
 })();
