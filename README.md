@@ -14,12 +14,11 @@ npm i maptext
     why is **serializedHTML not updating** as before when form/JSON changed?
 
 0. **View map**
-0. **Zooming**
-
-1. Allow **highlighted text search** (optionally overriding browser
-    find) with highlight of image regions (single or multiple select)
-2. Allow (click/drag) image highlighting of region(s)
-    for **copy-paste** and/or display of text
+  0. **Zooming**
+  1. Allow **highlighted text search** (optionally overriding browser
+      find) with highlight of image regions (single or multiple select)
+  2. Allow (click/drag) image highlighting of region(s)
+      for **copy-paste** and/or display of text
 
 ## Medium priority to-dos
 
