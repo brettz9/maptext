@@ -24,14 +24,12 @@ const defaultImageSrc =
 document.documentElement.lang = 'en-US';
 document.documentElement.dir = 'ltr';
 
-let polyID = 0;
 let imgRegionID = 0;
 let form;
 
-function makePolyXY (currImageRegionID) {
-  polyID++;
+function makePolyXY (currImageRegionID, from = false) {
   const polyDiv = Views.polyXYDiv({
-    polyID,
+    from,
     currImageRegionID,
     behaviors: {
       addPolyClick (e) {
@@ -40,13 +38,13 @@ function makePolyXY (currImageRegionID) {
       },
       removePolyClick (e) {
         e.preventDefault();
-        const buttonSets = e.target.parentElement.parentElement;
+        const buttonSets = polyDiv.parentElement;
         if (buttonSets.children.length <= 2) {
           return;
         }
-        const parentDiv = polyDiv.parentElement;
         polyDiv.remove();
-        const fromOrTo = parentDiv.firstElementChild.firstElementChild;
+        const firstButtonSet = buttonSets.firstElementChild;
+        const fromOrTo = firstButtonSet.firstElementChild;
         if (fromOrTo.className !== 'from') {
           fromOrTo.replaceWith(jml(...Views.makeFrom()));
         }
@@ -76,7 +74,7 @@ function addImageRegion (imageRegionID, prevElement) {
             outputArea, li,
             behaviors: {
               makePolyXY () {
-                return makePolyXY(currentImageRegionID);
+                return makePolyXY(currentImageRegionID, true);
               }
             }
           });
@@ -139,9 +137,12 @@ function deserializeForm (formObj) {
     shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
     shapeSelector.dispatchEvent(new Event('change'));
     if (shape === 'poly') {
-      let polySets = formObj[currID + '_xy'].length / 2;
+      const polySetsStart = formObj[currID + '_xy'].length / 2;
+      let polySets = polySetsStart;
       while (polySets > 2) { // Always have at least 2
-        $('.polyDivHolder').append(makePolyXY(currID));
+        $('.polyDivHolder').append(
+          makePolyXY(currID, polySets === polySetsStart)
+        );
         polySets--;
       }
     }

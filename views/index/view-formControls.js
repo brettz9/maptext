@@ -45,9 +45,10 @@ export const formShapeSelection = ({currentImageRegionID, behaviors}) => {
       $on: {change: behaviors.shapeSelectionChange}
     }, [
       ['option', {value: 'rect'}, [_('Rectangle')]],
-      ['option', {value: 'circle'}, [_('Circle')]]
+      ['option', {value: 'circle'}, [_('Circle')]],
+      // Todo: Disable after testing!
       // Todo: https://github.com/naver/image-maps/issues/9
-      // ['option', {value: 'poly'}, [_('Polygon')]]
+      ['option', {value: 'poly'}, [_('Polygon')]]
     ]],
     ['div']
   ]);
@@ -132,9 +133,9 @@ export const makeFrom = () => {
 };
 export const makeTo = () => ['span', [_('To:')]];
 
-export const polyXYDiv = ({polyID, currImageRegionID, behaviors}) => {
-  return jml('div', {id: 'polyID' + polyID}, [
-    polyID === 1
+export const polyXYDiv = ({from, currImageRegionID, behaviors}) => {
+  return jml('div', [
+    from
       ? makeFrom()
       : makeTo(),
     nbsp2,
