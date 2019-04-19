@@ -322,11 +322,11 @@ form = Views.mainForm({
   initialPrefs: {requireText},
   behaviors: {
     async requireText () {
-      const newValue = this.checked;
+      requireText = this.checked;
       $$('.requireText').forEach((textarea) => {
-        textarea.required = newValue;
+        textarea.required = requireText;
       });
-      await prefs.setPref('requireText', newValue);
+      await prefs.setPref('requireText', requireText);
     },
     imageFormSubmit (e) {
       e.preventDefault();
