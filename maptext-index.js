@@ -76,7 +76,7 @@ function addImageRegion (imageRegionID, prevElement) {
             outputArea, li,
             behaviors: {
               makePolyXY () {
-                makePolyXY(currentImageRegionID);
+                return makePolyXY(currentImageRegionID);
               }
             }
           });
