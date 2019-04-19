@@ -17,7 +17,8 @@ import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 // Todo: Could allow for multiple image maps
 const mapID = 0;
 const defaultMapName = `map${mapID}`;
-const defaultImageSrc = 'Handwriting_of_Shoghi_Effendi_1919-1.jpg';
+const defaultImageSrc =
+  'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 
 // Todo: Detect locale and set this in such a utility, etc.
 document.documentElement.lang = 'en-US';
