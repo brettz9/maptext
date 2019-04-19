@@ -33,12 +33,12 @@ npm i maptext
         allow conversion to canonical ranges.)
 1. Show **preview of image next to coordinates** and/or on image
     preview (so load preview as soon as URL entered)
-
-## Lower priority to-dos
-
 1. Allow **saving from HTML**
     1. Local storage (including asking for names?)
     2. Downloadable JSON file?
+
+## Lower priority to-dos
+
 2. Add more **testcafe** tests
 3. Add **CLI** for generating
 4. Allow for **multiple image maps**?
