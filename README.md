@@ -10,7 +10,6 @@ npm i maptext
 
 ## Immediate to-dos
 
-0. `removeShape`/`removeAllShapes` button issues
 0. Why is **serializedHTML not updating** as before when form/JSON changed?
 
 1. **View map**
