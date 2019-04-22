@@ -144,7 +144,7 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
         index,
         shape,
         coords: updatedCoords,
-        text: formObj[index + '_text'],
+        text: formObj[index + '_text'] || '',
         formObj,
         formControl: mockFormForValidation
       });
