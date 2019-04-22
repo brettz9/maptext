@@ -120,7 +120,6 @@ export async function removeShape ({sharedBehaviors} = {}) {
 
 export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   setFormObj(formObj);
-  alert(editMode);
   $('#preview').imageMaps({
     isEditMode: editMode,
     shape: 'rect',
