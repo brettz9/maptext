@@ -10,7 +10,7 @@ import _ from './external/i18n/i18n.js';
 import {empty} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/view-index.js';
-import * as Styles from './styles/index.js';
+import * as Styles from './styles/styles-index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 
 import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';

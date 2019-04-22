@@ -6,6 +6,12 @@ export const shapeStyle = {
   'stroke-width': 2
 };
 
+export const transparentShapeStyle = {
+  fill: 'transparent',
+  stroke: 'transparent',
+  'stroke-width': 0
+};
+
 export const load = async () => {
   // eslint-disable-next-line no-return-await
   return await loadStylesheets([

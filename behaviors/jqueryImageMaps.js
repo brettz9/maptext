@@ -2,7 +2,7 @@
 /* eslint-disable require-jsdoc */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
-import * as Styles from '../styles/index.js';
+import * as Styles from '../styles/styles-index.js';
 import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
 
 const $ = jqueryImageMaps(jQuery);
