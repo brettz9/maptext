@@ -186,7 +186,11 @@ async function updateViews (type, formObj, formControl) {
   if (type !== 'form') {
     deserializeForm.call(formControl, formObj);
   }
-  await formToPreview(formObj); // Sets preview
+  if (type !== 'map') {
+    await formToPreview(formObj); // Sets preview
+  }
+  // Even for map, we must update apparently because change in form changes
+  //   positions within map
   await updateMap(formObj);
   if (type !== 'html') {
     updateSerializedHTML();
