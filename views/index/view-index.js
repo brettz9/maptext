@@ -9,7 +9,7 @@ export {
 
 export const title = () => _('MapText demo');
 
-export const main = ({form, behaviors}) => {
+export const main = ({form, editMode, behaviors}) => {
   return jml('div', {
     role: 'main' // For Axe tests (Accessbility)
   }, [
@@ -33,12 +33,12 @@ export const main = ({form, behaviors}) => {
           $on: {input: behaviors.serializedJSONInput}
         }]
       ]],
-      imagePreviewContainer({behaviors})
+      imagePreviewContainer({editMode, behaviors})
     ]]
   ], body);
 };
 
-export const imagePreviewContainer = ({behaviors}) => ['section', [
+export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
   ['h2', [_('Image preview')]],
   ['div', [
     ['div', [
@@ -65,7 +65,15 @@ export const imagePreviewContainer = ({behaviors}) => ['section', [
         id: 'remove-all',
         class: 'btn',
         $on: {click: behaviors.removeAllClick}
-      }, [_('Remove all shapes')]]
+      }, [_('Remove all shapes')]],
+      ['label', [
+        _('Edit mode?'),
+        ['input', {
+          type: 'checkbox',
+          checked: editMode,
+          $on: {click: behaviors.setEditMode}
+        }]
+      ]]
     ]],
     ['br'],
     ['div', {id: 'imagePreviewHolder'}, [

@@ -37,7 +37,7 @@ export function addShape (shape, {sharedBehaviors, coords}) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
-  setTimeout(() => {
+  setTimeout(async () => {
     $('#preview').setShapeStyle(_shapeStrokeFillOptions).addShape(
       coords, $('input[name=mapURL]')[0].value, shape
     );
@@ -45,7 +45,7 @@ export function addShape (shape, {sharedBehaviors, coords}) {
       const newIndex = parseInt(
         $('#preview').imageMaps().shapeEl.data('index')
       );
-      sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+      await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
         index: newIndex,
         shape,
         coords,
@@ -68,7 +68,7 @@ export function addCircle ({
 }) {
   return addShape('circle', {sharedBehaviors, coords});
 }
-export function removeAllShapes ({sharedBehaviors} = {}) {
+export async function removeAllShapes ({sharedBehaviors} = {}) {
   $('#preview').removeAllShapes();
 
   setFormObj({
@@ -77,7 +77,7 @@ export function removeAllShapes ({sharedBehaviors} = {}) {
   });
   if (sharedBehaviors) {
     // Reset to default empty rect shape
-    sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+    await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
       index: 0,
       shape: 'rect',
       coords: ['', '', '', ''],
@@ -87,7 +87,7 @@ export function removeAllShapes ({sharedBehaviors} = {}) {
     });
   }
 }
-export function removeShape ({sharedBehaviors} = {}) {
+export async function removeShape ({sharedBehaviors} = {}) {
   const imageMaps = $('#preview').imageMaps();
   if (imageMaps.svgEl.find('._shape_face').length <= 1) {
     // Follow this routine instead which will at least set
@@ -104,7 +104,7 @@ export function removeShape ({sharedBehaviors} = {}) {
   } = $('#preview').imageMaps().getShapeInfo(oldIndex);
 
   $('#preview').removeShape();
-  sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+  await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
     index: oldIndex,
     shape: undefined,
     oldShapeToDelete,
@@ -118,12 +118,13 @@ export function removeShape ({sharedBehaviors} = {}) {
   );
 }
 
-export function setImageMaps ({formObj, sharedBehaviors}) {
+export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   setFormObj(formObj);
+  alert(editMode);
   $('#preview').imageMaps({
-    isEditMode: true,
+    isEditMode: editMode,
     shape: 'rect',
-    shapeStyle: Styles.shapeStyle,
+    shapeStyle: editMode ? Styles.shapeStyle : Styles.transparentShapeStyle,
     onClick (e, targetAreaHref) {
       // eslint-disable-next-line no-console
       console.log('click-targetAreaHref', targetAreaHref);
@@ -131,7 +132,7 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
     // onMouseDown (e, shapeType, coords) {},
     // We could use this but probably too aggressive
     // onMouseMove (e, shapeType, movedCoords) {},
-    onMouseUp ({target: {dataset: {index}}}, shapeType, updatedCoords) {
+    async onMouseUp ({target: {dataset: {index}}}, shapeType, updatedCoords) {
       const {type: shape} = this.getShapeInfo(index);
 
       // Won't change shape (and we don't change text here),
@@ -140,7 +141,7 @@ export function setImageMaps ({formObj, sharedBehaviors}) {
       // eslint-disable-next-line no-console
       console.log('updatedCoords', updatedCoords);
 
-      sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+      await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
         index,
         shape,
         coords: updatedCoords,

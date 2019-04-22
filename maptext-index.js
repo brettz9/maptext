@@ -16,7 +16,8 @@ import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
 
 const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
-  requireText: true
+  requireText: true,
+  editMode: true
 }});
 
 // CONFIG
@@ -181,13 +182,13 @@ function deserializeForm (formObj) {
  *   form-building. Not needed if this is a change to the whole form.
  * @returns {void}
  */
-function updateViews (type, formObj, formControl) {
+async function updateViews (type, formObj, formControl) {
   if (type !== 'form') {
     deserializeForm.call(formControl, formObj);
   }
-  type !== 'map' && formToPreview(formObj); // Sets preview
+  type !== 'map' && await formToPreview(formObj); // Sets preview
   if (type !== 'map') {
-    updateMap(formObj);
+    await updateMap(formObj);
   }
   if (type !== 'html') {
     updateSerializedHTML();
@@ -198,8 +199,8 @@ function updateViews (type, formObj, formControl) {
   ImageMaps.setFormObj(formObj);
 }
 
-function updateMap (formObj) {
-  ImageMaps.removeAllShapes();
+async function updateMap (formObj) {
+  await ImageMaps.removeAllShapes();
   setTimeout(() => {
     // const {name} = formObj; // Todo: Attach to map somehow
     mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
@@ -260,14 +261,14 @@ function setFormObjCoords ({
   }
 }
 
-function setFormObjCoordsAndUpdateViewForMap ({
+async function setFormObjCoordsAndUpdateViewForMap ({
   index, shape, coords, text, formObj, formControl, oldShapeToDelete
 }) {
   setFormObjCoords({index, shape, coords, text, formObj, oldShapeToDelete});
-  updateViews('map', formObj, formControl);
+  await updateViews('map', formObj, formControl);
 }
 
-function formToPreview (formObj) {
+async function formToPreview (formObj) {
   const imagePreview = $('#imagePreview');
   const {name} = formObj;
   imagePreview.replaceWith(
@@ -303,9 +304,13 @@ function formToPreview (formObj) {
     stroke: 'red',
     'stroke-width': 2
   });
-  ImageMaps.setImageMaps({formObj, sharedBehaviors: {
-    setFormObjCoordsAndUpdateViewForMap
-  }});
+  ImageMaps.setImageMaps({
+    formObj,
+    editMode: await prefs.getPref('editMode'),
+    sharedBehaviors: {
+      setFormObjCoordsAndUpdateViewForMap
+    }
+  });
 }
 
 document.title = Views.title();
@@ -328,10 +333,10 @@ form = Views.mainForm({
       });
       await prefs.setPref('requireText', requireText);
     },
-    imageFormSubmit (e) {
+    async imageFormSubmit (e) {
       e.preventDefault();
       const formObj = serialize(this, {hash: true});
-      updateViews('form', formObj);
+      await updateViews('form', formObj);
     },
     submitFormClick () {
       // To try again, we reset invalid forms, e.g., from previous bad JSON
@@ -348,8 +353,13 @@ form = Views.mainForm({
 
 Views.main({
   form,
+  editMode: await prefs.getPref('editMode'),
   behaviors: {
-    serializedHTMLInput () {
+    async setEditMode (e) {
+      const editMode = e.target.checked;
+      await prefs.setPref('editMode', editMode);
+    },
+    async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');
       const map = html.querySelector('map[name]');
       const img = html.querySelector(
@@ -379,9 +389,9 @@ Views.main({
         setFormObjCoords({index, shape, coords, text: alt || '', formObj});
       });
       // alert(JSON.stringify(formObj, null, 2));
-      updateViews('html', formObj, this);
+      await updateViews('html', formObj, this);
     },
-    serializedJSONInput () {
+    async serializedJSONInput () {
       let formObj;
       try {
         formObj = JSON.parse(this.value);
@@ -392,7 +402,7 @@ Views.main({
       }
       this.setCustomValidity('');
 
-      updateViews('json', formObj, this);
+      await updateViews('json', formObj, this);
     },
     rectClick (e) {
       e.preventDefault();
@@ -406,17 +416,17 @@ Views.main({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
-    removeClick (e) {
+    async removeClick (e) {
       e.preventDefault();
-      ImageMaps.removeShape({
+      await ImageMaps.removeShape({
         sharedBehaviors: {
           setFormObjCoordsAndUpdateViewForMap
         }
       });
     },
-    removeAllClick (e) {
+    async removeAllClick (e) {
       e.preventDefault();
-      ImageMaps.removeAllShapes({
+      await ImageMaps.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     }
