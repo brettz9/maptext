@@ -83,7 +83,8 @@ export async function removeAllShapes ({sharedBehaviors} = {}) {
       coords: ['', '', '', ''],
       text: '',
       formObj: _formObj,
-      formControl: mockFormForValidation
+      formControl: mockFormForValidation,
+      removeAll: true
     });
   }
 }
@@ -92,7 +93,7 @@ export async function removeShape ({sharedBehaviors} = {}) {
   if (imageMaps.svgEl.find('._shape_face').length <= 1) {
     // Follow this routine instead which will at least set
     //   a single empty rect set rather than removing the form
-    removeAllShapes({sharedBehaviors});
+    await removeAllShapes({sharedBehaviors});
     return;
   }
 

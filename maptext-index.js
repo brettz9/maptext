@@ -119,7 +119,11 @@ function addImageRegion (imageRegionID, prevElement) {
   li.firstElementChild.dispatchEvent(new Event('change'));
 }
 
-function updateSerializedHTML () {
+function updateSerializedHTML (removeAll) {
+  if (removeAll) {
+    $('#serializedHTML').value = '';
+    return;
+  }
   $('#serializedHTML').value =
     $('#imagePreview').outerHTML;
 }
@@ -180,23 +184,27 @@ function deserializeForm (formObj) {
  * @param {PlainObject} formObj
  * @param {HTMLElement} [formControl] Control on which to report errors in
  *   form-building. Not needed if this is a change to the whole form.
+ * @param {boolean} removeAll
  * @returns {void}
  */
-async function updateViews (type, formObj, formControl) {
+async function updateViews (type, formObj, formControl, removeAll) {
   if (type !== 'form') {
     deserializeForm.call(formControl, formObj);
   }
-  if (type !== 'map') {
-    await formToPreview(formObj); // Sets preview
+  if (!removeAll) {
+    // Don't actually set the map and update; we
+    if (type !== 'map') {
+      await formToPreview(formObj); // Sets preview
+    }
+    // Even for map, we must update apparently because change in form changes
+    //   positions within map
+    await updateMap(formObj);
   }
-  // Even for map, we must update apparently because change in form changes
-  //   positions within map
-  await updateMap(formObj);
   if (type !== 'html') {
-    updateSerializedHTML();
+    updateSerializedHTML(removeAll);
   }
   if (type !== 'json') {
-    updateSerializedJSON(formObj);
+    updateSerializedJSON(removeAll ? {} : formObj);
   }
   ImageMaps.setFormObj(formObj);
 }
@@ -242,20 +250,33 @@ function mapImageMapFormObject (formObj, handler) {
 function setFormObjCoords ({
   index, shape, coords, text, formObj, oldShapeToDelete
 }) {
-  formObj[index + '_shape'] = shape;
-  formObj[index + '_text'] = text;
+  if (shape === undefined) {
+    delete formObj[index + '_shape'];
+  } else {
+    formObj[index + '_shape'] = shape;
+  }
+  if (text === undefined) {
+    delete formObj[index + '_text'];
+  } else {
+    formObj[index + '_text'] = text;
+  }
+  function circleOrRect (item, i) {
+    if (coords[i] === undefined) {
+      delete formObj[index + '_' + item];
+    } else {
+      formObj[index + '_' + item] = coords[i];
+    }
+  }
   switch (shape || oldShapeToDelete) {
   default:
     return;
   case 'circle':
-    ['circlex', 'circley', 'circler'].forEach((item, i) => {
-      formObj[index + '_' + item] = coords[i];
-    });
+    // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+    ['circlex', 'circley', 'circler'].forEach(circleOrRect);
     break;
   case 'rect':
-    ['leftx', 'topy', 'rightx', 'bottomy'].forEach((item, i) => {
-      formObj[index + '_' + item] = coords[i];
-    });
+    // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+    ['leftx', 'topy', 'rightx', 'bottomy'].forEach(circleOrRect);
     break;
   case 'poly':
     formObj[index + '_xy'] = coords;
@@ -264,10 +285,11 @@ function setFormObjCoords ({
 }
 
 async function setFormObjCoordsAndUpdateViewForMap ({
-  index, shape, coords, text, formObj, formControl, oldShapeToDelete
+  index, shape, coords, text, formObj, formControl, oldShapeToDelete,
+  removeAll
 }) {
   setFormObjCoords({index, shape, coords, text, formObj, oldShapeToDelete});
-  await updateViews('map', formObj, formControl);
+  await updateViews('map', formObj, formControl, removeAll);
 }
 
 async function formToPreview (formObj) {
