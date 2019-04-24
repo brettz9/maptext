@@ -18,7 +18,6 @@ function copyImageMapsTo (sourceEl, targetEl) {
     if (item.text) {
       targetEl.setTextShape(item.text);
     }
-
     const widthRatio = sourceEl.width();
     const heightRatio = sourceEl.height();
     const newCoords = sourceEl.getCoordsByRatio(
@@ -90,7 +89,6 @@ export function addShape (shape, {sharedBehaviors, coords}) {
           formControl: mockFormForValidation
         });
       }
-      copyImageMaps();
       resolve();
     }, 200);
   });
@@ -126,7 +124,6 @@ export async function removeAllShapes ({sharedBehaviors} = {}) {
       removeAll: true
     });
   }
-  copyImageMaps();
 }
 export async function removeShape ({sharedBehaviors} = {}) {
   const imageMaps = $('#preview').imageMaps();
@@ -154,8 +151,6 @@ export async function removeShape ({sharedBehaviors} = {}) {
     formObj: _formObj,
     formControl: mockFormForValidation
   });
-
-  copyImageMaps();
 }
 
 export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
@@ -194,11 +189,9 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
     }
   };
   $('#preview').imageMaps(settings);
-
   $('#preview_noneditable').imageMaps({
     ...settings, shapeStyle: _shapeStrokeFillOptions, isEditMode: false
   });
-  copyImageMaps();
 
   $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
   $('#preview_noneditable')[editMode !== 'edit' ? 'show' : 'hide']();
@@ -209,4 +202,5 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   $('map[name=map0_noneditable_map]')[
     editMode === 'view-guides' ? 'show' : 'hide'
   ]();
+  copyImageMaps();
 }
