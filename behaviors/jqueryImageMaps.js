@@ -2,10 +2,41 @@
 /* eslint-disable require-jsdoc */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
-import * as Styles from '../styles/styles-index.js';
 import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
 
 const $ = jqueryImageMaps(jQuery);
+
+// See https://github.com/naver/image-maps/pull/13
+function copyImageMapsTo (sourceEl, targetEl) {
+  const allShapes = sourceEl.getAllShapes();
+  targetEl.removeAllShapes();
+  $.each(allShapes, (index, item) => {
+    targetEl.setShapeStyle(item.style);
+    if (item.href) {
+      targetEl.setImageShape(item.href);
+    }
+    if (item.text) {
+      targetEl.setTextShape(item.text);
+    }
+
+    const widthRatio = sourceEl.width();
+    const heightRatio = sourceEl.height();
+    const newCoords = sourceEl.getCoordsByRatio(
+      item.coords,
+      item.type,
+      targetEl.width() / widthRatio,
+      targetEl.height() / heightRatio
+    );
+    targetEl.addShape(newCoords, item.url, item.type);
+  });
+}
+function copyImageMaps () {
+  // If https://github.com/naver/image-maps/pull/13
+  //   is accepted, we can just do the following without
+  //   the need for the above utility:
+  // $('#preview').copyImageMapsTo($('#preview_noneditable'));
+  copyImageMapsTo($('#preview'), $('#preview_noneditable'));
+}
 
 const mockFormForValidation = {
   reportValidity () {
@@ -38,7 +69,9 @@ export function addShape (shape, {sharedBehaviors, coords}) {
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
   setTimeout(async () => {
-    $('#preview').setShapeStyle(_shapeStrokeFillOptions).addShape(
+    $('#preview').setShapeStyle(
+      _shapeStrokeFillOptions
+    ).addShape(
       coords, $('input[name=mapURL]')[0].value, shape
     );
     if (sharedBehaviors) {
@@ -54,6 +87,7 @@ export function addShape (shape, {sharedBehaviors, coords}) {
         formControl: mockFormForValidation
       });
     }
+    copyImageMaps();
   });
 }
 export function addRect ({
@@ -87,6 +121,7 @@ export async function removeAllShapes ({sharedBehaviors} = {}) {
       removeAll: true
     });
   }
+  copyImageMaps();
 }
 export async function removeShape ({sharedBehaviors} = {}) {
   const imageMaps = $('#preview').imageMaps();
@@ -117,14 +152,15 @@ export async function removeShape ({sharedBehaviors} = {}) {
   $(`.removeRegion[data-region-id=${oldIndex}]`)[0].dispatchEvent(
     new Event('click')
   );
+  copyImageMaps();
 }
 
 export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   setFormObj(formObj);
-  $('#preview').imageMaps({
-    isEditMode: editMode,
+  const settings = {
+    isEditMode: true,
     shape: 'rect',
-    shapeStyle: editMode ? Styles.shapeStyle : Styles.transparentShapeStyle,
+    shapeStyle: _shapeStrokeFillOptions,
     onClick (e, targetAreaHref) {
       // eslint-disable-next-line no-console
       console.log('click-targetAreaHref', targetAreaHref);
@@ -153,5 +189,18 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
     onSelect (e, data) {
       console.log(data); // eslint-disable-line no-console
     }
+  };
+  $('#preview').imageMaps(settings);
+
+  $('#preview_noneditable').imageMaps({
+    ...settings, shapeStyle: _shapeStrokeFillOptions, isEditMode: false
   });
+  copyImageMaps();
+
+  $('#preview')[editMode ? 'show' : 'hide']();
+  $('#preview_noneditable')[!editMode ? 'show' : 'hide']();
+
+  // We need to show/hide the maps too or the guides will show
+  $('map[name=map0]')[editMode ? 'show' : 'hide']();
+  $('map[name=map0_noneditable_map]')[!editMode ? 'show' : 'hide']();
 }

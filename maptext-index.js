@@ -323,11 +323,7 @@ async function formToPreview (formObj) {
       }
     })
   );
-  ImageMaps.setShapeStrokeFillOptions({
-    fill: '#ffffff',
-    stroke: 'red',
-    'stroke-width': 2
-  });
+  ImageMaps.setShapeStrokeFillOptions(Styles.shapeStyle);
   ImageMaps.setImageMaps({
     formObj,
     editMode: await prefs.getPref('editMode'),
