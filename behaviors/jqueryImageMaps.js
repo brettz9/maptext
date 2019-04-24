@@ -198,10 +198,13 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   });
   copyImageMaps();
 
-  $('#preview')[editMode ? 'show' : 'hide']();
-  $('#preview_noneditable')[!editMode ? 'show' : 'hide']();
+  $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
+  $('#preview_noneditable')[editMode !== 'edit' ? 'show' : 'hide']();
 
   // We need to show/hide the maps too or the guides will show
-  $('map[name=map0]')[editMode ? 'show' : 'hide']();
-  $('map[name=map0_noneditable_map]')[!editMode ? 'show' : 'hide']();
+  $('map[name=map0]')[editMode === 'edit' ? 'show' : 'hide']();
+  // eslint-disable-next-line standard/computed-property-even-spacing
+  $('map[name=map0_noneditable_map]')[
+    editMode === 'view-guides' ? 'show' : 'hide'
+  ]();
 }

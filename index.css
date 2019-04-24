@@ -46,3 +46,15 @@ div.imageRegions, .preferences {
 .imageRegions > h2, h2.preferences {
   font-size: 20px;
 }
+
+div.shapeControls {
+  float: left;
+  width: 40%;
+}
+fieldset.shapeControls {
+  float: left;
+  width: 30%;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  text-align: center;
+}

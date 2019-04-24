@@ -17,7 +17,7 @@ import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
 
 const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
   requireText: true,
-  editMode: true
+  editMode: 'edit'
 }});
 
 // CONFIG
@@ -376,7 +376,7 @@ Views.main({
   editMode: await prefs.getPref('editMode'),
   behaviors: {
     async setEditMode (e) {
-      const editMode = e.target.checked;
+      const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
     },
     async serializedHTMLInput () {

@@ -1,4 +1,4 @@
-import {jml, body} from '../../node_modules/jamilih/dist/jml-es.js';
+import {jml, body, nbsp} from '../../node_modules/jamilih/dist/jml-es.js';
 import _ from '../../external/i18n/i18n.js';
 
 export {
@@ -42,37 +42,52 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
   ['h2', [_('Image preview')]],
   ['div', [
     ['div', [
-      ['a', {
-        href: '#',
-        id: 'rect',
-        class: 'btn',
-        $on: {click: behaviors.rectClick}
-      }, [_('Add rectangle')]],
-      ['a', {
-        href: '#',
-        id: 'circle',
-        class: 'btn',
-        $on: {click: behaviors.circleClick}
-      }, [_('Add circle')]],
-      ['a', {
-        href: '#',
-        id: 'remove',
-        class: 'btn',
-        $on: {click: behaviors.removeClick}
-      }, [_('Remove shape')]],
-      ['a', {
-        href: '#',
-        id: 'remove-all',
-        class: 'btn',
-        $on: {click: behaviors.removeAllClick}
-      }, [_('Remove all shapes')]],
-      ['label', [
-        _('Edit mode?'),
-        ['input', {
-          type: 'checkbox',
-          checked: editMode,
-          $on: {click: behaviors.setEditMode}
-        }]
+      ['div', {class: 'shapeControls'}, [
+        ['a', {
+          href: '#',
+          id: 'rect',
+          class: 'btn',
+          $on: {click: behaviors.rectClick}
+        }, [_('Add rectangle')]],
+        ['a', {
+          href: '#',
+          id: 'circle',
+          class: 'btn',
+          $on: {click: behaviors.circleClick}
+        }, [_('Add circle')]],
+        ['a', {
+          href: '#',
+          id: 'remove',
+          class: 'btn',
+          $on: {click: behaviors.removeClick}
+        }, [_('Remove shape')]],
+        ['a', {
+          href: '#',
+          id: 'remove-all',
+          class: 'btn',
+          $on: {click: behaviors.removeAllClick}
+        }, [_('Remove all shapes')]]
+      ]],
+      ['fieldset', {class: 'shapeControls'}, [
+        ['legend', [_('Edit mode?')]],
+        ...[
+          ['Edit', 'edit'],
+          ['View with guides', 'view-guides'],
+          ['View', 'view']
+        ].map(([i18nKey, mode]) => {
+          return ['label', [
+            ['input', {
+              name: 'editMode',
+              type: 'radio',
+              checked: editMode === mode,
+              value: mode,
+              $on: {click: behaviors.setEditMode}
+            }],
+            nbsp,
+            _(i18nKey),
+            nbsp.repeat(3)
+          ]];
+        })
       ]]
     ]],
     ['br'],
