@@ -30,6 +30,7 @@ function copyImageMapsTo (sourceEl, targetEl) {
     targetEl.addShape(newCoords, item.url, item.type);
   });
 }
+
 function copyImageMaps () {
   // If https://github.com/naver/image-maps/pull/13
   //   is accepted, we can just do the following without
