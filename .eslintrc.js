@@ -11,7 +11,8 @@ module.exports = {
             "location.href",
             "Object.assign",
             "Object.entries",
-            "Object.keys"
+            "Object.keys",
+            "Promise"
         ]
     },
     "extends": ["ash-nazg/sauron", "plugin:testcafe/recommended"],

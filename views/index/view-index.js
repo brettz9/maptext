@@ -98,7 +98,7 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
 ]];
 
 export const imagePreview = ({behaviors, src, name}) => {
-  const map = jml('map', {name}, behaviors.mapImageMapFormObject(({
+  const map = jml('map', {name}, behaviors.imageMapFormObjectInfoMap(({
     shape, alt, coords
   }) => {
     return ['area', {

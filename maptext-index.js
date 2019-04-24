@@ -211,15 +211,14 @@ async function updateViews (type, formObj, formControl, removeAll) {
 
 async function updateMap (formObj) {
   await ImageMaps.removeAllShapes();
-  setTimeout(() => {
-    // const {name} = formObj; // Todo: Attach to map somehow
-    mapImageMapFormObject(formObj, ({shape, alt, coords}) => {
-      ImageMaps.addShape(shape, {coords});
-    });
-  });
+  return Promise.all(
+    imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
+      return ImageMaps.addShape(shape, {coords});
+    })
+  );
 }
 
-function mapImageMapFormObject (formObj, handler) {
+function imageMapFormObjectInfo (formObj) {
   const formObjKeys = Object.keys(formObj);
   const shapeIDS = formObjKeys.filter((item) => {
     return item.endsWith('_shape');
@@ -243,7 +242,7 @@ function mapImageMapFormObject (formObj, handler) {
         }).map((item) => {
           return formObj[item];
         });
-    return handler({shape, alt, coords});
+    return {shape, alt, coords};
   });
 }
 
@@ -304,13 +303,14 @@ async function formToPreview (formObj) {
           : location.href + '/' + defaultImageSrc
       ),
       behaviors: {
-        mapImageMapFormObject (handler) {
-          mapImageMapFormObject(formObj, ({coords, ...args}) => {
-            handler({
+        imageMapFormObjectInfoMap (handler) {
+          return imageMapFormObjectInfo(formObj).map(({coords, ...args}) => {
+            return {
               ...args,
               coords: coords.join(',')
-            });
-          });
+            };
+          // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+          }).map(handler);
         },
         mouseover () {
           this.dataset.tippyContent = this.alt;
@@ -378,6 +378,13 @@ Views.main({
     async setEditMode (e) {
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
+      ImageMaps.setImageMaps({
+        formObj: JSON.parse($('#serializedJSON').value),
+        editMode,
+        sharedBehaviors: {
+          setFormObjCoordsAndUpdateViewForMap
+        }
+      });
     },
     async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');
@@ -424,15 +431,15 @@ Views.main({
 
       await updateViews('json', formObj, this);
     },
-    rectClick (e) {
+    async rectClick (e) {
       e.preventDefault();
-      ImageMaps.addRect({
+      await ImageMaps.addRect({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
-    circleClick (e) {
+    async circleClick (e) {
       e.preventDefault();
-      ImageMaps.addCircle({
+      await ImageMaps.addCircle({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },

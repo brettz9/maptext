@@ -69,26 +69,30 @@ export function addShape (shape, {sharedBehaviors, coords}) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
-  setTimeout(async () => {
-    $('#preview').setShapeStyle(
-      _shapeStrokeFillOptions
-    ).addShape(
-      coords, $('input[name=mapURL]')[0].value, shape
-    );
-    if (sharedBehaviors) {
-      const newIndex = parseInt(
-        $('#preview').imageMaps().shapeEl.data('index')
+  // eslint-disable-next-line promise/avoid-new
+  return new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      $('#preview').setShapeStyle(
+        _shapeStrokeFillOptions
+      ).addShape(
+        coords, $('input[name=mapURL]')[0].value, shape
       );
-      await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
-        index: newIndex,
-        shape,
-        coords,
-        text: '',
-        formObj: _formObj,
-        formControl: mockFormForValidation
-      });
-    }
-    copyImageMaps();
+      if (sharedBehaviors) {
+        const newIndex = parseInt(
+          $('#preview').imageMaps().shapeEl.data('index')
+        );
+        await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+          index: newIndex,
+          shape,
+          coords,
+          text: '',
+          formObj: _formObj,
+          formControl: mockFormForValidation
+        });
+      }
+      copyImageMaps();
+      resolve();
+    }, 200);
   });
 }
 export function addRect ({
@@ -150,9 +154,7 @@ export async function removeShape ({sharedBehaviors} = {}) {
     formObj: _formObj,
     formControl: mockFormForValidation
   });
-  $(`.removeRegion[data-region-id=${oldIndex}]`)[0].dispatchEvent(
-    new Event('click')
-  );
+
   copyImageMaps();
 }
 

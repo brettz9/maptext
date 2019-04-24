@@ -12,9 +12,6 @@ npm i maptext
 
 0. Why is **serializedHTML not updating** as before when form/JSON changed?
 
-1. **Edit mode**
-  1. Ensure clicking into the mode **changes the mode immediately**
-
 1. **View map**
   1. **Zooming**
   1. Allow **highlighted text search** (optionally overriding browser
