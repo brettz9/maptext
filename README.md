@@ -12,7 +12,8 @@ npm i maptext
 
 0. **map areas of view (no guides) do not work when clicked** due to
   extra map area (should add to/overwrite not duplicate?) (and it is also
-  showing in serializedHTML)
+  showing in serializedHTML); also ensure tooltips work in view with
+  guides mode and maybe even edit mode?
 
 1. **View map**
   1. **Zooming**
