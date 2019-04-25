@@ -88,6 +88,22 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
             nbsp.repeat(3)
           ]];
         })
+      ]],
+      ['fieldset', {class: 'zoom'}, [
+        ['legend', [_('Zoom')]],
+        ['input', {
+          type: 'number', class: 'zoom', placeholder: _('zoom percentage')
+        }],
+        nbsp,
+        ['label', {for: 'zoom'}, [
+          ['a', {
+            hidden: editMode === 'edit',
+            href: '#', class: 'zoom btn', id: 'map-zoom',
+            $on: {click: behaviors.zoomClick}
+          }, [
+            _('zoom')
+          ]]
+        ]]
       ]]
     ]],
     ['br'],

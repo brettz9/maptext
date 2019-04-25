@@ -51,10 +51,14 @@ div.shapeControls {
   float: left;
   width: 40%;
 }
-fieldset.shapeControls {
+fieldset.shapeControls, fieldset.zoom {
   float: left;
-  width: 30%;
+  width: 25%;
   margin-top: -10px;
   margin-bottom: 10px;
   text-align: center;
+}
+
+input.zoom {
+  width: 110px;
 }

@@ -16,7 +16,6 @@ npm i maptext
   guides mode and maybe even edit mode?
 
 1. **View map**
-  1. **Zooming**
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
   1. Allow (click/drag) image highlighting of region(s)

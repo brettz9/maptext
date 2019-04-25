@@ -384,6 +384,9 @@ Views.main({
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
 
+      $('input.zoom').disabled = editMode === 'edit';
+      $('a.zoom').hidden = editMode === 'edit';
+
       const {width, height, shapes} = ImageMaps.getPreviewInfo();
       if (!width || !height) { // Nothing else to do yet
         return;
@@ -481,6 +484,21 @@ Views.main({
       await ImageMaps.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
+    },
+    zoomClick (e) {
+      e.preventDefault();
+
+      const zoomInput = $('input.zoom');
+      const val = Number(zoomInput.value || 100);
+
+      if (typeof val !== 'number' || isNaN(val) || val <= 0) {
+        alert( // eslint-disable-line no-alert
+          'You must enter a number and one greater than 0.'
+        );
+        return;
+      }
+
+      ImageMaps.zoomPreviewAndResize(val);
     }
   }
 });

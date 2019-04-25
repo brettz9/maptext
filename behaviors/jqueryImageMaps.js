@@ -215,3 +215,14 @@ export function hideGuidesIfViewMode (editMode) {
     editMode !== 'view' ? 'visible' : 'hidden'
   );
 }
+
+export function zoomPreviewAndResize (val) {
+  const preview = $('#preview');
+  preview.zoom([val]);
+
+  // for image resize
+  $('#imagePreview').css({
+    width: val * 0.01 * preview.width(),
+    height: val * 0.01 * preview.height()
+  });
+}
