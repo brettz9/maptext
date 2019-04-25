@@ -10,9 +10,9 @@ npm i maptext
 
 ## Immediate to-dos
 
-0. Why is **serializedHTML not updating** as before when form/JSON changed?
 0. **map areas of view (no guides) do not work when clicked** due to
-  extra map area (should add to/overwrite not duplicate?)
+  extra map area (should add to/overwrite not duplicate?) (and it is also
+  showing in serializedHTML)
 
 1. **View map**
   1. **Zooming**

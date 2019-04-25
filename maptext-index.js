@@ -124,8 +124,10 @@ function updateSerializedHTML (removeAll) {
     $('#serializedHTML').value = '';
     return;
   }
+  const clonedImagePreview = $('#imagePreview').cloneNode(true);
+  clonedImagePreview.querySelector('svg').remove();
   $('#serializedHTML').value =
-    $('#imagePreview').outerHTML;
+    clonedImagePreview.outerHTML;
 }
 
 function updateSerializedJSON (formObj) {
