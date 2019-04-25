@@ -12,6 +12,9 @@ import {empty} from './external/dom-behaviors/dom-behaviors.js';
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
+import {
+  copyTextDragRectangle, disableTextDragRectangle
+} from './behaviors/copyTextDragRectangle.js';
 
 import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
 
@@ -402,6 +405,11 @@ Views.main({
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
 
+      if (editMode === 'view') {
+        copyTextDragRectangle();
+      } else {
+        disableTextDragRectangle();
+      }
       $('input.zoom').disabled = editMode === 'edit';
       $('a.zoom').hidden = editMode === 'edit';
 
@@ -522,6 +530,8 @@ Views.main({
 });
 
 addImageRegion(imgRegionID++);
+
+copyTextDragRectangle();
 
 body.addEventListener('keydown', (e) => {
   if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {

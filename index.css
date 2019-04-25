@@ -62,3 +62,9 @@ fieldset.shapeControls, fieldset.zoom {
 input.zoom {
   width: 110px;
 }
+
+rect.selector {
+  fill: transparent;
+  stroke: blue;
+  stroke-width: 2px;
+}
