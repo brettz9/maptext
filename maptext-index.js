@@ -306,17 +306,27 @@ async function formToPreview (formObj) {
         defaultImageSrc.startsWith('http')
           ? defaultImageSrc
           : location.href + '/' + defaultImageSrc
-      ),
+      )
+    })
+  );
+
+  ImageMaps.setShapeStrokeFillOptions(Styles.shapeStyle);
+  ImageMaps.setImageMaps({
+    formObj,
+    editMode: await prefs.getPref('editMode'),
+    sharedBehaviors: {
+      setFormObjCoordsAndUpdateViewForMap
+    }
+  });
+
+  // Todo: Only build a new area if not one for the same coords already
+  //   (in which case, supplement it with `alt` and `mouseover`)
+  imageMapFormObjectInfo(formObj).forEach(({shape, alt, coords}) => {
+    jml(...Views.buildArea({
+      shape,
+      alt,
+      coords: coords.join(','),
       behaviors: {
-        imageMapFormObjectInfoMap (handler) {
-          return imageMapFormObjectInfo(formObj).map(({coords, ...args}) => {
-            return {
-              ...args,
-              coords: coords.join(',')
-            };
-          // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
-          }).map(handler);
-        },
         mouseover () {
           this.dataset.tippyContent = this.alt;
           tippy('[data-tippy-content]', {
@@ -326,15 +336,7 @@ async function formToPreview (formObj) {
           });
         }
       }
-    })
-  );
-  ImageMaps.setShapeStrokeFillOptions(Styles.shapeStyle);
-  ImageMaps.setImageMaps({
-    formObj,
-    editMode: await prefs.getPref('editMode'),
-    sharedBehaviors: {
-      setFormObjCoordsAndUpdateViewForMap
-    }
+    }), $(`map[name=${name}]`));
   });
 }
 

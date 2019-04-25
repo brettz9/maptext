@@ -113,21 +113,21 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
   ]]
 ]];
 
-export const imagePreview = ({behaviors, src, name}) => {
+export const buildArea = ({shape, alt, coords, behaviors}) => {
+  const atts = {
+    shape,
+    coords,
+    $on: {mouseover: behaviors.mouseover}
+  };
+  if (alt !== undefined) { // Todo: Make this a nullable type for Jamilih
+    atts.alt = alt;
+  }
+  return ['area', atts];
+};
+
+export const imagePreview = ({src, name}) => {
   return jml('div', {id: 'imagePreview'}, [
-    ['map', {name}, behaviors.imageMapFormObjectInfoMap(({
-      shape, alt, coords
-    }) => {
-      const atts = {
-        shape,
-        coords,
-        $on: {mouseover: behaviors.mouseover}
-      };
-      if (alt !== undefined) { // Todo: Make this a nullable type for Jamilih
-        atts.alt = alt;
-      }
-      return ['area', atts];
-    })],
+    ['map', {name}],
     ['img', {
       id: 'preview',
       alt: _('Selected image for map'),
