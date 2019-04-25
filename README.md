@@ -11,7 +11,8 @@ npm i maptext
 ## Immediate to-dos
 
 0. Why is **serializedHTML not updating** as before when form/JSON changed?
-0. Why is **view-with-guides too high on the page** unless first clicking view
+0. Why is **view-with-guides too high on the page** (code for copying maps)
+    unless first clicking view
 
 1. **View map**
   1. **Zooming**
