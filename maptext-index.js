@@ -192,12 +192,13 @@ async function updateViews (type, formObj, formControl, removeAll) {
     deserializeForm.call(formControl, formObj);
   }
   if (!removeAll) {
-    // Don't actually set the map and update; we
+    // Don't actually set the map and update
     if (type !== 'map') {
       await formToPreview(formObj); // Sets preview
     }
-    // Even for map, we must update apparently because change in form changes
-    //   positions within map
+    // Even for map, we must update apparently because change in form
+    //   control positions after adding controls changes positions within
+    //   map as well
     await updateMap(formObj);
   }
   if (type !== 'html') {
@@ -211,11 +212,13 @@ async function updateViews (type, formObj, formControl, removeAll) {
 
 async function updateMap (formObj) {
   await ImageMaps.removeAllShapes();
-  return Promise.all(
+  await Promise.all(
     imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
       return ImageMaps.addShape(shape, {coords});
     })
   );
+  const editMode = await prefs.getPref('editMode');
+  ImageMaps.hideGuidesIfViewMode(editMode);
 }
 
 function imageMapFormObjectInfo (formObj) {
@@ -378,6 +381,15 @@ Views.main({
     async setEditMode (e) {
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
+
+      const {width, height, shapes} = ImageMaps.getPreviewInfo();
+      if (!width || !height) { // Nothing else to do yet
+        return;
+      }
+      // console.log('width', width, height, shapes, editMode);
+
+      await formToPreview(JSON.parse($('#serializedJSON').value));
+      /*
       ImageMaps.setImageMaps({
         formObj: JSON.parse($('#serializedJSON').value),
         editMode,
@@ -385,6 +397,17 @@ Views.main({
           setFormObjCoordsAndUpdateViewForMap
         }
       });
+      */
+
+      // Todo: Reconsider https://github.com/naver/image-maps/pull/13
+      ImageMaps.copyImageMapsToPreview({
+        // Mock ImageMaps jQuery
+        width: () => width,
+        height: () => height,
+        getAllShapes: () => shapes
+      });
+
+      ImageMaps.hideGuidesIfViewMode(editMode);
     },
     async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');

@@ -6,39 +6,6 @@ import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
 
 const $ = jqueryImageMaps(jQuery);
 
-// See https://github.com/naver/image-maps/pull/13
-function copyImageMapsTo (sourceEl, targetEl) {
-  const allShapes = sourceEl.getAllShapes();
-  targetEl.removeAllShapes();
-  $.each(allShapes, (index, item) => {
-    targetEl.setShapeStyle(item.style);
-    if (item.href) {
-      targetEl.setImageShape(item.href);
-    }
-    if (item.text) {
-      targetEl.setTextShape(item.text);
-    }
-    const widthRatio = sourceEl.width();
-    const heightRatio = sourceEl.height();
-    const newCoords = sourceEl.getCoordsByRatio(
-      item.coords,
-      item.type,
-      targetEl.width() / widthRatio,
-      targetEl.height() / heightRatio
-    );
-    console.log('widthRatio', widthRatio, heightRatio, newCoords, targetEl.width(), targetEl.height());
-    targetEl.addShape(newCoords, item.url, item.type);
-  });
-}
-
-function copyImageMaps () {
-  // If https://github.com/naver/image-maps/pull/13
-  //   is accepted, we can just do the following without
-  //   the need for the above utility:
-  // $('#preview').copyImageMapsTo($('#preview_noneditable'));
-  copyImageMapsTo($('#preview'), $('#preview_noneditable'));
-}
-
 const mockFormForValidation = {
   reportValidity () {
     if (this.$message) {
@@ -157,7 +124,7 @@ export async function removeShape ({sharedBehaviors} = {}) {
 export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   setFormObj(formObj);
   const settings = {
-    isEditMode: true,
+    isEditMode: editMode === 'edit',
     shape: 'rect',
     shapeStyle: _shapeStrokeFillOptions,
     onClick (e, targetAreaHref) {
@@ -189,23 +156,62 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
       console.log(data); // eslint-disable-line no-console
     }
   };
+
   $('#preview').imageMaps(settings);
-  $('#preview_noneditable').imageMaps({
-    ...settings, shapeStyle: _shapeStrokeFillOptions, isEditMode: false
+  // $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
+
+  hideGuidesIfViewMode(editMode);
+}
+
+export function getPreviewInfo () {
+  const width = $('#preview').width();
+  const height = $('#preview').height();
+  const shapes = $('#preview').getAllShapes();
+  return {width, height, shapes};
+}
+
+// See https://github.com/naver/image-maps/pull/13
+/**
+ *
+ * @param {external:jQuery} sourceEl
+ * @param {external:jQuery} targetEl
+ * @returns {void}
+ */
+function copyImageMapsTo (sourceEl, targetEl) {
+  const allShapes = sourceEl.getAllShapes();
+  targetEl.removeAllShapes();
+  $.each(allShapes, (index, item) => {
+    targetEl.setShapeStyle(item.style);
+    if (item.href) {
+      targetEl.setImageShape(item.href);
+    }
+    if (item.text) {
+      targetEl.setTextShape(item.text);
+    }
+    const widthRatio = sourceEl.width();
+    const heightRatio = sourceEl.height();
+    const newCoords = targetEl.getCoordsByRatio(
+      item.coords,
+      item.type,
+      targetEl.width() / widthRatio,
+      targetEl.height() / heightRatio
+    );
+    /*
+    console.log(
+      'widthRatio', widthRatio, heightRatio,
+        newCoords, targetEl.width(), targetEl.height()
+    );
+    */
+    targetEl.addShape(newCoords, item.url, item.type);
   });
-  setTimeout(() => {
-    console.log('Preview', $('#preview').width(), $('#preview').height());
-    console.log('Preview noneditable', $('#preview_noneditable').width(), $('#preview_noneditable').height());
+}
 
-    $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
-    $('#preview_noneditable')[editMode !== 'edit' ? 'show' : 'hide']();
-
-    // We need to show/hide the maps too or the guides will show
-    $('map[name=map0]')[editMode === 'edit' ? 'show' : 'hide']();
-    // eslint-disable-next-line standard/computed-property-even-spacing
-    $('map[name=map0_noneditable_map]')[
-      editMode === 'view-guides' ? 'show' : 'hide'
-    ]();
-    copyImageMaps();
-  }, 5000);
+export function copyImageMapsToPreview (sourceEl) {
+  copyImageMapsTo(sourceEl, $('#preview'));
+}
+export function hideGuidesIfViewMode (editMode) {
+  $('map[name=map0] > svg').css(
+    'visibility',
+    editMode !== 'view' ? 'visible' : 'hidden'
+  );
 }

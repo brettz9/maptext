@@ -98,39 +98,31 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
 ]];
 
 export const imagePreview = ({behaviors, src, name}) => {
-  const map = jml('map', {name}, behaviors.imageMapFormObjectInfoMap(({
-    shape, alt, coords
-  }) => {
-    return ['area', {
-      shape,
-      alt,
-      coords,
-      $on: {mouseover: behaviors.mouseover}
-    }];
-  }));
-  const img = jml('img', {
-    id: 'preview',
-    alt: _('Selected image for map'),
-    usemap: '#' + name,
-    src,
-    $on: {
-      // Todo: We could scale using this:
-      load () {
-        // this.naturalWidth, this.naturalHeight
-      }
-    }
-  });
-  const mapView = map.cloneNode(true);
-  mapView.name += '_noneditable_map';
-
-  const imgView = img.cloneNode(true);
-  imgView.id = 'preview_noneditable';
-  imgView.setAttribute('usemap', `#${name}_noneditable_map`);
-
   return jml('div', {id: 'imagePreview'}, [
-    map,
-    img,
-    mapView,
-    imgView
+    ['map', {name}, behaviors.imageMapFormObjectInfoMap(({
+      shape, alt, coords
+    }) => {
+      const atts = {
+        shape,
+        coords,
+        $on: {mouseover: behaviors.mouseover}
+      };
+      if (alt !== undefined) { // Todo: Make this a nullable type for Jamilih
+        atts.alt = alt;
+      }
+      return ['area', atts];
+    })],
+    ['img', {
+      id: 'preview',
+      alt: _('Selected image for map'),
+      usemap: '#' + name,
+      src,
+      $on: {
+        // Todo: We could scale using this:
+        load () {
+          // this.naturalWidth, this.naturalHeight
+        }
+      }
+    }]
   ]);
 };
