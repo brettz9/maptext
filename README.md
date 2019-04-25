@@ -12,7 +12,7 @@ npm i maptext
 
 0. Why is **serializedHTML not updating** as before when form/JSON changed?
 0. **map areas of view (no guides) do not work when clicked** due to
-  hidden SVG visibility
+  extra map area
 
 1. **View map**
   1. **Zooming**
