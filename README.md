@@ -10,11 +10,6 @@ npm i maptext
 
 ## Immediate to-dos
 
-0. **map areas of view (no guides) do not work when clicked** due to
-  extra map area (should add to/overwrite not duplicate?) (and it is also
-  showing in serializedHTML); also ensure tooltips work in view with
-  guides mode and maybe even edit mode?
-
 1. **View map**
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)

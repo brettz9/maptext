@@ -321,23 +321,39 @@ async function formToPreview (formObj) {
 
   // Todo: Only build a new area if not one for the same coords already
   //   (in which case, supplement it with `alt` and `mouseover`)
-  imageMapFormObjectInfo(formObj).forEach(({shape, alt, coords}) => {
-    jml(...Views.buildArea({
-      shape,
-      alt,
-      coords: coords.join(','),
-      behaviors: {
-        mouseover () {
-          this.dataset.tippyContent = this.alt;
-          tippy('[data-tippy-content]', {
-            followCursor: true,
-            distance: 10,
-            placement: 'right'
-          });
-        }
+  const map = $(`map[name=${name}]`);
+  function mouseover () {
+    this.dataset.tippyContent = this.alt;
+    tippy('[data-tippy-content]', {
+      followCursor: true,
+      distance: 10,
+      placement: 'right'
+    });
+  }
+
+  // Todo: Should find a better way around this
+  // Wait until SVG is built
+  setTimeout(() => {
+    imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
+      return {shape, alt, coords: coords.join(',')};
+    }).filter(({shape, alt, coords}) => {
+      const existingArea = map.querySelector(
+        `area[shape="${shape}"][coords="${coords}"]`
+      );
+      if (existingArea) {
+        existingArea.alt = alt || '';
+        existingArea.addEventListener('mouseover', mouseover);
       }
-    }), $(`map[name=${name}]`));
-  });
+      return !existingArea;
+    }).forEach(({shape, alt, coords}) => {
+      jml(...Views.buildArea({
+        shape,
+        alt,
+        coords,
+        behaviors: {mouseover}
+      }), map);
+    });
+  }, 500);
 }
 
 document.title = Views.title();
