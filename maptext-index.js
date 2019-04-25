@@ -525,6 +525,7 @@ addImageRegion(imgRegionID++);
 
 body.addEventListener('keydown', (e) => {
   if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
     // console.log('Find');
     // Add magnifying glass next to control (and type=search for
     //   clear-results button?)
@@ -532,7 +533,6 @@ body.addEventListener('keydown', (e) => {
     // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
     // Or for right-facing:
     // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
-    e.preventDefault();
   }
 });
 })();
