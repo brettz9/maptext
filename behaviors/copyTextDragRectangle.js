@@ -109,32 +109,35 @@ function textDragRectangleMouseMove (e) {
       shape, coords, alt
     }) => {
       const coordArr = coords.split(/,\s*/u);
-      let intersectPoints;
+      let intersection;
       switch (shape) {
       case 'rect': {
-        const [x, y, x2, y2] = coordArr;
+        const [x, y, x2, y2] = coordArr.map((n) => parseFloat(n));
         const width = x2 - x;
         const height = y2 - y;
-        intersectPoints = svgIntersect(rect, [shape, {x, y, width, height}]);
+        // console.log('shape', shape, {x, y, width, height});
+        intersection = svgIntersect(rect, [shape, {x, y, width, height}]);
         break;
       } case 'circle': {
-        const [cx, cy, r] = coordArr;
-        intersectPoints = svgIntersect(rect, [shape, {cx, cy, r}]);
+        const [cx, cy, r] = coordArr.map((n) => parseFloat(n));
+        // console.log('shape', shape, {cx, cy, r});
+        intersection = svgIntersect(rect, [shape, {cx, cy, r}]);
         break;
       } case 'polygon': {
-        intersectPoints = svgIntersect(rect, [shape, {points: coords}]);
+        intersection = svgIntersect(rect, [shape, {points: coords}]);
         break;
       } default: {
         throw new TypeError('Unexpected map type!');
       }
       }
-      return ' ' + (
-        intersectPoints.length
+      // console.log('intersection points', intersection.points);
+      return s + ' ' + (
+        intersection.points.length
           ? alt
           : ''
       );
     }, '').slice(1);
-    console.log('text', text.length, text);
+    // console.log('text', text.length, text);
   }
 }
 
