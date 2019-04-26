@@ -6,7 +6,27 @@ import {
 } from '../node_modules/svg-intersections/dist/index-esm.js';
 
 const svgShape = (svgEl) => {
-  return intersectShape(svgEl.localName.toLowerCase(), svgEl);
+  function getAnimVal (o, prop) {
+    o[prop] = svgEl[prop].animVal.value;
+    return o;
+  }
+  let propArr;
+  switch (svgEl.localName.toLowerCase()) {
+  case 'rect':
+    propArr = ['x', 'y', 'width', 'height'];
+    break;
+  case 'circle':
+    propArr = ['cx', 'cy', 'r'];
+    break;
+  case 'polygon':
+    propArr = ['points'];
+    break;
+  default:
+    throw new TypeError('Unexpected SVG element type!');
+  }
+  // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+  const props = propArr.reduce(getAnimVal, {});
+  return intersectShape(svgEl.localName.toLowerCase(), props);
 };
 const svgIntersect = (shape1, shape2) => {
   return intersect(
