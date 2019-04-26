@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 import {$} from '../node_modules/jamilih/dist/jml-es.js';
-import _ from '../external/i18n/i18n.js';
+// import _ from '../external/i18n/i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svg = document.createElementNS(SVG_NS, 'svg');
@@ -24,7 +24,7 @@ function resetRect () {
 }
 
 let originalX, originalY;
-const text = 'Test';
+let text = '';
 
 function textDragRectangleMouseDown (e) {
   e.preventDefault();
@@ -53,14 +53,27 @@ async function textDragRectangleMouseUp (e) {
       return;
     }
   }
-  // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
-  /* const notification = */ new Notification( // eslint-disable-line no-new
-    // Todo: This should accept a formatted string
-    _('Copied ') + text, {
-      lang: document.documentElement.lang,
-      dir: document.documentElement.dir
-    }
-  );
+  $('textarea.textToCopy').value = text;
+  /*
+  // Not yet supported
+  const clipboardPermission =
+    await navigator.permissions.request('clipboard-write');
+  console.log('clipboardPermission', clipboardPermission);
+  if (clipboardPermission === 'granted') {
+    const data = new DataTransfer();
+    // Todo: Option to switch between `text/html` and `text/plain`?
+    data.items.add('text/html', text);
+    await navigator.clipboard.write(data);
+    // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
+    new Notification( // eslint-disable-line no-new
+      // Todo: This should accept a formatted string
+      _('Copied ') + text, {
+        lang: document.documentElement.lang,
+        dir: document.documentElement.dir
+      }
+    );
+  }
+  */
 }
 
 function textDragRectangleMouseMove (e) {
@@ -71,6 +84,9 @@ function textDragRectangleMouseMove (e) {
   if (e.pageX > originalX && e.pageY > originalY) {
     rect.setAttribute('width', e.pageX - originalX);
     rect.setAttribute('height', e.pageY - originalY);
+    // Todo: Change this to reflect space-joined text on areas whose
+    //   coords intersect this rectangle
+    text = '';
   }
 }
 

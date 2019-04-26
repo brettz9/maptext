@@ -6,9 +6,11 @@ module.exports = {
     "settings": {
         "polyfills": [
             "console",
+            "DataTransfer",
             "DOMParser",
             "JSON",
             "location.href",
+            "navigator.clipboard",
             "Notification",
             "Notification.permission",
             "Notification.requestPermission",

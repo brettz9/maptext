@@ -46,16 +46,25 @@ div.imageRegions, .preferences {
   font-size: 20px;
 }
 
+textarea.textToCopy {
+  float: left;
+  width: 20%;
+}
 div.shapeControls {
   float: left;
-  width: 40%;
+  width: 35%;
+}
+fieldset.shapeControls {
+  width: 25%;
 }
 fieldset.shapeControls, fieldset.zoom {
   float: left;
-  width: 25%;
   margin-top: -10px;
   margin-bottom: 10px;
   text-align: center;
+}
+fieldset.zoom {
+  width: 15%;
 }
 
 input.zoom {

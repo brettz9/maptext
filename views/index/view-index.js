@@ -104,7 +104,12 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
             _('zoom')
           ]]
         ]]
-      ]]
+      ]],
+      ['textarea', {
+        class: 'textToCopy',
+        'aria-label': _('Text to copy'),
+        placeholder: _('Text to copy')
+      }]
     ]],
     ['br'],
     ['div', {id: 'imagePreviewHolder'}, [
