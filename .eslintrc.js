@@ -5,6 +5,7 @@ module.exports = {
     },
     "settings": {
         "polyfills": [
+            "Array.isArray",
             "console",
             "DataTransfer",
             "DOMParser",

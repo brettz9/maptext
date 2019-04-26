@@ -1,7 +1,23 @@
 /* eslint-disable require-jsdoc */
-import {$} from '../node_modules/jamilih/dist/jml-es.js';
+import {$, $$} from '../node_modules/jamilih/dist/jml-es.js';
 // import _ from '../external/i18n/i18n.js';
-import {intersect} from '../node_modules/svg-intersections/dist/index-esm.js';
+import {
+  intersect, shape as intersectShape
+} from '../node_modules/svg-intersections/dist/index-esm.js';
+
+const svgShape = (svgEl) => {
+  return intersectShape(svgEl.localName.toLowerCase(), svgEl);
+};
+const svgIntersect = (shape1, shape2) => {
+  return intersect(
+    Array.isArray(shape1)
+      ? intersectShape(shape1[0], shape1[1])
+      : svgShape(shape1),
+    Array.isArray(shape2)
+      ? intersectShape(shape2[0], shape2[1])
+      : svgShape(shape2)
+  );
+};
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svg = document.createElementNS(SVG_NS, 'svg');
@@ -89,8 +105,36 @@ function textDragRectangleMouseMove (e) {
     rect.setAttribute('height', e.pageY - originalY);
     // Todo: Change this to reflect space-joined text on areas whose
     //   coords intersect this rectangle
-    // intersect();
-    text = '';
+    text = $$('#imagePreview > map > area').reduce((s, {
+      shape, coords, alt
+    }) => {
+      const coordArr = coords.split(/,\s*/u);
+      let intersectPoints;
+      switch (shape) {
+      case 'rect': {
+        const [x, y, x2, y2] = coordArr;
+        const width = x2 - x;
+        const height = y2 - y;
+        intersectPoints = svgIntersect(rect, [shape, {x, y, width, height}]);
+        break;
+      } case 'circle': {
+        const [cx, cy, r] = coordArr;
+        intersectPoints = svgIntersect(rect, [shape, {cx, cy, r}]);
+        break;
+      } case 'polygon': {
+        intersectPoints = svgIntersect(rect, [shape, {points: coords}]);
+        break;
+      } default: {
+        throw new TypeError('Unexpected map type!');
+      }
+      }
+      return ' ' + (
+        intersectPoints.length
+          ? alt
+          : ''
+      );
+    }, '').slice(1);
+    console.log('text', text.length, text);
   }
 }
 
