@@ -13,8 +13,10 @@ npm i maptext
 1. **View map**
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
+      1. Ensure works with zoom
   1. Allow (click/drag) image highlighting of region(s)
       for **copy-paste** and/or display of text
+      1. Take into account zoom when copying over such a region
 
 ## Medium priority to-dos
 
