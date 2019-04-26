@@ -9,7 +9,6 @@
 }
 
 img {
-    position: relative;
     width: 100%;
     height: 100%;
 }
@@ -61,6 +60,13 @@ fieldset.shapeControls, fieldset.zoom {
 
 input.zoom {
   width: 110px;
+}
+
+svg.selector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
 }
 
 rect.selector {

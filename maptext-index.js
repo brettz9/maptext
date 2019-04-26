@@ -13,7 +13,7 @@ import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
 import {
-  copyTextDragRectangle, disableTextDragRectangle
+  enableTextDragRectangle, disableTextDragRectangle
 } from './behaviors/copyTextDragRectangle.js';
 
 import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
@@ -22,6 +22,15 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
   requireText: true,
   editMode: 'edit'
 }});
+
+async function setTextRectangleByEditMode () {
+  const editMode = await prefs.getPref('editMode');
+  if (editMode !== 'edit') {
+    enableTextDragRectangle();
+  } else {
+    disableTextDragRectangle();
+  }
+}
 
 // CONFIG
 // Todo: Could allow for multiple image maps
@@ -334,6 +343,8 @@ async function formToPreview (formObj) {
     });
   }
 
+  await setTextRectangleByEditMode();
+
   // Todo: Should find a better way around this
   // Wait until SVG is built
   setTimeout(() => {
@@ -405,11 +416,8 @@ Views.main({
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
 
-      if (editMode === 'view') {
-        copyTextDragRectangle();
-      } else {
-        disableTextDragRectangle();
-      }
+      await setTextRectangleByEditMode();
+
       $('input.zoom').disabled = editMode === 'edit';
       $('a.zoom').hidden = editMode === 'edit';
 
@@ -530,8 +538,6 @@ Views.main({
 });
 
 addImageRegion(imgRegionID++);
-
-copyTextDragRectangle();
 
 body.addEventListener('keydown', (e) => {
   if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
