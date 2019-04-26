@@ -6,8 +6,21 @@ import {
 } from '../node_modules/svg-intersections/dist/index-esm.js';
 
 const svgShape = (svgEl) => {
-  function getAnimVal (o, prop) {
+  function getOffsetAdjustedAnimVal (o, prop) {
     o[prop] = svgEl[prop].animVal.value;
+
+    // Adjust for offsets
+    if (prop === 'points') {
+      o[prop] = o[prop].split(/,\s*/u).map((xOrY, i) => {
+        return xOrY % 0
+          ? xOrY - previewOffsetLeft
+          : xOrY - previewOffsetTop;
+      }).join(',');
+    } else if (['x', 'cx'].includes(prop)) {
+      o[prop] -= previewOffsetLeft;
+    } else if (['y', 'cy'].includes(prop)) {
+      o[prop] -= previewOffsetTop;
+    }
     return o;
   }
   let propArr;
@@ -25,7 +38,8 @@ const svgShape = (svgEl) => {
     throw new TypeError('Unexpected SVG element type!');
   }
   // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
-  const props = propArr.reduce(getAnimVal, {});
+  const props = propArr.reduce(getOffsetAdjustedAnimVal, {});
+
   console.log('props', svgEl.localName.toLowerCase(), props);
   return intersectShape(svgEl.localName.toLowerCase(), props);
 };
@@ -61,7 +75,7 @@ function resetRect () {
   svg.style.display = 'none';
 }
 
-let originalX, originalY;
+let originalX, originalY, previewOffsetLeft, previewOffsetTop;
 let lastText = '';
 
 function textDragRectangleMouseDown (e) {
@@ -163,6 +177,8 @@ function textDragRectangleMouseMove (e) {
 }
 
 export function enableTextDragRectangle () {
+  previewOffsetLeft = $('#imagePreview').offsetLeft;
+  previewOffsetTop = $('#imagePreview').offsetTop;
   $('#imagePreview').before(svg);
   window.addEventListener('mouseup', textDragRectangleMouseUp);
   window.addEventListener('mousemove', textDragRectangleMouseMove);
