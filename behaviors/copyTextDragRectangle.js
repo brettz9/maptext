@@ -29,9 +29,6 @@ let text = '';
 function textDragRectangleMouseDown (e) {
   e.preventDefault();
   // Todo: Jamilih should support SVG (through options mode); then use here
-  if (svg.style.display !== 'block') {
-    svg.style.display = 'block';
-  }
 
   originalX = e.pageX;
   originalY = e.pageY;
@@ -80,6 +77,11 @@ function textDragRectangleMouseMove (e) {
   e.preventDefault();
   if (e.buttons !== 1) {
     return;
+  }
+  // Thouh we could put this in mouseDown, it interferes with normal
+  //   clicking behavior of map areas
+  if (svg.style.display !== 'block') {
+    svg.style.display = 'block';
   }
   if (e.pageX > originalX && e.pageY > originalY) {
     rect.setAttribute('width', e.pageX - originalX);
