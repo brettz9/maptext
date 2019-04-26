@@ -1,5 +1,6 @@
 /* eslint-disable require-jsdoc */
 import {$} from '../node_modules/jamilih/dist/jml-es.js';
+import _ from '../external/i18n/i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svg = document.createElementNS(SVG_NS, 'svg');
@@ -23,6 +24,8 @@ function resetRect () {
 }
 
 let originalX, originalY;
+const text = 'Test';
+
 function textDragRectangleMouseDown (e) {
   e.preventDefault();
   // Todo: Jamilih should support SVG (through options mode); then use here
@@ -36,9 +39,28 @@ function textDragRectangleMouseDown (e) {
   rect.setAttribute('y', originalY);
 }
 
-function textDragRectangleMouseUp (e) {
+async function textDragRectangleMouseUp (e) {
   e.preventDefault();
   resetRect();
+  if (Notification.permission !== 'granted') {
+    const permission = await Notification.requestPermission();
+    switch (permission) {
+    case 'granted':
+      break;
+    case 'denied':
+      return;
+    default: case 'default':
+      return;
+    }
+  }
+  // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
+  /* const notification = */ new Notification( // eslint-disable-line no-new
+    // Todo: This should accept a formatted string
+    _('Copied ') + text, {
+      lang: document.documentElement.lang,
+      dir: document.documentElement.dir
+    }
+  );
 }
 
 function textDragRectangleMouseMove (e) {
