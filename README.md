@@ -15,6 +15,8 @@ npm i maptext
       find) with highlight of image regions (single or multiple select)
   1. Allow (click/drag) image highlighting of region(s)
       for **copy-paste** and/or display of text
+      1. Add as **separate mode** so can opt to click on through to map
+        instead (`<rect>` is currently overriding `<area>`)
 
 ## Medium priority to-dos
 
