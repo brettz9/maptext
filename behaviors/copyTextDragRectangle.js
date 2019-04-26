@@ -26,6 +26,7 @@ const svgShape = (svgEl) => {
   }
   // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
   const props = propArr.reduce(getAnimVal, {});
+  console.log('props', svgEl.localName.toLowerCase(), props);
   return intersectShape(svgEl.localName.toLowerCase(), props);
 };
 const svgIntersect = (shape1, shape2) => {
@@ -61,7 +62,7 @@ function resetRect () {
 }
 
 let originalX, originalY;
-let text = '';
+let lastText = '';
 
 function textDragRectangleMouseDown (e) {
   e.preventDefault();
@@ -87,7 +88,7 @@ async function textDragRectangleMouseUp (e) {
       return;
     }
   }
-  $('textarea.textToCopy').value = text;
+  $('textarea.textToCopy').value = lastText;
   /*
   // Not yet supported
   const clipboardPermission =
@@ -96,12 +97,12 @@ async function textDragRectangleMouseUp (e) {
   if (clipboardPermission === 'granted') {
     const data = new DataTransfer();
     // Todo: Option to switch between `text/html` and `text/plain`?
-    data.items.add('text/html', text);
+    data.items.add('text/html', lastText);
     await navigator.clipboard.write(data);
     // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
     new Notification( // eslint-disable-line no-new
       // Todo: This i18n should accept a formatted string
-      _('Copied ') + text, {
+      _('Copied ') + lastText, {
         lang: document.documentElement.lang,
         dir: document.documentElement.dir
       }
@@ -123,41 +124,41 @@ function textDragRectangleMouseMove (e) {
   if (e.pageX > originalX && e.pageY > originalY) {
     rect.setAttribute('width', e.pageX - originalX);
     rect.setAttribute('height', e.pageY - originalY);
-    // Todo: Change this to reflect space-joined text on areas whose
-    //   coords intersect this rectangle
-    text = $$('#imagePreview > map > area').reduce((s, {
+
+    lastText = $$('#imagePreview > map > area').reduce((s, {
       shape, coords, alt
     }) => {
       const coordArr = coords.split(/,\s*/u);
-      let intersection;
+      let props;
       switch (shape) {
       case 'rect': {
         const [x, y, x2, y2] = coordArr.map((n) => parseFloat(n));
         const width = x2 - x;
         const height = y2 - y;
         // console.log('shape', shape, {x, y, width, height});
-        intersection = svgIntersect(rect, [shape, {x, y, width, height}]);
+        props = {x, y, width, height};
         break;
       } case 'circle': {
         const [cx, cy, r] = coordArr.map((n) => parseFloat(n));
         // console.log('shape', shape, {cx, cy, r});
-        intersection = svgIntersect(rect, [shape, {cx, cy, r}]);
+        props = {cx, cy, r};
         break;
       } case 'polygon': {
-        intersection = svgIntersect(rect, [shape, {points: coords}]);
+        props = {points: coords};
         break;
       } default: {
         throw new TypeError('Unexpected map type!');
       }
       }
-      // console.log('intersection points', intersection.points);
+      console.log('[shape, props]', shape, props);
+      const intersection = svgIntersect(rect, [shape, props]);
+      console.log('intersection points', intersection.points);
       return s + ' ' + (
         intersection.points.length
           ? alt
           : ''
       );
     }, '').slice(1);
-    // console.log('text', text.length, text);
   }
 }
 
