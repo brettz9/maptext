@@ -62,6 +62,7 @@
     "jquery": "^3.4.0",
     "load-stylesheets": "^0.7.0",
     "simple-prefs": "^0.1.0",
+    "svg-intersections": "https://github.com/brettz9/svg-intersections#esm-with-dist",
     "tippy.js": "^4.2.1"
   }
 }
