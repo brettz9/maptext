@@ -14,10 +14,10 @@ npm i maptext
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
       1. Ensure works with zoom
-1. **Reading and writing** from/to database, server, and/or
-    local Webappfind openable file? Find could even be across multiple files,
-    with the highlighted results showing the word regions only (with ability
-    to click to enlarge for full image)
+      1. Find could even be across multiple files,
+        with the highlighted results showing the word regions only (with
+        ability to click to enlarge for full image)
+1. **Reading and writing** from/to server
 
 ## Medium priority to-dos
 
@@ -42,3 +42,5 @@ npm i maptext
 1. Add **CLI** for generating
 1. Allow for **multiple image maps**?
 1. **OCR.js**-type options for auto-populating text fields
+1. **Reading and writing** from/to database and/or
+    local Webappfind openable file
