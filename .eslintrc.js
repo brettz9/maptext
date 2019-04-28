@@ -9,6 +9,7 @@ module.exports = {
             "console",
             "DataTransfer",
             "DOMParser",
+            "Error",
             "JSON",
             "location.href",
             "navigator.clipboard",

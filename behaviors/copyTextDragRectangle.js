@@ -54,6 +54,35 @@ const svgIntersect = (shape1, shape2) => {
   );
 };
 
+/**
+ * @todo Replace with the following if implemented:
+ *   https://github.com/thelonious/kld-intersections/issues/20
+ * @param {SVGRect} rect Our copy-paste rectangle
+ * @param {Array} shapeInfo
+ * @param {string} shapeInfo.0 The shape
+ * @param {Object} shapeInfo.1 The properties of the shape
+ * @returns {boolean}
+ */
+const svgContains = (rect, [shape, props]) => {
+  switch (shape) {
+  default:
+    throw new Error('Unrecognized shape type');
+  case 'rect':
+    return (props.x >= rect.x && props.y >= rect.y &&
+        props.x + props.width <= rect.x + rect.width &&
+        props.y + props.height <= rect.y + rect.height
+    );
+  case 'circle':
+    return (props.cx - props.r >= rect.x && props.cy - props.r >= rect.y &&
+        props.cx + props.r <= rect.x + rect.width &&
+        props.cy + props.r <= rect.y + rect.height
+    );
+  case 'polygon':
+    // Todo: rect.points vs. props.points
+    throw new Error('Not yet implemented');
+  }
+};
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svg = document.createElementNS(SVG_NS, 'svg');
 const maxWidth = 2000;
@@ -166,9 +195,10 @@ function textDragRectangleMouseMove (e) {
       }
       console.log('[shape, props]', shape, props);
       const intersection = svgIntersect(rect, [shape, props]);
+      const contained = svgContains(rect, [shape, props]);
       console.log('intersection points', intersection.points);
       return s + ' ' + (
-        intersection.points.length
+        intersection.points.length || contained
           ? alt
           : ''
       );
