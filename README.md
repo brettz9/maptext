@@ -14,9 +14,6 @@ npm i maptext
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
       1. Ensure works with zoom
-  1. Allow (click/drag) image highlighting of region(s)
-      for **copy-paste** and/or display of text
-      1. Take into account zoom when copying over such a region
 
 ## Medium priority to-dos
 
@@ -41,6 +38,8 @@ npm i maptext
 
 ## Lower priority to-dos
 
+1. Ensure even greater pixel precision for
+    **highlighting of region(s) for copy-paste**
 1. Add more **testcafe** tests
 1. Add **CLI** for generating
 1. Allow for **multiple image maps**?
