@@ -43,7 +43,6 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
 
 const svgShape = (svgEl) => {
   const props = getOffsetAdjustedPropsObject(svgEl);
-  console.log('props', svgEl.localName.toLowerCase(), props);
   return intersectShape(svgEl.localName.toLowerCase(), props);
 };
 const svgIntersect = (shape1, shape2) => {
@@ -80,8 +79,6 @@ const svgContains = (rect, [shape, props]) => {
         props.y + props.height <= rectY2
     );
   case 'circle':
-    console.log('circle: x1', props.cx - props.r, 'x2', props.cx + props.r, 'y1', props.cy - props.r, 'y2', props.cy + props.r);
-    console.log('rect: x1', rectProps.x, 'x2', rectX2, 'y1', rectProps.y, 'y2', rectY2);
     return (props.cx - props.r >= rectProps.x &&
         props.cy - props.r >= rectProps.y &&
         props.cx + props.r <= rectX2 &&
@@ -206,10 +203,8 @@ function textDragRectangleMouseMove (e) {
         throw new TypeError('Unexpected map type!');
       }
       }
-      console.log('[shape, props]', shape, props);
       const intersection = svgIntersect(rect, [shape, props]);
       const contained = svgContains(rect, [shape, props]);
-      console.log('intersection points', contained, intersection.points);
       return s + ' ' + (
         intersection.points.length || contained
           ? alt
