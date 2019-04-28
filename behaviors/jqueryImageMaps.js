@@ -226,3 +226,16 @@ export function zoomPreviewAndResize (val) {
 export function getPosition () {
   return $('#preview').position();
 }
+
+let originalPreviewWidth;
+let originalPreviewHeight;
+export function getZoom () {
+  const preview = $('#preview');
+  if (originalPreviewWidth === undefined) {
+    originalPreviewWidth = preview.width();
+    originalPreviewHeight = preview.height();
+  }
+  const xZoom = preview.width() / originalPreviewWidth;
+  const yZoom = preview.height() / originalPreviewHeight;
+  return [xZoom, yZoom];
+}

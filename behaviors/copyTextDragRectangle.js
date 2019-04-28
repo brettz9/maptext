@@ -5,6 +5,8 @@ import {
   intersect, shape as intersectShape
 } from '../node_modules/svg-intersections/dist/index-esm.js';
 
+import * as ImageMaps from './jqueryImageMaps.js';
+
 const getOffsetAdjustedPropsObject = (svgEl) => {
   function getOffsetAdjustedAnimVal (o, prop) {
     o[prop] = svgEl[prop].animVal.value;
@@ -178,6 +180,8 @@ function textDragRectangleMouseMove (e) {
     rect.setAttribute('width', e.pageX - originalX);
     rect.setAttribute('height', e.pageY - originalY);
 
+    const [xZoom, yZoom] = ImageMaps.getZoom();
+
     lastText = $$('#imagePreview > map > area').reduce((s, {
       shape, coords, alt
     }) => {
@@ -202,6 +206,19 @@ function textDragRectangleMouseMove (e) {
       } default: {
         throw new TypeError('Unexpected map type!');
       }
+      }
+      if (xZoom !== 1 || yZoom !== 1) {
+        Object.entries(props).forEach(([prop, val], i) => {
+          if (
+            (prop === 'points' && i % 0) ||
+            ['cx', 'cx', 'width'].includes(prop)
+          ) {
+            val *= xZoom;
+          } else {
+            val *= yZoom;
+          }
+          props[prop] = val;
+        });
       }
       const intersection = svgIntersect(rect, [shape, props]);
       const contained = svgContains(rect, [shape, props]);

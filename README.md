@@ -23,7 +23,6 @@ npm i maptext
 
 1. **Demo with RTL and Chinese text**, adding special
     handling/options if necessary
-1. Fix **copy-paste to work with zoom**
 1. Allow **scroll to extend selection**
 1. Allow **citation format** for text selection, e.g., pars. 5-10 and
     fully representative canonical form (including ellipses)
