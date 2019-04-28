@@ -23,6 +23,7 @@ npm i maptext
 
 1. **Demo with RTL and Chinese text**, adding special
     handling/options if necessary
+1. Allow **scroll to extend selection**
 1. Allow **citation format** for text selection, e.g., pars. 5-10 and
     fully representative canonical form (including ellipses)
     1. (Also begin related [dom-on-the-range](http://github.com/brettz9/dom-on-the-range)
@@ -34,7 +35,6 @@ npm i maptext
 1. Allow **saving from HTML**
     1. Local storage (including asking for names?)
     1. Downloadable JSON file?
-1. Allow **scroll to extend selection**
 
 ## Lower priority to-dos
 
