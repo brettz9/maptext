@@ -14,6 +14,10 @@ npm i maptext
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
       1. Ensure works with zoom
+1. **Reading and writing** from/to database, server, and/or
+    local Webappfind openable file? Find could even be across multiple files,
+    with the highlighted results showing the word regions only (with ability
+    to click to enlarge for full image)
 
 ## Medium priority to-dos
 
@@ -31,10 +35,6 @@ npm i maptext
     1. Local storage (including asking for names?)
     1. Downloadable JSON file?
 1. Allow **scroll to extend selection**
-1. **Reading and writing** from/to database, server, and/or
-    local Webappfind openable file? Find could even be across multiple files,
-    with the highlighted results showing the word regions only (with ability
-    to click to enlarge for full image)
 
 ## Lower priority to-dos
 
