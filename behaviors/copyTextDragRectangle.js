@@ -219,9 +219,11 @@ function textDragRectangleMouseMove (e) {
   }
 }
 
-export function enableTextDragRectangle () {
-  previewOffsetLeft = $('#imagePreview').offsetLeft;
-  previewOffsetTop = $('#imagePreview').offsetTop;
+export function enableTextDragRectangle (pos) {
+  ({
+    left: previewOffsetLeft,
+    top: previewOffsetTop
+  } = pos);
   $('#imagePreview').before(svg);
   window.addEventListener('mouseup', textDragRectangleMouseUp);
   window.addEventListener('mousemove', textDragRectangleMouseMove);

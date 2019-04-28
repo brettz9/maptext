@@ -3,6 +3,7 @@
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
 import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
+import {timeout} from '../external/dom-behaviors/dom-behaviors.js';
 
 const $ = jqueryImageMaps(jQuery);
 
@@ -32,34 +33,29 @@ export function setShapeStrokeFillOptions (shapeStrokeFillOptions) {
   _shapeStrokeFillOptions = shapeStrokeFillOptions;
 }
 
-export function addShape (shape, {sharedBehaviors, coords}) {
+export async function addShape (shape, {sharedBehaviors, coords}) {
   // Not sure why the timeout is necessary, but without it,
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
-  // eslint-disable-next-line promise/avoid-new
-  return new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      $('#preview').setShapeStyle(
-        _shapeStrokeFillOptions
-      ).addShape(
-        coords, $('input[name=mapURL]')[0].value, shape
-      );
-      if (sharedBehaviors) {
-        const newIndex = parseInt(
-          $('#preview').imageMaps().shapeEl.data('index')
-        );
-        await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
-          index: newIndex,
-          shape,
-          coords,
-          text: '',
-          formObj: _formObj,
-          formControl: mockFormForValidation
-        });
-      }
-      resolve();
-    }, 200);
-  });
+  await timeout(200);
+  $('#preview').setShapeStyle(
+    _shapeStrokeFillOptions
+  ).addShape(
+    coords, $('input[name=mapURL]')[0].value, shape
+  );
+  if (sharedBehaviors) {
+    const newIndex = parseInt(
+      $('#preview').imageMaps().shapeEl.data('index')
+    );
+    await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+      index: newIndex,
+      shape,
+      coords,
+      text: '',
+      formObj: _formObj,
+      formControl: mockFormForValidation
+    });
+  }
 }
 export function addRect ({
   sharedBehaviors,
@@ -225,4 +221,8 @@ export function zoomPreviewAndResize (val) {
     width: val * 0.01 * preview.width(),
     height: val * 0.01 * preview.height()
   });
+}
+
+export function getPosition () {
+  return $('#preview').position();
 }

@@ -7,7 +7,7 @@ import {
 import tippy from './external/tippy.js/tippy.js';
 // Todo: Switch to npm version
 import _ from './external/i18n/i18n.js';
-import {empty} from './external/dom-behaviors/dom-behaviors.js';
+import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
@@ -26,7 +26,7 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
 async function setTextRectangleByEditMode () {
   const editMode = await prefs.getPref('editMode');
   if (editMode !== 'edit') {
-    enableTextDragRectangle();
+    enableTextDragRectangle(ImageMaps.getPosition());
   } else {
     disableTextDragRectangle();
   }
@@ -347,27 +347,26 @@ async function formToPreview (formObj) {
 
   // Todo: Should find a better way around this
   // Wait until SVG is built
-  setTimeout(() => {
-    imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-      return {shape, alt, coords: coords.join(',')};
-    }).filter(({shape, alt, coords}) => {
-      const existingArea = map.querySelector(
-        `area[shape="${shape}"][coords="${coords}"]`
-      );
-      if (existingArea) {
-        existingArea.alt = alt || '';
-        existingArea.addEventListener('mouseover', mouseover);
-      }
-      return !existingArea;
-    }).forEach(({shape, alt, coords}) => {
-      jml(...Views.buildArea({
-        shape,
-        alt,
-        coords,
-        behaviors: {mouseover}
-      }), map);
-    });
-  }, 500);
+  await timeout(500);
+  imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
+    return {shape, alt, coords: coords.join(',')};
+  }).filter(({shape, alt, coords}) => {
+    const existingArea = map.querySelector(
+      `area[shape="${shape}"][coords="${coords}"]`
+    );
+    if (existingArea) {
+      existingArea.alt = alt || '';
+      existingArea.addEventListener('mouseover', mouseover);
+    }
+    return !existingArea;
+  }).forEach(({shape, alt, coords}) => {
+    jml(...Views.buildArea({
+      shape,
+      alt,
+      coords,
+      behaviors: {mouseover}
+    }), map);
+  });
 }
 
 document.title = Views.title();

@@ -38,8 +38,6 @@ npm i maptext
 
 ## Lower priority to-dos
 
-1. Ensure even greater pixel precision for
-    **highlighting of region(s) for copy-paste**
 1. Add more **testcafe** tests
 1. Add **CLI** for generating
 1. Allow for **multiple image maps**?
