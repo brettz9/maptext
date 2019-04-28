@@ -5,7 +5,7 @@ import {
   intersect, shape as intersectShape
 } from '../node_modules/svg-intersections/dist/index-esm.js';
 
-const svgShape = (svgEl) => {
+const getOffsetAdjustedPropsObject = (svgEl) => {
   function getOffsetAdjustedAnimVal (o, prop) {
     o[prop] = svgEl[prop].animVal.value;
 
@@ -38,8 +38,11 @@ const svgShape = (svgEl) => {
     throw new TypeError('Unexpected SVG element type!');
   }
   // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
-  const props = propArr.reduce(getOffsetAdjustedAnimVal, {});
+  return propArr.reduce(getOffsetAdjustedAnimVal, {});
+};
 
+const svgShape = (svgEl) => {
+  const props = getOffsetAdjustedPropsObject(svgEl);
   console.log('props', svgEl.localName.toLowerCase(), props);
   return intersectShape(svgEl.localName.toLowerCase(), props);
 };
@@ -64,22 +67,32 @@ const svgIntersect = (shape1, shape2) => {
  * @returns {boolean}
  */
 const svgContains = (rect, [shape, props]) => {
+  const rectProps = getOffsetAdjustedPropsObject(rect);
+  const rectX2 = rectProps.x + rectProps.width;
+  const rectY2 = rectProps.y + rectProps.height;
   switch (shape) {
   default:
     throw new Error('Unrecognized shape type');
   case 'rect':
-    return (props.x >= rect.x && props.y >= rect.y &&
-        props.x + props.width <= rect.x + rect.width &&
-        props.y + props.height <= rect.y + rect.height
+    return (props.x >= rectProps.x &&
+        props.y >= rectProps.y &&
+        props.x + props.width <= rectX2 &&
+        props.y + props.height <= rectY2
     );
   case 'circle':
-    return (props.cx - props.r >= rect.x && props.cy - props.r >= rect.y &&
-        props.cx + props.r <= rect.x + rect.width &&
-        props.cy + props.r <= rect.y + rect.height
+    console.log('circle: x1', props.cx - props.r, 'x2', props.cx + props.r, 'y1', props.cy - props.r, 'y2', props.cy + props.r);
+    console.log('rect: x1', rectProps.x, 'x2', rectX2, 'y1', rectProps.y, 'y2', rectY2);
+    return (props.cx - props.r >= rectProps.x &&
+        props.cy - props.r >= rectProps.y &&
+        props.cx + props.r <= rectX2 &&
+        props.cy + props.r <= rectY2
     );
   case 'polygon':
-    // Todo: rect.points vs. props.points
-    throw new Error('Not yet implemented');
+    return props.points.every((pt, i) => {
+      return i % 0
+        ? pt >= rectProps.x && pt <= rectX2
+        : pt >= rectProps.y && pt <= rectY2;
+    });
   }
 };
 
@@ -196,7 +209,7 @@ function textDragRectangleMouseMove (e) {
       console.log('[shape, props]', shape, props);
       const intersection = svgIntersect(rect, [shape, props]);
       const contained = svgContains(rect, [shape, props]);
-      console.log('intersection points', intersection.points);
+      console.log('intersection points', contained, intersection.points);
       return s + ' ' + (
         intersection.points.length || contained
           ? alt
