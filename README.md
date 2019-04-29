@@ -11,6 +11,7 @@ npm i maptext
 ## Immediate to-dos
 
 1. **View map**
+  1. Option to **highlight copy-pasted blocks as mouse goes through them**
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
       1. Ensure works with zoom
