@@ -3,7 +3,7 @@ import loadStylesheets from '../node_modules/load-stylesheets/dist/index-es.js';
 // Todo: Would ideally get ImageMaps to set a class instead so
 //    could set these in CSS
 export const shapeStyle = {
-  fill: '#ffffff',
+  fill: 'transparent',
   stroke: 'red',
   'stroke-width': 2
 };

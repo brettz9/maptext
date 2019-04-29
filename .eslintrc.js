@@ -12,6 +12,7 @@ module.exports = {
             "Error",
             "JSON",
             "location.href",
+            "Map",
             "navigator.clipboard",
             "Notification",
             "Notification.permission",

@@ -26,7 +26,7 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
 async function setTextRectangleByEditMode () {
   const editMode = await prefs.getPref('editMode');
   if (editMode !== 'edit') {
-    enableTextDragRectangle(ImageMaps.getPosition());
+    enableTextDragRectangle(ImageMaps.getPosition(), editMode);
   } else {
     disableTextDragRectangle();
   }
@@ -232,7 +232,7 @@ async function updateMap (formObj) {
     })
   );
   const editMode = await prefs.getPref('editMode');
-  ImageMaps.hideGuidesIfViewMode(editMode);
+  ImageMaps.showGuidesUnlessViewMode(editMode);
 }
 
 function imageMapFormObjectInfo (formObj) {
@@ -445,7 +445,7 @@ Views.main({
         getAllShapes: () => shapes
       });
 
-      ImageMaps.hideGuidesIfViewMode(editMode);
+      ImageMaps.showGuidesUnlessViewMode(editMode);
     },
     async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');

@@ -156,7 +156,7 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
   $('#preview').imageMaps(settings);
   // $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
 
-  hideGuidesIfViewMode(editMode);
+  showGuidesUnlessViewMode(editMode);
 }
 
 export function getPreviewInfo () {
@@ -205,7 +205,7 @@ function copyImageMapsTo (sourceEl, targetEl) {
 export function copyImageMapsToPreview (sourceEl) {
   copyImageMapsTo(sourceEl, $('#preview'));
 }
-export function hideGuidesIfViewMode (editMode) {
+export function showGuidesUnlessViewMode (editMode) {
   $('map[name=map0] > svg').css(
     'visibility',
     editMode !== 'view' ? 'visible' : 'hidden'

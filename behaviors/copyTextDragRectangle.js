@@ -120,6 +120,7 @@ let originalX, originalY, previewOffsetLeft, previewOffsetTop;
 let lastText = '';
 
 function textDragRectangleMouseDown (e) {
+  shapesAdded = new Map();
   e.preventDefault();
   // Todo: Jamilih should support SVG (through options mode); then use here
 
@@ -127,6 +128,11 @@ function textDragRectangleMouseDown (e) {
   originalY = e.pageY;
   rect.setAttribute('x', originalX);
   rect.setAttribute('y', originalY);
+
+  if (_editMode === 'view') {
+    ImageMaps.showGuidesUnlessViewMode('view-guides');
+    ImageMaps.removeAllShapes();
+  }
 }
 
 async function textDragRectangleMouseUp (e) {
@@ -164,8 +170,14 @@ async function textDragRectangleMouseUp (e) {
     );
   }
   */
+  if (_editMode === 'view') {
+    ImageMaps.removeAllShapes();
+    ImageMaps.showGuidesUnlessViewMode('view');
+    // Todo: Add original shapes back (but invisible)
+  }
 }
 
+let shapesAdded;
 function textDragRectangleMouseMove (e) {
   e.preventDefault();
   if (e.buttons !== 1) {
@@ -182,9 +194,10 @@ function textDragRectangleMouseMove (e) {
 
     const [xZoom, yZoom] = ImageMaps.getZoom();
 
-    lastText = $$('#imagePreview > map > area').reduce((s, {
-      shape, coords, alt
-    }) => {
+    lastText = $$('#imagePreview > map > area').reduce((s, area) => {
+      const {
+        shape, coords, alt
+      } = area;
       const coordArr = coords.split(/,\s*/u);
       let props;
       switch (shape) {
@@ -222,8 +235,17 @@ function textDragRectangleMouseMove (e) {
       }
       const intersection = svgIntersect(rect, [shape, props]);
       const contained = svgContains(rect, [shape, props]);
+      const areaMatched = intersection.points.length || contained;
+      if (areaMatched) {
+        const json = JSON.stringify([shape, {coords: coordArr}]);
+        // Don't keep adding when reencountering same shape
+        if (!shapesAdded.has(json)) {
+          ImageMaps.addShape(shape, {coords: coordArr});
+          shapesAdded.set(json, true);
+        }
+      }
       return s + ' ' + (
-        intersection.points.length || contained
+        areaMatched
           ? alt
           : ''
       );
@@ -231,12 +253,14 @@ function textDragRectangleMouseMove (e) {
   }
 }
 
-export function enableTextDragRectangle (pos) {
+let _editMode;
+export function enableTextDragRectangle (pos, editMode) {
   ({
     left: previewOffsetLeft,
     top: previewOffsetTop
   } = pos);
   $('#imagePreview').before(svg);
+  _editMode = editMode;
   window.addEventListener('mouseup', textDragRectangleMouseUp);
   window.addEventListener('mousemove', textDragRectangleMouseMove);
   $('#imagePreview').addEventListener('mousedown', textDragRectangleMouseDown);
