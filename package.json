@@ -57,6 +57,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.3",
     "form-serialization": "^0.10.0",
+    "htteepee": "^0.4.0",
     "imagemaps": "^1.0.1",
     "jamilih": "^0.44.0",
     "jquery": "^3.4.0",

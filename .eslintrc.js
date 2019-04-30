@@ -23,6 +23,16 @@ module.exports = {
             "Promise"
         ]
     },
+    "overrides": [
+      {
+        "files": ["server/*"],
+        "rules": {
+          "strict": "off",
+          "import/unambiguous": "off",
+          "import/no-commonjs": "off"
+        }
+      }
+    ],
     "extends": ["ash-nazg/sauron", "plugin:testcafe/recommended"],
     "globals": {
         "Atomics": "readonly",
