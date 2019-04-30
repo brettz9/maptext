@@ -1,0 +1,6 @@
+{
+  "plugins": [
+    ["babel-plugin-dynamic-import-node-babel-7"],
+    ["@babel/plugin-transform-modules-commonjs"]
+  ]
+}

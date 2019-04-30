@@ -12,6 +12,7 @@ import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
 import * as ImageMaps from './behaviors/jqueryImageMaps.js';
+import * as TextSearch from './behaviors/mapTextSearch.js';
 import {
   enableTextDragRectangle, disableTextDragRectangle
 } from './behaviors/copyTextDragRectangle.js';
@@ -140,6 +141,10 @@ function updateSerializedHTML (removeAll) {
   clonedImagePreview.querySelector('svg').remove();
   $('#serializedHTML').value =
     clonedImagePreview.outerHTML;
+}
+
+function getSerializedJSON () {
+  return JSON.parse($('#serializedJSON').value);
 }
 
 function updateSerializedJSON (formObj) {
@@ -426,10 +431,10 @@ Views.main({
       }
       // console.log('width', width, height, shapes, editMode);
 
-      await formToPreview(JSON.parse($('#serializedJSON').value));
+      await formToPreview(getSerializedJSON());
       /*
       ImageMaps.setImageMaps({
-        formObj: JSON.parse($('#serializedJSON').value),
+        formObj: getSerializedJSON(),
         editMode,
         sharedBehaviors: {
           setFormObjCoordsAndUpdateViewForMap
@@ -546,7 +551,29 @@ Views.findBar({
   magnifyingGlassText: '\u{1F50D}',
   behaviors: {
     input () {
-      console.log(this.value); // eslint-disable-line no-console
+      const {value} = this;
+      const formObj = getSerializedJSON();
+
+      // Todo: Allow `all` mode
+      // Todo: Even for "first" mode, we need to get "next"
+      const mode = 'first';
+      const isFirstMode = mode === 'first';
+
+      const formObjectInfo = imageMapFormObjectInfo(formObj);
+      const [
+        beginSegmentIndexIndex, endSegmentIndexIndex
+      ] = TextSearch.getBeginAndEndIndexes({
+        formObjectInfo, value, isFirstMode
+      });
+
+      formObjectInfo.slice(
+        beginSegmentIndexIndex, endSegmentIndexIndex + 1
+      ).forEach((
+        {shape, coords}
+      ) => {
+        // Todo: Highlight
+        console.log('matching shape & coords', shape, coords);
+      });
     },
     cancel () {
       $('.findBar').style.display = 'none';

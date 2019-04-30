@@ -9,6 +9,7 @@
     "eslint": "eslint .",
     "rollup": "rollup -c",
     "copy-im": "cp -a ../imagemaps/dist/. node_modules/imagemaps/dist/",
+    "test:unit": "mocha --require @babel/register test/unit/mapTextSearch.js",
     "test": "npm run eslint && testcafe chrome test/**/*.js"
   },
   "repository": {
@@ -33,8 +34,14 @@
   },
   "homepage": "https://github.com/brettz9/maptext#readme",
   "devDependencies": {
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-transform-modules-commonjs": "^7.4.4",
+    "@babel/register": "^7.4.4",
     "@mysticatea/eslint-plugin": "^10.0.2",
     "axe-testcafe": "^1.1.0",
+    "babel-eslint": "^10.0.1",
+    "babel-plugin-dynamic-import-node-babel-7": "^2.0.7",
+    "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-config-ash-nazg": "^3.0.1",
     "eslint-config-standard": "^12.0.0",
@@ -48,6 +55,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-testcafe": "^0.2.1",
     "eslint-plugin-unicorn": "^8.0.2",
+    "mocha": "^6.1.4",
     "node-static": "^0.7.11",
     "opn-cli": "^4.1.0",
     "rollup": "^1.10.1",
