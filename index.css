@@ -83,3 +83,24 @@ rect.selector {
   stroke: blue;
   stroke-width: 2px;
 }
+
+div.findBar {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  z-index: 1000;
+  background-color: white;
+  border: 2px outset black;
+  padding: 5px;
+  display: none;
+}
+
+.findBar {
+  font-size: x-large;
+  min-width: 200px;
+}
+button.cancel {
+  color: white;
+  background-color: red;
+  min-height: 20px;
+}

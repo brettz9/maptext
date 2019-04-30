@@ -7,6 +7,8 @@ export {
   formText, makeFrom
 } from './view-formControls.js';
 
+export {findBar} from './view-find.js';
+
 export const title = () => _('MapText demo');
 
 export const main = ({form, editMode, behaviors}) => {

@@ -538,16 +538,30 @@ Views.main({
 
 addImageRegion(imgRegionID++);
 
+Views.findBar({
+  // Left-facing:
+  // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
+  // Or for right-facing:
+  // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
+  magnifyingGlassText: '\u{1F50D}',
+  behaviors: {
+    input () {
+      console.log(this.value); // eslint-disable-line no-console
+    },
+    cancel () {
+      $('.findBar').style.display = 'none';
+    }
+  }
+});
+
 body.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    $('.findBar').style.display = 'none';
+    return;
+  }
   if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
     e.preventDefault();
-    // console.log('Find');
-    // Add magnifying glass next to control (and type=search for
-    //   clear-results button?)
-    // Left-facing:
-    // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
-    // Or for right-facing:
-    // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
+    $('.findBar').style.display = 'block';
   }
 });
 })();
