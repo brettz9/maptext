@@ -2,8 +2,8 @@
 
 const http = require('htteepee');
 
-http.createServer = http.createMiddlewareServer(require('./middleware')(
+module.exports = http.createMiddleware(require('./middleware')(
   'Hello '
+), require('./middleware')(
+  'there '
 ));
-
-module.exports = http;
