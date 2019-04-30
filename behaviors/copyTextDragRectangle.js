@@ -173,7 +173,6 @@ async function textDragRectangleMouseUp (e) {
   if (_editMode === 'view') {
     ImageMaps.removeAllShapes();
     ImageMaps.showGuidesUnlessViewMode('view');
-    // Todo: Add original shapes back (but invisible)
   }
 }
 
