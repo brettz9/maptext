@@ -103,4 +103,6 @@ button.cancel {
   color: white;
   background-color: red;
   min-height: 20px;
+  margin-bottom: 5px;
+  vertical-align: middle;
 }
