@@ -1,6 +1,6 @@
 # maptext
 
-***This project is not yet functional***
+***This project is currently only minimally functional***
 
 ## Installation
 
