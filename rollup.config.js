@@ -14,7 +14,7 @@ export default [
     input: 'node_modules/tippy.js/esm/index.all.js',
     output: {
       format: 'esm',
-      file: 'external/tippy.js'
+      file: 'external/tippy.js/esm/index.all.js'
     },
     plugins: [resolve()]
   }

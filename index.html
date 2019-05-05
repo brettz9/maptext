@@ -4,8 +4,13 @@
         <meta charset="utf-8">
         <title>-</title>
         <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
-        <script defer="defer" src="./node_modules/@babel/polyfill/dist/polyfill.js"></script>
-        <script defer="defer" src="./node_modules/jquery/dist/jquery.js"></script>
+        <!-- Babel polyfills -->
+        <script defer="defer" src="./external/core-js-bundle/minified.js"></script>
+        <script defer="defer" src="./external/regenerator-runtime/runtime.js"></script>
+
+        <!-- Not yet in ESM -->
+        <script defer="defer" src="./external/jquery/dist/jquery.js"></script>
+
         <script type="module" src="maptext-index.js"></script>
     </head>
     <body>

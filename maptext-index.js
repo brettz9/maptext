@@ -4,7 +4,7 @@ import {
   serialize, deserialize
 } from './node_modules/form-serialization/dist/index-es.js';
 
-import tippy from './external/tippy.js/tippy.js';
+import tippy from './external/tippy.js/esm/index.all.js';
 // Todo: Switch to npm version
 import _ from './external/i18n/i18n.js';
 import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';

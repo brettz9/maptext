@@ -1,2 +1,6 @@
 node_modules
-external/tippy.js/tippy.js
+external
+
+# Items to move to own repos
+!external/dom-behaviors
+!external/i18n
