@@ -27,6 +27,7 @@ npm i maptext
 
 ## Medium priority to-dos
 
+1. Ability to **upload image**
 1. **Demo with RTL and Chinese text**, adding special
     handling/options if necessary
 1. Allow **scroll to extend selection**
