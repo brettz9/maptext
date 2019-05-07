@@ -5,7 +5,7 @@
   "main": "maptext-index.js",
   "scripts": {
     "open": "opn http://localhost:8050/ && npm run start",
-    "start": "json-server maptext.json --snapshots snapshots --id name --watch --static . --port 8050",
+    "start": "json-server maptext.json --middlewares server/text-search.js --snapshots snapshots --id name --watch --static . --port 8050",
     "eslint": "eslint .",
     "copy-im": "cp -a ../imagemaps/dist/. node_modules/imagemaps/dist/",
     "tippy-rollup": "rollup -c",
