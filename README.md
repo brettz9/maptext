@@ -37,7 +37,8 @@ npm i maptext
 1. Show **preview of image next to coordinates** and/or on image
     preview (so load preview as soon as URL entered)
 1. Allow **saving from HTML**
-    1. Local storage (including asking for names?)
+    1. Local storage (including asking for names?) / IndexedDB (service
+        worker intercepting json-server requests)
     1. Downloadable JSON file?
 
 ## Lower priority to-dos
