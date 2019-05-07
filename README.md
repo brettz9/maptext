@@ -12,17 +12,17 @@ npm i maptext
 
 1. **Testing** (Some quirks with buttons not going through until after
     some clicks)
+    1. Finish testing option to
+        **highlight copy-pasted blocks as mouse goes through them**
 1. **View map**
-  1. Finish testing option to
-      **highlight copy-pasted blocks as mouse goes through them**
   1. Allow **highlighted text search** (optionally overriding browser
       find) with highlight of image regions (single or multiple select)
       1. Ensure **works with zoom**
-  1. **Access control** middleware
-  1. Allow **URL to designate map info to pre-load**
-    1. **Find across multiple files**, with the highlighted
-        results showing the word regions only (with
-        ability to click to enlarge for full image)
+1. **Access control** middleware
+1. Allow **URL to designate map info to pre-load**
+1. **Find across multiple files**, with the highlighted
+      results showing the word regions only (with
+      ability to click to enlarge for full image)
 
 ## Medium priority to-dos
 
