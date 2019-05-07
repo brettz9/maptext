@@ -23,6 +23,7 @@ npm i maptext
 1. **Find across multiple files**, with the highlighted
       results showing the word regions only (with
       ability to click to enlarge for full image)
+1. **Saving copy of image** (as Data URL?); needed for offline
 
 ## Medium priority to-dos
 
