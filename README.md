@@ -21,7 +21,6 @@ npm i maptext
       1. Find could even be across multiple files,
         with the highlighted results showing the word regions only (with
         ability to click to enlarge for full image)
-1. **Reading and writing** from/to server
 
 ## Medium priority to-dos
 

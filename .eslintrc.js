@@ -10,6 +10,7 @@ module.exports = {
             "DataTransfer",
             "DOMParser",
             "Error",
+            "fetch",
             "JSON",
             "location.href",
             "Map",
@@ -25,7 +26,7 @@ module.exports = {
     },
     "overrides": [
       {
-        "files": ["server/*"],
+        "files": ["server/**"],
         "rules": {
           "strict": "off",
           "import/unambiguous": "off",

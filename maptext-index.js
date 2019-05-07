@@ -19,7 +19,12 @@ import {
 
 import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
 
+// Todo: Could allow for multiple image maps
+const mapID = 0;
+
 const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
+  lastMapName: `map${mapID}`,
+  lastImageSrc: 'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg',
   requireText: true,
   editMode: 'edit'
 }});
@@ -32,13 +37,6 @@ async function setTextRectangleByEditMode () {
     disableTextDragRectangle();
   }
 }
-
-// CONFIG
-// Todo: Could allow for multiple image maps
-const mapID = 0;
-const defaultMapName = `map${mapID}`;
-const defaultImageSrc =
-  'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg';
 
 // Todo: Detect locale and set this in such a utility, etc.
 document.documentElement.lang = 'en-US';
@@ -314,6 +312,7 @@ async function setFormObjCoordsAndUpdateViewForMap ({
 }
 
 async function formToPreview (formObj) {
+  const defaultImageSrc = await prefs.getPref('lastImageSrc');
   const imagePreview = $('#imagePreview');
   const {name} = formObj;
   imagePreview.replaceWith(
@@ -382,11 +381,93 @@ await Styles.load();
 
 requireText = await prefs.getPref('requireText');
 
+async function getMapData ({url, method}) {
+  const response = await fetch(url, {method});
+  return response.json();
+}
+
+function mapDataByName ({name, method = 'GET'}) {
+  return getMapData({
+    method,
+    url: '/maps/' + encodeURIComponent(name)
+  });
+}
+
+function rememberLastMap (map) {
+  return Promise.all([
+    prefs.setPref('lastMapName', map.name),
+    prefs.setPref('lastImageSrc', map.mapURL)
+  ]);
+}
+
+async function mapNameChange (e, avoidSetting) {
+  if (!this.value) {
+    updateSerializedJSON({});
+    serializedJSONInput.call($('#serializedJSON'));
+    return;
+  }
+  form.disabled = true;
+  const map = await mapDataByName({name: this.value});
+  // eslint-disable-next-line no-console
+  console.log('maps', map);
+  if (map.name) {
+    await ImageMaps.removeAllShapes({
+      sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+    });
+    updateSerializedJSON(map);
+    serializedJSONInput.call($('#serializedJSON'));
+    await rememberLastMap(map);
+  }
+  form.disabled = false;
+}
+
+async function saveMapData ({url, method, data}) {
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  return response.json();
+}
+
 form = Views.mainForm({
-  defaultMapName,
-  defaultImageSrc: defaultImageSrc || '',
+  defaultMapName: await prefs.getPref('lastMapName'),
+  defaultImageSrc: await prefs.getPref('lastImageSrc'),
   initialPrefs: {requireText},
   behaviors: {
+    async mapDelete (e) {
+      e.preventDefault();
+      const mapName = $('input[name="name"]').value;
+      if (!mapName) {
+        // eslint-disable-next-line no-alert
+        alert(_('You must provide a map name'));
+        return;
+      }
+      // eslint-disable-next-line no-alert
+      const ok = confirm(
+        _(`Are you sure you wish to delete the map: ${mapName} ?`)
+      );
+      if (!ok) {
+        return;
+      }
+      const results = await mapDataByName({
+        name: mapName, method: 'DELETE'
+      });
+      console.log('delete results', results);
+      await ImageMaps.removeAllShapes({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
+      await rememberLastMap({
+        name: null,
+        mapURL: null
+      });
+
+      // eslint-disable-next-line no-alert
+      alert(_('Map deleted!'));
+    },
+    mapNameChange,
     async requireText () {
       requireText = this.checked;
       $$('.requireText').forEach((textarea) => {
@@ -397,7 +478,41 @@ form = Views.mainForm({
     async imageFormSubmit (e) {
       e.preventDefault();
       const formObj = serialize(this, {hash: true});
+      const mapName = $('input[name="name"]').value;
+      if (!mapName) {
+        // eslint-disable-next-line no-alert
+        alert(_('You must provide a map name'));
+        return;
+      }
+      const map = await mapDataByName({name: mapName});
+      if (map.name) {
+        // eslint-disable-next-line no-alert
+        const ok = confirm(
+          _(`Do you wish to overwrite the existing map: ${mapName}?`)
+        );
+        if (!ok) {
+          return;
+        }
+      }
+
+      const cfg = map.name
+        // Overwrite
+        ? {
+          url: '/maps/' + encodeURIComponent(mapName),
+          method: 'PUT'
+        }
+        // Create new
+        : {
+          url: '/maps',
+          method: 'POST'
+        };
+
+      await saveMapData({...cfg, data: formObj});
       await updateViews('form', formObj);
+      await rememberLastMap(formObj);
+
+      // eslint-disable-next-line no-alert
+      alert(map.name ? _('Map overwritten!') : _('Map created!'));
     },
     submitFormClick () {
       // To try again, we reset invalid forms, e.g., from previous bad JSON
@@ -407,6 +522,20 @@ form = Views.mainForm({
     }
   }
 });
+
+async function serializedJSONInput () {
+  let formObj;
+  try {
+    formObj = JSON.parse(this.value);
+  } catch (err) {
+    this.setCustomValidity(_('JSON Did not parse', err));
+    this.reportValidity();
+    return;
+  }
+  this.setCustomValidity('');
+
+  await updateViews('json', formObj, this);
+}
 
 // const imageHeightWidthRatio = 1001 / 1024;
 // const width = 450; // 1024;
@@ -484,19 +613,7 @@ Views.main({
       // alert(JSON.stringify(formObj, null, 2));
       await updateViews('html', formObj, this);
     },
-    async serializedJSONInput () {
-      let formObj;
-      try {
-        formObj = JSON.parse(this.value);
-      } catch (err) {
-        this.setCustomValidity(_('JSON Did not parse', err));
-        this.reportValidity();
-        return;
-      }
-      this.setCustomValidity('');
-
-      await updateViews('json', formObj, this);
-    },
+    serializedJSONInput,
     async rectClick (e) {
       e.preventDefault();
       await ImageMaps.addRect({
@@ -531,7 +648,7 @@ Views.main({
 
       if (typeof val !== 'number' || isNaN(val) || val <= 0) {
         alert( // eslint-disable-line no-alert
-          'You must enter a number and one greater than 0.'
+          _('You must enter a number and one greater than 0.')
         );
         return;
       }
@@ -542,6 +659,8 @@ Views.main({
 });
 
 addImageRegion(imgRegionID++);
+
+await mapNameChange.call($('input[name="name"]'), true);
 
 Views.findBar({
   // Left-facing:

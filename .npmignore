@@ -1,1 +1,4 @@
 test
+snapshots
+!snapshots.README.md
+maptext.json

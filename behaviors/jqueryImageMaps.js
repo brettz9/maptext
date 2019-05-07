@@ -70,12 +70,16 @@ export function addCircle ({
   return addShape('circle', {sharedBehaviors, coords});
 }
 export async function removeAllShapes ({sharedBehaviors} = {}) {
-  $('#preview').removeAllShapes();
+  try {
+    $('#preview').removeAllShapes();
+    setFormObj({
+      name: _formObj.name,
+      mapURL: _formObj.mapURL
+    });
+  } catch (err) {
+    // May not yet be present
+  }
 
-  setFormObj({
-    name: _formObj.name,
-    mapURL: _formObj.mapURL
-  });
   if (sharedBehaviors) {
     // Reset to default empty rect shape
     await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
@@ -83,7 +87,7 @@ export async function removeAllShapes ({sharedBehaviors} = {}) {
       shape: 'rect',
       coords: ['', '', '', ''],
       text: '',
-      formObj: _formObj,
+      formObj: _formObj || {},
       formControl: mockFormForValidation,
       removeAll: true
     });

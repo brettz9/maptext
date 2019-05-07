@@ -14,8 +14,11 @@ export const mainForm = ({
       _('Image map name'), nbsp2,
       ['input', {
         name: 'name', size: 100,
-        value: defaultMapName
-      }]
+        value: defaultMapName,
+        $on: {change: behaviors.mapNameChange}
+      }],
+      nbsp2,
+      ['button', {$on: {click: behaviors.mapDelete}}, [_('x')]]
     ]],
     ['br'],
     ['label', [
@@ -47,7 +50,7 @@ export const mainForm = ({
         ]]
       ]]
     ]],
-    ['input', {type: 'submit', value: _('Apply'), $on: {
+    ['input', {type: 'submit', value: _('Save'), $on: {
       click: behaviors.submitFormClick
     }}]
   ]);
