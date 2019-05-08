@@ -19,14 +19,14 @@ npm i maptext
       find) with highlight of image regions (single or multiple select)
       1. Ensure **works with zoom**
 1. **Access control** middleware
-1. Allow **URL to designate map info to pre-load**
+1. Allow **URL params to designate map info to pre-load**
 1. **Find across multiple files**, with the highlighted
       results showing the word regions only (with
       ability to click to enlarge for full image)
-1. **Saving copy of image** (as Data URL?); needed for offline
 
 ## Medium priority to-dos
 
+1. **Saving copy of image** (as Data URL?); needed for offline
 1. Ability to **upload image**
 1. **Demo with RTL and Chinese text**, adding special
     handling/options if necessary
