@@ -571,13 +571,7 @@ Views.main({
       });
       */
 
-      // Todo: Reconsider https://github.com/naver/image-maps/pull/13
-      ImageMaps.copyImageMapsToPreview({
-        // Mock ImageMaps jQuery
-        width: () => width,
-        height: () => height,
-        getAllShapes: () => shapes
-      });
+      ImageMaps.copyImageMapsToPreview({width, height, shapes});
 
       ImageMaps.showGuidesUnlessViewMode(editMode);
     },

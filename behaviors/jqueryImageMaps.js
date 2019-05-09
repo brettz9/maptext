@@ -164,23 +164,28 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
 }
 
 export function getPreviewInfo () {
-  const width = $('#preview').width();
-  const height = $('#preview').height();
-  const shapes = $('#preview').getAllShapes();
+  const previewElement = $('#preview');
+  const width = previewElement.width();
+  const height = previewElement.height();
+  const shapes = previewElement.getAllShapes();
   return {width, height, shapes};
 }
 
-// See https://github.com/naver/image-maps/pull/13
+// See https://github.com/naver/image-maps/pull/15
 /**
- *
- * @param {external:jQuery} sourceEl
+* @typedef {PlainObject} SourceInfo
+* @property {external:imageMaps.AllShapeInfo} shapes
+* @property {Float} width
+* @property {Float} height
+*/
+/**
+ * @param {SourceInfo} sourceInfo
  * @param {external:jQuery} targetEl
  * @returns {void}
  */
-function copyImageMapsTo (sourceEl, targetEl) {
-  const allShapes = sourceEl.getAllShapes();
+function copyImageMaps ({shapes, width, height}, targetEl) {
   targetEl.removeAllShapes();
-  $.each(allShapes, (index, item) => {
+  $.each(shapes, (index, item) => {
     targetEl.setShapeStyle(item.style);
     if (item.href) {
       targetEl.setImageShape(item.href);
@@ -188,8 +193,8 @@ function copyImageMapsTo (sourceEl, targetEl) {
     if (item.text) {
       targetEl.setTextShape(item.text);
     }
-    const widthRatio = sourceEl.width();
-    const heightRatio = sourceEl.height();
+    const widthRatio = width;
+    const heightRatio = height;
     const newCoords = targetEl.getCoordsByRatio(
       item.coords,
       item.type,
@@ -206,8 +211,8 @@ function copyImageMapsTo (sourceEl, targetEl) {
   });
 }
 
-export function copyImageMapsToPreview (sourceEl) {
-  copyImageMapsTo(sourceEl, $('#preview'));
+export function copyImageMapsToPreview (sourceInfo) {
+  copyImageMaps(sourceInfo, $('#preview'));
 }
 export function showGuidesUnlessViewMode (editMode) {
   $('map[name=map0] > svg').css(
