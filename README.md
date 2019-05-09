@@ -19,6 +19,7 @@ npm i maptext
       find) with highlight of image regions (single or multiple select)
       1. Ensure **works with zoom**
 1. **Access control** middleware
+  1. Ensure user config and .git don't show up when serving static files
 1. Allow **URL params to designate map info to pre-load**
 1. **Find across multiple files**, with the highlighted
       results showing the word regions only (with
