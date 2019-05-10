@@ -14,10 +14,10 @@ npm i maptext
     some clicks)
     1. Finish testing option to
         **highlight copy-pasted blocks as mouse goes through them**
+    1. Allow **highlighted text search** (optionally overriding browser
+        find) with highlight of image regions (single or multiple select)
 1. **View map**
-  1. Allow **highlighted text search** (optionally overriding browser
-      find) with highlight of image regions (single or multiple select)
-      1. Ensure **works with zoom**
+      1. Ensure highlighted text search **works with zoom**
 1. **Access control** middleware
   1. Ensure user config and .git don't show up when serving static files
 1. Allow **URL params to designate map info to pre-load**
