@@ -110,15 +110,17 @@ export async function removeShape ({sharedBehaviors} = {}) {
   } = $('#preview').imageMaps().getShapeInfo(oldIndex);
 
   $('#preview').removeShape();
-  await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
-    index: oldIndex,
-    shape: undefined,
-    oldShapeToDelete,
-    coords: [],
-    text: undefined,
-    formObj: _formObj,
-    formControl: mockFormForValidation
-  });
+  if (sharedBehaviors) {
+    await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
+      index: oldIndex,
+      shape: undefined,
+      oldShapeToDelete,
+      coords: [],
+      text: undefined,
+      formObj: _formObj,
+      formControl: mockFormForValidation
+    });
+  }
 }
 
 export function setImageMaps ({formObj, editMode, sharedBehaviors}) {

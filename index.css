@@ -115,7 +115,7 @@ button.cancel {
       stroke: red;
     }
 }
-rect, circle, polygon {
+rect:not(.selector), circle, polygon {
     stroke-width: 2px;
     stroke: transparent;
 }
