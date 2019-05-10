@@ -20,6 +20,8 @@ npm i maptext
       1. Ensure highlighted text search **works with zoom**
 1. **Access control** middleware
   1. Ensure user config and .git don't show up when serving static files
+  1. Let access level (with URL params--see below) determine what
+      panels are shown
 1. Allow **URL params to designate map info to pre-load**
 1. **Find across multiple files**, with the highlighted
       results showing the word regions only (with
