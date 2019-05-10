@@ -103,8 +103,8 @@ svg.setAttribute('width', maxWidth);
 svg.setAttribute('height', maxHeight);
 svg.setAttribute('class', 'selector');
 const rect = document.createElementNS(SVG_NS, 'rect');
-rect.setAttribute('x', 500);
-rect.setAttribute('y', 500);
+rect.setAttribute('x', 10);
+rect.setAttribute('y', 10);
 rect.setAttribute('class', 'selector');
 svg.append(rect);
 
@@ -126,8 +126,18 @@ function textDragRectangleMouseDown (e) {
 
   originalX = e.pageX;
   originalY = e.pageY;
+
   rect.setAttribute('x', originalX);
   rect.setAttribute('y', originalY);
+
+  /*
+  // Todo: Works to restore triangle, but causes selected rectangles to
+  //   be hidden
+  svg.style.left = originalX + 'px';
+  svg.style.top = originalY + 'px';
+  rect.setAttribute('x', 10);
+  rect.setAttribute('y', 10);
+  */
 
   if (_editMode === 'view') {
     ImageMaps.showGuidesUnlessViewMode('view-guides');
