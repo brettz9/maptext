@@ -106,3 +106,20 @@ button.cancel {
   margin-bottom: 5px;
   vertical-align: middle;
 }
+
+@keyframes borderBlink {
+    from, to {
+        stroke: transparent;
+    }
+    50% {
+      stroke: red;
+    }
+}
+rect, circle, polygon {
+    stroke-width: 2px;
+    stroke: transparent;
+}
+rect.borderBlink, circle.borderBlink, polygon.borderBlink {
+    display: block !important;
+    animation: borderBlink 1s step-end infinite !important;
+}

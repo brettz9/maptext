@@ -663,7 +663,7 @@ Views.findBar({
   // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
   magnifyingGlassText: '\u{1F50D}',
   behaviors: {
-    input () {
+    async input () {
       const {value} = this;
       const formObj = getSerializedJSON();
 
@@ -679,13 +679,62 @@ Views.findBar({
         formObjectInfo, value, isFirstMode
       });
 
+      const viewMode = (await prefs.getPref('editMode')) === 'view';
+
+      async function blinkShape ({shape, coords}) {
+        let attSel;
+        switch (shape) {
+        default:
+          throw new Error('Unexpected shape ' + shape);
+        case 'rect': {
+          const [x, y, x2, y2] = coords;
+          const width = x2 - x;
+          const height = y2 - y;
+          attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
+          break;
+        }
+        case 'circle': {
+          const [cx, cy, r] = coords;
+          attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
+          break;
+        }
+        case 'polygon': {
+          attSel = `[points=${coords.join(',')}]`;
+        }
+        }
+        const matchedShape = $(shape + attSel);
+        console.log('mat', shape + attSel, matchedShape);
+        matchedShape.classList.add('borderBlink');
+        await timeout(3000);
+        matchedShape.classList.remove('borderBlink');
+        /*
+        // Gets correct <area>, but doesn't work to style apparently
+        const matchedArea = $(`area[coords="${coords.join(',')}"]`);
+        console.log('matchedArea', matchedArea);
+        matchedArea.classList.add('borderBlink');
+        await timeout(10000);
+        matchedArea.classList.remove('borderBlink');
+        */
+      }
+
       formObjectInfo.slice(
         beginSegmentIndexIndex, endSegmentIndexIndex + 1
-      ).forEach((
+      ).forEach(async (
         {shape, coords}
       ) => {
         // Todo: Highlight
-        console.log('matching shape & coords', shape, coords);
+        // console.log('matching shape & coords', shape, coords);
+        if (viewMode) {
+          // We don't have displayed shapes now (with accurate dimensions),
+          //  so we have to build our own elements
+          ImageMaps.addShape(shape, {coords});
+          await timeout(500);
+        }
+        blinkShape({shape, coords});
+        if (viewMode) {
+          await timeout(2000);
+          ImageMaps.removeShape();
+        }
       });
     },
     cancel () {
