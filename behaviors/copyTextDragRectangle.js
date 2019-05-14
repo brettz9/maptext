@@ -9,6 +9,8 @@ import * as ImageMaps from './jqueryImageMaps.js';
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?
+//   May not be necessary per some API additions
+//   (currently the `api-factor` branch)
 function getIntersectionArgsForShapeAndProps ({shape, props}) {
   let args;
   switch (shape) {
