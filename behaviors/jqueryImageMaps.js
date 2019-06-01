@@ -1,5 +1,5 @@
 /* globals jQuery */
-/* eslint-disable require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
 import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';

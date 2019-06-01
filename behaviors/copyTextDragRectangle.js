@@ -1,39 +1,31 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 import {$, $$} from '../node_modules/jamilih/dist/jml-es.js';
 // import _ from '../external/i18n/i18n.js';
 import {
-  Intersection, IntersectionArgs, Point2D
+  Intersection, ShapeInfo
 } from '../node_modules/kld-intersections/dist/index-esm.js';
 
 import * as ImageMaps from './jqueryImageMaps.js';
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?
-//   May not be necessary per some API additions
-//   (currently the `api-factor` branch)
-function getIntersectionArgsForShapeAndProps ({shape, props}) {
-  let args;
+function getShapeInfoForShapeAndProps ({shape, props}) {
+  let shapeInfo;
   switch (shape) {
   default:
     throw new TypeError('Unexpected shape ' + shape);
   case 'rect': {
-    const {x, y, width, height} = props;
-    args = new IntersectionArgs('Rectangle', [
-      new Point2D(x, y),
-      new Point2D(x + width, y + height)
-    ]);
+    shapeInfo = ShapeInfo.rectangle(props);
     break;
   } case 'circle': {
-    const {cx, cy, r} = props;
-    args = new IntersectionArgs('Circle', [new Point2D(cx, cy), r]);
+    shapeInfo = ShapeInfo.circle(props);
     break;
   } case 'polygon': {
-    const {points} = props;
-    args = new IntersectionArgs('Polygon', [points]);
+    shapeInfo = ShapeInfo.polygon(props.points);
     break;
   }
   }
-  return args;
+  return shapeInfo;
 }
 
 const getOffsetAdjustedPropsObject = (svgEl) => {
@@ -78,7 +70,7 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
  * @param {SVGRect} rect Our copy-paste rectangle
  * @param {Array} shapeInfo
  * @param {string} shapeInfo.0 The shape
- * @param {Object} shapeInfo.1 The properties of the shape
+ * @param {object} shapeInfo.1 The properties of the shape
  * @returns {boolean}
  */
 const svgContains = (rect, [shape, props]) => {
@@ -259,10 +251,10 @@ function textDragRectangleMouseMove (e) {
 
       const intersection = Intersection.intersect(
         // SvgShapes.element(rect),
-        getIntersectionArgsForShapeAndProps({
-          shape, props: getOffsetAdjustedPropsObject(rect)
+        getShapeInfoForShapeAndProps({
+          shape: 'rect', props: getOffsetAdjustedPropsObject(rect)
         }),
-        getIntersectionArgsForShapeAndProps({shape, props})
+        getShapeInfoForShapeAndProps({shape, props})
       );
       const contained = svgContains(rect, [shape, props]);
       const areaMatched = intersection.points.length || contained;

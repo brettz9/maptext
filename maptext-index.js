@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 import {jml, $, $$, body} from './node_modules/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
