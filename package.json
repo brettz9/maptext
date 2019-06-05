@@ -8,10 +8,14 @@
     "start": "json-server maptext.json --middlewares server/text-search.js --snapshots snapshots --id name --watch --static . --port 8050",
     "eslint": "eslint .",
     "copy-im": "cp -a ../imagemaps/dist/. node_modules/imagemaps/dist/",
-    "tippy-rollup": "rollup -c",
-    "copy": "npm run tippy-rollup && cp node_modules/core-js-bundle/minified.js external/core-js-bundle/minified.js && cp node_modules/jquery/dist/jquery.js external/jquery/dist/jquery.js && cp node_modules/regenerator-runtime/runtime.js external/regenerator-runtime/runtime.js",
+    "copy:tippy.js": "rollup -c",
+    "copy:core-js-bundle": "cp node_modules/core-js-bundle/minified.js external/core-js-bundle/minified.js",
+    "copy:jquery": "cp node_modules/jquery/dist/jquery.js external/jquery/dist/jquery.js",
+    "copy:regenerator-runtime": "echo 'Copying regenerator-runtime for simple-prefs' && cp node_modules/regenerator-runtime/runtime.js external/regenerator-runtime/runtime.js",
+    "copy": "npm run copy:tippy.js && npm run copy:core-js-bundle && npm run copy:jquery && npm run copy:regenerator-runtime",
     "test:unit": "mocha --require @babel/register test/unit/mapTextSearch.js",
-    "test": "npm run eslint && testcafe chrome test/ui/*.js"
+    "test:ui": "testcafe chrome test/ui/*.js",
+    "test": "npm run eslint && npm run test:unit && npm run test:ui"
   },
   "repository": {
     "type": "git",
@@ -76,7 +80,7 @@
     "jamilih": "^0.45.0",
     "jquery": "^3.4.1",
     "load-stylesheets": "^0.8.0",
-    "simple-prefs": "^0.1.0",
-    "tippy.js": "^4.3.2"
+    "simple-prefs": "^0.2.0",
+    "tippy.js": "^4.3.3"
   }
 }
