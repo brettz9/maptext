@@ -1,28 +1,28 @@
 module.exports = {
     "env": {
-        "browser": true,
-        "es6": true
+      "browser": true,
+      "es6": true
     },
     "settings": {
-        "polyfills": [
-            "Array.isArray",
-            "console",
-            "DataTransfer",
-            "DOMParser",
-            "Error",
-            "fetch",
-            "JSON",
-            "location.href",
-            "Map",
-            "navigator.clipboard",
-            "Notification",
-            "Notification.permission",
-            "Notification.requestPermission",
-            "Object.assign",
-            "Object.entries",
-            "Object.keys",
-            "Promise"
-        ]
+      "polyfills": [
+        "Array.isArray",
+        "console",
+        "DataTransfer",
+        "DOMParser",
+        "Error",
+        "fetch",
+        "JSON",
+        "location.href",
+        "Map",
+        "navigator.clipboard",
+        "Notification",
+        "Notification.permission",
+        "Notification.requestPermission",
+        "Object.assign",
+        "Object.entries",
+        "Object.keys",
+        "Promise"
+      ]
     },
     "overrides": [
       {
@@ -36,15 +36,17 @@ module.exports = {
     ],
     "extends": ["ash-nazg/sauron", "plugin:testcafe/recommended"],
     "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
     },
     "parser": "babel-eslint",
     "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
+      "ecmaVersion": 2018,
+      "sourceType": "module"
     },
     "rules": {
-        "indent": [2]
+      // Todo: Making explicit here for Atom `eslint-tab-length`, though
+      //  still not working; test
+      "indent": ["error", 2]
     }
 };

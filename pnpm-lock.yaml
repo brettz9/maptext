@@ -5,6 +5,7 @@ specifiers:
   '@babel/plugin-transform-modules-commonjs': ^7.4.4
   '@babel/register': ^7.4.4
   '@mysticatea/eslint-plugin': ^10.0.3
+  '@passport-next/passport': git+https://github.com/brettz9/passport.git#promises
   axe-testcafe: ^1.1.0
   babel-eslint: ^10.0.1
   babel-plugin-dynamic-import-node-babel-7: ^2.0.7
@@ -44,6 +45,7 @@ specifiers:
   typescript: ^3.5.1
 
 dependencies:
+  '@passport-next/passport': github.com/brettz9/passport/29fee11f295f189cfebf1ff985704868f5871d4d
   connect: 3.7.0
   form-serialization: 0.10.0
   htteepee: 0.5.0
@@ -1438,6 +1440,11 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
     dev: true
+
+  /@passport-next/passport-strategy/1.1.0:
+    resolution: {integrity: sha512-2KhFjtPueJG6xVj2HnqXt9BlANOfYCVLyu+pXYjPGBDT8yk+vQwc/6tsceIj+mayKcoxMau2JimggXRPHgoc8w==}
+    engines: {node: '>= 6.0.0'}
+    dev: false
 
   /@sindresorhus/is/0.14.0:
     resolution: {integrity: sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==}
@@ -7289,8 +7296,17 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
+  github.com/brettz9/passport/29fee11f295f189cfebf1ff985704868f5871d4d:
+    resolution: {tarball: https://codeload.github.com/brettz9/passport/tar.gz/29fee11f295f189cfebf1ff985704868f5871d4d}
+    name: '@passport-next/passport'
+    version: 3.1.0
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      '@passport-next/passport-strategy': 1.1.0
+    dev: false
+
   github.com/thelonious/kld-intersections/3e329985e2f997fdae84396a3a0839b9a1652371:
-    resolution: {commit: 3e329985e2f997fdae84396a3a0839b9a1652371, repo: git+ssh://git@github.com/thelonious/kld-intersections.git, type: git}
+    resolution: {tarball: https://codeload.github.com/thelonious/kld-intersections/tar.gz/3e329985e2f997fdae84396a3a0839b9a1652371}
     name: kld-intersections
     version: 0.7.0
     engines: {node: '>= 10.15.3'}
