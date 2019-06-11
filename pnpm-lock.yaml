@@ -11,7 +11,6 @@ specifiers:
   babel-eslint: ^10.0.3
   babel-plugin-dynamic-import-node-babel-7: ^2.0.7
   chai: ^4.2.0
-  connect: ^3.7.0
   core-js-bundle: ^3.4.1
   eslint: ^6.6.0
   eslint-config-ash-nazg: ^11.3.0
@@ -39,6 +38,7 @@ specifiers:
   kld-intersections: https://github.com/thelonious/kld-intersections#development
   load-stylesheets: ^0.9.0
   mocha: ^6.2.2
+  multipronged: ^0.1.0
   open-cli: ^5.0.0
   regenerator-runtime: ^0.13.3
   rollup: ^1.26.5
@@ -50,13 +50,13 @@ specifiers:
 
 dependencies:
   '@passport-next/passport': github.com/brettz9/passport/29fee11f295f189cfebf1ff985704868f5871d4d
-  connect: 3.7.0
   form-serialization: 0.10.0
   htteepee: 0.5.0
   imagemaps: 1.0.1_jquery@3.6.0
   jamilih: 0.46.0_core-js-bundle@3.20.2
   jquery: 3.6.0
   load-stylesheets: 0.9.0_core-js-bundle@3.20.2
+  multipronged: 0.1.0
   simple-prefs: 0.5.0
   tippy.js: 5.2.1
 
@@ -5214,6 +5214,13 @@ packages:
   /multimap/1.1.0:
     resolution: {integrity: sha512-0ZIR9PasPxGXmRsEF8jsDzndzHDj7tIav+JUmvIFB/WHswliFnquxECT/De7GR4yg99ky/NlRKJT82G1y271bw==}
     dev: true
+
+  /multipronged/0.1.0:
+    resolution: {integrity: sha512-l44wwKUtlwZSEELma27PR4xsUPyyCPm/0cmWr5y7griI74tF9kBfdUeIx9Ze42wm8FYTg1uLbGoF0b72ldc8Pw==}
+    engines: {node: '>= 0.10.0'}
+    dependencies:
+      connect: 3.7.0
+    dev: false
 
   /mustache/2.3.2:
     resolution: {integrity: sha512-KpMNwdQsYz3O/SBS1qJ/o3sqUJ5wSb8gb0pul8CO0S56b9Y2ALm8zCfsjPXsqGFfoNBkDwZuZIAjhsZI03gYVQ==}

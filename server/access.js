@@ -1,7 +1,9 @@
+const app = require('multipronged')();
 const passport = require('@passport-next/passport');
 
-module.exports = (req, res, next) => {
-  // Todo: Passport
-  console.log('passport', passport);
-  next();
-};
+app.use([
+  passport.initialize(),
+  passport.session()
+]);
+
+module.exports = app;
