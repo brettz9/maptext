@@ -173,48 +173,20 @@ export function getPreviewInfo () {
   return {width, height, shapes};
 }
 
-// See https://github.com/naver/image-maps/pull/15
 /**
 * @typedef {PlainObject} SourceInfo
 * @property {external:imageMaps.AllShapeInfo} shapes
 * @property {Float} width
 * @property {Float} height
 */
+
 /**
+ *
  * @param {SourceInfo} sourceInfo
- * @param {external:jQuery} targetEl
  * @returns {void}
  */
-function copyImageMaps ({shapes, width, height}, targetEl) {
-  targetEl.removeAllShapes();
-  $.each(shapes, (index, item) => {
-    targetEl.setShapeStyle(item.style);
-    if (item.href) {
-      targetEl.setImageShape(item.href);
-    }
-    if (item.text) {
-      targetEl.setTextShape(item.text);
-    }
-    const widthRatio = width;
-    const heightRatio = height;
-    const newCoords = targetEl.getCoordsByRatio(
-      item.coords,
-      item.type,
-      targetEl.width() / widthRatio,
-      targetEl.height() / heightRatio
-    );
-    /*
-    console.log(
-      'widthRatio', widthRatio, heightRatio,
-        newCoords, targetEl.width(), targetEl.height()
-    );
-    */
-    targetEl.addShape(newCoords, item.url, item.type);
-  });
-}
-
 export function copyImageMapsToPreview (sourceInfo) {
-  copyImageMaps(sourceInfo, $('#preview'));
+  $.imageMaps.copyImageMaps(sourceInfo, $('#preview'));
 }
 export function showGuidesUnlessViewMode (editMode) {
   $('map[name=map0] > svg').css(
