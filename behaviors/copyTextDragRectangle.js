@@ -65,12 +65,36 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
 };
 
 /**
+* @typedef {PlainObject} Rectangle
+* @property {Float} x
+* @property {Float} y
+* @property {Float} width
+* @property {Float} height
+*/
+
+/**
+* @typedef {PlainObject} Circle
+* @property {Float} cx
+* @property {Float} cy
+* @property {Float} r
+*/
+
+/**
+* @typedef {PlainObject} Polygon
+* @property {Float[]} points
+*/
+
+/**
+* @typedef {Rectangle|Circle|Polygon} ShapeInfo
+*/
+
+/**
  * @todo Replace with the following if implemented:
  *   https://github.com/thelonious/kld-intersections/issues/20
  * @param {SVGRect} rect Our copy-paste rectangle
  * @param {GenericArray} shapeInfo
- * @param {string} shapeInfo.0 The shape
- * @param {PlainObject} shapeInfo.1 The properties of the shape
+ * @param {"rect"|"circle"|"polygon"} shapeInfo.0 The shape
+ * @param {ShapeInfo} shapeInfo.1 The properties of the shape
  * @returns {boolean}
  */
 const svgContains = (rect, [shape, props]) => {
@@ -214,22 +238,23 @@ function textDragRectangleMouseMove (e) {
         shape, coords, alt
       } = area;
       const coordArr = coords.split(/,\s*/u);
+      const coordArrFloats = coordArr.map((n) => parseFloat(n));
       let props;
       switch (shape) {
       case 'rect': {
-        const [x, y, x2, y2] = coordArr.map((n) => parseFloat(n));
+        const [x, y, x2, y2] = coordArrFloats;
         const width = x2 - x;
         const height = y2 - y;
         // console.log('shape', shape, {x, y, width, height});
         props = {x, y, width, height};
         break;
       } case 'circle': {
-        const [cx, cy, r] = coordArr.map((n) => parseFloat(n));
+        const [cx, cy, r] = coordArrFloats;
         // console.log('shape', shape, {cx, cy, r});
         props = {cx, cy, r};
         break;
       } case 'polygon': {
-        props = {points: coords};
+        props = {points: coordArrFloats};
         break;
       } default: {
         throw new TypeError('Unexpected map type!');
