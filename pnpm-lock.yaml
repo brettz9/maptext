@@ -6,6 +6,7 @@ specifiers:
   '@babel/register': ^7.7.0
   '@mysticatea/eslint-plugin': ^13.0.0
   '@passport-next/passport': git+https://github.com/brettz9/passport.git#promises
+  '@passport-next/passport-local': git+https://github.com/brettz9/passport-local.git#es6-linting
   axe-core: ^3.4.0
   axe-testcafe: ^3.0.0
   babel-eslint: ^10.0.3
@@ -50,6 +51,7 @@ specifiers:
 
 dependencies:
   '@passport-next/passport': github.com/brettz9/passport/29fee11f295f189cfebf1ff985704868f5871d4d
+  '@passport-next/passport-local': github.com/brettz9/passport-local/aca8398a1807bda6d79a706a7659055f24fed2bd
   form-serialization: 0.10.0
   htteepee: 0.5.0
   imagemaps: 1.0.1_jquery@3.6.0
@@ -7625,6 +7627,15 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  github.com/brettz9/passport-local/aca8398a1807bda6d79a706a7659055f24fed2bd:
+    resolution: {tarball: https://codeload.github.com/brettz9/passport-local/tar.gz/aca8398a1807bda6d79a706a7659055f24fed2bd}
+    name: '@passport-next/passport-local'
+    version: 1.2.1
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      '@passport-next/passport-strategy': 1.1.0
+    dev: false
 
   github.com/brettz9/passport/29fee11f295f189cfebf1ff985704868f5871d4d:
     resolution: {tarball: https://codeload.github.com/brettz9/passport/tar.gz/29fee11f295f189cfebf1ff985704868f5871d4d}
