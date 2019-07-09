@@ -3,6 +3,7 @@ const passport = require('@passport-next/passport');
 const LocalStrategy = require('@passport-next/passport-local').Strategy;
 
 const User = {
+  // eslint-disable-next-line require-await
   async findOne ({username}) {
     return {
       verifyPassword (password) {

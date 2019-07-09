@@ -14,7 +14,7 @@
     "copy:regenerator-runtime": "echo 'Copying regenerator-runtime for simple-prefs' && cp node_modules/regenerator-runtime/runtime.js external/regenerator-runtime/runtime.js",
     "copy": "npm run copy:tippy.js && npm run copy:core-js-bundle && npm run copy:jquery && npm run copy:regenerator-runtime",
     "test:unit": "mocha --require @babel/register test/unit/mapTextSearch.js",
-    "test:ui": "testcafe chrome test/ui/*.js",
+    "test:ui": "echo \"Running separate tests due to testcafe issues in running both...\" && testcafe chrome test/ui/accessibility.js && testcafe chrome test/ui/ui.js",
     "test": "npm run eslint && npm run test:unit && npm run test:ui"
   },
   "repository": {

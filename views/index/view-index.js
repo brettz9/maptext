@@ -16,6 +16,7 @@ export const main = ({form, editMode, behaviors}) => {
     role: 'main' // For Axe tests (Accessbility)
   }, [
     ['div', [
+      ['h1', [_('MapText')]],
       form,
       ['section', {class: 'serialized'}, [
         ['h2', [_('Serialized HTML')]],
