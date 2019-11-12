@@ -123,3 +123,7 @@ rect.borderBlink, circle.borderBlink, polygon.borderBlink {
     display: block !important;
     animation: borderBlink 1s step-end infinite !important;
 }
+
+h1#imageAreas {
+  font-size: 20px;
+}

@@ -32,7 +32,7 @@ export const mainForm = ({
     ['fieldset', [
       ['div', [
         ['div', {class: 'imageRegions'}, [
-          ['h2', [_('Image areas')]],
+          ['h1', {id: 'imageAreas'}, [_('Image areas')]],
           ['ol', {id: 'imageRegions'}]
         ]],
         ['div', [

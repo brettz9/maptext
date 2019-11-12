@@ -68,9 +68,9 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
  * @todo Replace with the following if implemented:
  *   https://github.com/thelonious/kld-intersections/issues/20
  * @param {SVGRect} rect Our copy-paste rectangle
- * @param {Array} shapeInfo
+ * @param {GenericArray} shapeInfo
  * @param {string} shapeInfo.0 The shape
- * @param {object} shapeInfo.1 The properties of the shape
+ * @param {PlainObject} shapeInfo.1 The properties of the shape
  * @returns {boolean}
  */
 const svgContains = (rect, [shape, props]) => {
