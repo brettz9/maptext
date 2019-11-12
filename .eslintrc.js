@@ -45,8 +45,5 @@ module.exports = {
       "sourceType": "module"
     },
     "rules": {
-      // Todo: Making explicit here for Atom `eslint-tab-length`, though
-      //  still not working; test
-      "indent": ["error", 2]
     }
 };
