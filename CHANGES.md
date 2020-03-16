@@ -2,6 +2,8 @@
 
 ## ?
 
+- Update: Tippy, corejs, regenerator-runtime copies
+- Testing: Allow `test` script to work with `start` in parallel
 - npm: Switch to non-deprecated `@rollup/plugin-node-resolve`
 - npm: Update `eslint-config-ash-nazg`; add `browserslist`
 - npm: Update devDeps and add deps: `imagemaps`/`jquery` for expected usage
