@@ -4,3 +4,4 @@ external
 # Items to move to own repos
 !external/dom-behaviors
 !external/i18n
+!*.eslintrc.js
