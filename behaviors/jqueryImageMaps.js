@@ -44,7 +44,7 @@ export async function addShape (shape, {sharedBehaviors, coords}) {
     coords, $('input[name=mapURL]')[0].value, shape
   );
   if (sharedBehaviors) {
-    const newIndex = parseInt(
+    const newIndex = Number.parseInt(
       $('#preview').imageMaps().shapeEl.data('index')
     );
     await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
@@ -102,7 +102,7 @@ export async function removeShape ({sharedBehaviors} = {}) {
     return;
   }
 
-  const oldIndex = parseInt(
+  const oldIndex = Number.parseInt(
     imageMaps.shapeEl.data('index')
   );
   const {

@@ -158,7 +158,7 @@ function deserializeForm (formObj) {
     if (!key.endsWith('_shape')) {
       return;
     }
-    const currID = parseInt(key.slice(0, -('_shape'.length)));
+    const currID = Number.parseInt(key.slice(0, -('_shape'.length)));
     addImageRegion(currID);
     const lastRegion = imageRegions.lastElementChild;
     const shapeSelector = lastRegion.querySelector('select');
@@ -640,7 +640,7 @@ Views.main({
       const zoomInput = $('input.zoom');
       const val = Number(zoomInput.value || 100);
 
-      if (typeof val !== 'number' || isNaN(val) || val <= 0) {
+      if (typeof val !== 'number' || Number.isNaN(val) || val <= 0) {
         alert( // eslint-disable-line no-alert
           _('You must enter a number and one greater than 0.')
         );

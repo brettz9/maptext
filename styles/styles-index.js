@@ -9,7 +9,6 @@ export const shapeStyle = {
 };
 
 export const load = async () => {
-  // eslint-disable-next-line no-return-await
   return await loadStylesheets([
     './index.css'
   ]);
