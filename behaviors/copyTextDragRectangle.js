@@ -238,7 +238,7 @@ function textDragRectangleMouseMove (e) {
         shape, coords, alt
       } = area;
       const coordArr = coords.split(/,\s*/u);
-      const coordArrFloats = coordArr.map((n) => parseFloat(n));
+      const coordArrFloats = coordArr.map((n) => Number.parseFloat(n));
       let props;
       switch (shape) {
       case 'rect': {
