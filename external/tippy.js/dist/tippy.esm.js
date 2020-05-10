@@ -86,6 +86,20 @@ function getWindowScrollBarX(element) {
   return getBoundingClientRect(getDocumentElement(element)).left + getWindowScroll(element).scrollLeft;
 }
 
+function getComputedStyle(element) {
+  return getWindow(element).getComputedStyle(element);
+}
+
+function isScrollParent(element) {
+  // Firefox wants us to check `-x` and `-y` variations as well
+  var _getComputedStyle = getComputedStyle(element),
+      overflow = _getComputedStyle.overflow,
+      overflowX = _getComputedStyle.overflowX,
+      overflowY = _getComputedStyle.overflowY;
+
+  return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX);
+}
+
 // Composite means it takes into account transforms as well as layout.
 
 function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
@@ -93,7 +107,7 @@ function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
     isFixed = false;
   }
 
-  var documentElement;
+  var documentElement = getDocumentElement(offsetParent);
   var rect = getBoundingClientRect(elementOrVirtualElement);
   var scroll = {
     scrollLeft: 0,
@@ -105,7 +119,8 @@ function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
   };
 
   if (!isFixed) {
-    if (getNodeName(offsetParent) !== 'body') {
+    if (getNodeName(offsetParent) !== 'body' || // https://github.com/popperjs/popper-core/issues/1078
+    isScrollParent(documentElement)) {
       scroll = getNodeScroll(offsetParent);
     }
 
@@ -113,7 +128,7 @@ function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
       offsets = getBoundingClientRect(offsetParent);
       offsets.x += offsetParent.clientLeft;
       offsets.y += offsetParent.clientTop;
-    } else if (documentElement = getDocumentElement(offsetParent)) {
+    } else if (documentElement) {
       offsets.x = getWindowScrollBarX(documentElement);
     }
   }
@@ -142,16 +157,15 @@ function getParentNode(element) {
     return element;
   }
 
-  return element.parentNode || // DOM Element detected
-  // $FlowFixMe: need a better way to handle this...
-  element.host || // ShadowRoot detected
-  document.ownerDocument || // Fallback to ownerDocument if available
-  document.documentElement // Or to documentElement if everything else fails
-  ;
-}
+  return (// $FlowFixMe: this is a quicker (but less type safe) way to save quite some bytes from the bundle
+    element.assignedSlot || // step into the shadow DOM of the parent of a slotted node
+    element.parentNode || // DOM Element detected
+    // $FlowFixMe: need a better way to handle this...
+    element.host || // ShadowRoot detected
+    // $FlowFixMe: HTMLElement is a Node
+    getDocumentElement(element) // fallback
 
-function getComputedStyle(element) {
-  return getWindow(element).getComputedStyle(element);
+  );
 }
 
 function getScrollParent(node) {
@@ -160,16 +174,8 @@ function getScrollParent(node) {
     return node.ownerDocument.body;
   }
 
-  if (isHTMLElement(node)) {
-    // Firefox wants us to check `-x` and `-y` variations as well
-    var _getComputedStyle = getComputedStyle(node),
-        overflow = _getComputedStyle.overflow,
-        overflowX = _getComputedStyle.overflowX,
-        overflowY = _getComputedStyle.overflowY;
-
-    if (/auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX)) {
-      return node;
-    }
+  if (isHTMLElement(node) && isScrollParent(node)) {
+    return node;
   }
 
   return getScrollParent(getParentNode(node));
@@ -182,7 +188,8 @@ function listScrollParents(element, list) {
 
   var scrollParent = getScrollParent(element);
   var isBody = getNodeName(scrollParent) === 'body';
-  var target = isBody ? getWindow(scrollParent) : scrollParent;
+  var win = getWindow(scrollParent);
+  var target = isBody ? [win].concat(win.visualViewport || [], isScrollParent(scrollParent) ? scrollParent : []) : scrollParent;
   var updatedList = list.concat(target);
   return isBody ? updatedList : // $FlowFixMe: isBody tells us target will be an HTMLElement here
   updatedList.concat(listScrollParents(getParentNode(target)));
@@ -192,19 +199,13 @@ function isTableElement(element) {
   return ['table', 'td', 'th'].indexOf(getNodeName(element)) >= 0;
 }
 
-var isFirefox = function isFirefox() {
-  return typeof window.InstallTrigger !== 'undefined';
-};
-
 function getTrueOffsetParent(element) {
-  var offsetParent;
-
-  if (!isHTMLElement(element) || !(offsetParent = element.offsetParent) || // https://github.com/popperjs/popper-core/issues/837
-  isFirefox() && getComputedStyle(offsetParent).position === 'fixed') {
+  if (!isHTMLElement(element) || // https://github.com/popperjs/popper-core/issues/837
+  getComputedStyle(element).position === 'fixed') {
     return null;
   }
 
-  return offsetParent;
+  return element.offsetParent;
 }
 
 function getOffsetParent(element) {
@@ -234,14 +235,10 @@ var clippingParents = 'clippingParents';
 var viewport = 'viewport';
 var popper = 'popper';
 var reference = 'reference';
-var variationPlacements =
-/*#__PURE__*/
-basePlacements.reduce(function (acc, placement) {
+var variationPlacements = /*#__PURE__*/basePlacements.reduce(function (acc, placement) {
   return acc.concat([placement + "-" + start, placement + "-" + end]);
 }, []);
-var placements =
-/*#__PURE__*/
-[].concat(basePlacements, [auto]).reduce(function (acc, placement) {
+var placements = /*#__PURE__*/[].concat(basePlacements, [auto]).reduce(function (acc, placement) {
   return acc.concat([placement, placement + "-" + start, placement + "-" + end]);
 }, []); // modifiers that need to read the DOM
 
@@ -486,7 +483,7 @@ function popperGenerator(generatorOptions) {
         cleanupModifierEffects();
         state.options = Object.assign({}, defaultOptions, {}, state.options, {}, options);
         state.scrollParents = {
-          reference: isElement(reference) ? listScrollParents(reference) : [],
+          reference: isElement(reference) ? listScrollParents(reference) : reference.contextElement ? listScrollParents(reference.contextElement) : [],
           popper: listScrollParents(popper)
         }; // Orders the modifiers based on their dependencies and `phase`
         // properties
@@ -711,7 +708,8 @@ function effect(_ref) {
       window.removeEventListener('resize', instance.update, passive);
     }
   };
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var eventListeners = {
   name: 'eventListeners',
@@ -808,7 +806,8 @@ function popperOffsets(_ref) {
     strategy: 'absolute',
     placement: state.placement
   });
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var popperOffsets$1 = {
   name: 'popperOffsets',
@@ -904,8 +903,7 @@ function computeStyles(_ref3) {
       adaptive = _options$adaptive === void 0 ? true : _options$adaptive;
 
   if (process.env.NODE_ENV !== "production") {
-    var _getComputedStyle = getComputedStyle(state.elements.popper),
-        transitionProperty = _getComputedStyle.transitionProperty;
+    var transitionProperty = getComputedStyle(state.elements.popper).transitionProperty || '';
 
     if (adaptive && ['transform', 'top', 'right', 'bottom', 'left'].some(function (property) {
       return transitionProperty.indexOf(property) >= 0;
@@ -919,13 +917,15 @@ function computeStyles(_ref3) {
     popper: state.elements.popper,
     popperRect: state.rects.popper,
     gpuAcceleration: gpuAcceleration
-  }; // popper offsets are always available
+  };
 
-  state.styles.popper = Object.assign({}, state.styles.popper, {}, mapToStyles(Object.assign({}, commonStyles, {
-    offsets: state.modifiersData.popperOffsets,
-    position: state.options.strategy,
-    adaptive: adaptive
-  }))); // arrow offsets may not be available
+  if (state.modifiersData.popperOffsets != null) {
+    state.styles.popper = Object.assign({}, state.styles.popper, {}, mapToStyles(Object.assign({}, commonStyles, {
+      offsets: state.modifiersData.popperOffsets,
+      position: state.options.strategy,
+      adaptive: adaptive
+    })));
+  }
 
   if (state.modifiersData.arrow != null) {
     state.styles.arrow = Object.assign({}, state.styles.arrow, {}, mapToStyles(Object.assign({}, commonStyles, {
@@ -938,7 +938,8 @@ function computeStyles(_ref3) {
   state.attributes.popper = Object.assign({}, state.attributes.popper, {
     'data-popper-placement': state.placement
   });
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var computeStyles$1 = {
   name: 'computeStyles',
@@ -981,7 +982,7 @@ function effect$1(_ref2) {
   var state = _ref2.state;
   var initialStyles = {
     popper: {
-      position: 'absolute',
+      position: state.options.strategy,
       left: '0',
       top: '0',
       margin: '0'
@@ -1021,7 +1022,8 @@ function effect$1(_ref2) {
       });
     });
   };
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var applyStyles$1 = {
   name: 'applyStyles',
@@ -1066,10 +1068,15 @@ function offset(_ref2) {
   var _data$state$placement = data[state.placement],
       x = _data$state$placement.x,
       y = _data$state$placement.y;
-  state.modifiersData.popperOffsets.x += x;
-  state.modifiersData.popperOffsets.y += y;
+
+  if (state.modifiersData.popperOffsets != null) {
+    state.modifiersData.popperOffsets.x += x;
+    state.modifiersData.popperOffsets.y += y;
+  }
+
   state.modifiersData[name] = data;
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var offset$1 = {
   name: 'offset',
@@ -1103,9 +1110,20 @@ function getOppositeVariationPlacement(placement) {
 
 function getViewportRect(element) {
   var win = getWindow(element);
+  var visualViewport = win.visualViewport;
+  var width = win.innerWidth;
+  var height = win.innerHeight; // We don't know which browsers have buggy or odd implementations of this, so
+  // for now we're only applying it to iOS to fix the keyboard issue.
+  // Investigation required
+
+  if (visualViewport && /iPhone|iPod|iPad/.test(navigator.platform)) {
+    width = visualViewport.width;
+    height = visualViewport.height;
+  }
+
   return {
-    width: win.innerWidth,
-    height: win.innerHeight,
+    width: width,
+    height: height,
     x: 0,
     y: 0
   };
@@ -1285,7 +1303,7 @@ function detectOverflow(state, options) {
   var referenceElement = state.elements.reference;
   var popperRect = state.rects.popper;
   var element = state.elements[altBoundary ? altContext : elementContext];
-  var clippingClientRect = getClippingRect(isElement(element) ? element : getDocumentElement(state.elements.popper), boundary, rootBoundary);
+  var clippingClientRect = getClippingRect(isElement(element) ? element : element.contextElement || getDocumentElement(state.elements.popper), boundary, rootBoundary);
   var referenceClientRect = getBoundingClientRect(referenceElement);
   var popperOffsets = computeOffsets({
     reference: referenceClientRect,
@@ -1317,6 +1335,9 @@ function detectOverflow(state, options) {
   return overflowOffsets;
 }
 
+/*:: type OverflowsMap = { [ComputedPlacement]: number }; */
+
+/*;; type OverflowsMap = { [key in ComputedPlacement]: number }; */
 function computeAutoPlacement(state, options) {
   if (options === void 0) {
     options = {};
@@ -1327,13 +1348,17 @@ function computeAutoPlacement(state, options) {
       boundary = _options.boundary,
       rootBoundary = _options.rootBoundary,
       padding = _options.padding,
-      flipVariations = _options.flipVariations;
+      flipVariations = _options.flipVariations,
+      _options$allowedAutoP = _options.allowedAutoPlacements,
+      allowedAutoPlacements = _options$allowedAutoP === void 0 ? placements : _options$allowedAutoP;
   var variation = getVariation(placement);
-  var placements = variation ? flipVariations ? variationPlacements : variationPlacements.filter(function (placement) {
+  var placements$1 = (variation ? flipVariations ? variationPlacements : variationPlacements.filter(function (placement) {
     return getVariation(placement) === variation;
-  }) : basePlacements; // $FlowFixMe: Flow seems to have problems with two array unions...
+  }) : basePlacements).filter(function (placement) {
+    return allowedAutoPlacements.indexOf(placement) >= 0;
+  }); // $FlowFixMe: Flow seems to have problems with two array unions...
 
-  var overflows = placements.reduce(function (acc, placement) {
+  var overflows = placements$1.reduce(function (acc, placement) {
     acc[placement] = detectOverflow(state, {
       placement: placement,
       boundary: boundary,
@@ -1365,13 +1390,18 @@ function flip(_ref) {
     return;
   }
 
-  var specifiedFallbackPlacements = options.fallbackPlacements,
+  var _options$mainAxis = options.mainAxis,
+      checkMainAxis = _options$mainAxis === void 0 ? true : _options$mainAxis,
+      _options$altAxis = options.altAxis,
+      checkAltAxis = _options$altAxis === void 0 ? true : _options$altAxis,
+      specifiedFallbackPlacements = options.fallbackPlacements,
       padding = options.padding,
       boundary = options.boundary,
       rootBoundary = options.rootBoundary,
       altBoundary = options.altBoundary,
       _options$flipVariatio = options.flipVariations,
-      flipVariations = _options$flipVariatio === void 0 ? true : _options$flipVariatio;
+      flipVariations = _options$flipVariatio === void 0 ? true : _options$flipVariatio,
+      allowedAutoPlacements = options.allowedAutoPlacements;
   var preferredPlacement = state.options.placement;
   var basePlacement = getBasePlacement(preferredPlacement);
   var isBasePlacement = basePlacement === preferredPlacement;
@@ -1382,7 +1412,8 @@ function flip(_ref) {
       boundary: boundary,
       rootBoundary: rootBoundary,
       padding: padding,
-      flipVariations: flipVariations
+      flipVariations: flipVariations,
+      allowedAutoPlacements: allowedAutoPlacements
     }) : placement);
   }, []);
   var referenceRect = state.rects.reference;
@@ -1413,7 +1444,15 @@ function flip(_ref) {
     }
 
     var altVariationSide = getOppositePlacement(mainVariationSide);
-    var checks = [overflow[_basePlacement] <= 0, overflow[mainVariationSide] <= 0, overflow[altVariationSide] <= 0];
+    var checks = [];
+
+    if (checkMainAxis) {
+      checks.push(overflow[_basePlacement] <= 0);
+    }
+
+    if (checkAltAxis) {
+      checks.push(overflow[mainVariationSide] <= 0, overflow[altVariationSide] <= 0);
+    }
 
     if (checks.every(function (check) {
       return check;
@@ -1459,7 +1498,8 @@ function flip(_ref) {
     state.placement = firstFittingPlacement;
     state.reset = true;
   }
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var flip$1 = {
   name: 'flip',
@@ -1518,6 +1558,10 @@ function preventOverflow(_ref) {
     y: 0
   };
 
+  if (!popperOffsets) {
+    return;
+  }
+
   if (checkMainAxis) {
     var mainSide = mainAxis === 'y' ? top : left;
     var altSide = mainAxis === 'y' ? bottom : right;
@@ -1569,12 +1613,13 @@ function preventOverflow(_ref) {
 
     var _preventedOffset = within(_min, _offset, _max);
 
-    state.modifiersData.popperOffsets[altAxis] = _preventedOffset;
+    popperOffsets[altAxis] = _preventedOffset;
     data[altAxis] = _preventedOffset - _offset;
   }
 
   state.modifiersData[name] = data;
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var preventOverflow$1 = {
   name: 'preventOverflow',
@@ -1596,7 +1641,7 @@ function arrow(_ref) {
   var isVertical = [left, right].indexOf(basePlacement) >= 0;
   var len = isVertical ? 'height' : 'width';
 
-  if (!arrowElement) {
+  if (!arrowElement || !popperOffsets) {
     return;
   }
 
@@ -1606,15 +1651,18 @@ function arrow(_ref) {
   var maxProp = axis === 'y' ? bottom : right;
   var endDiff = state.rects.reference[len] + state.rects.reference[axis] - popperOffsets[axis] - state.rects.popper[len];
   var startDiff = popperOffsets[axis] - state.rects.reference[axis];
-  var arrowOffsetParent = state.elements.arrow && getOffsetParent(state.elements.arrow);
-  var clientOffset = arrowOffsetParent ? axis === 'y' ? arrowOffsetParent.clientLeft || 0 : arrowOffsetParent.clientTop || 0 : 0;
-  var centerToReference = endDiff / 2 - startDiff / 2 - clientOffset; // Make sure the arrow doesn't overflow the popper if the center point is
+  var arrowOffsetParent = getOffsetParent(arrowElement);
+  var clientSize = arrowOffsetParent ? axis === 'y' ? arrowOffsetParent.clientHeight || 0 : arrowOffsetParent.clientWidth || 0 : 0;
+  var centerToReference = endDiff / 2 - startDiff / 2; // Make sure the arrow doesn't overflow the popper if the center point is
   // outside of the popper bounds
 
-  var center = within(paddingObject[minProp], state.rects.popper[len] / 2 - arrowRect[len] / 2 + centerToReference, state.rects.popper[len] - arrowRect[len] - paddingObject[maxProp]); // Prevents breaking syntax highlighting...
+  var min = paddingObject[minProp];
+  var max = clientSize - arrowRect[len] - paddingObject[maxProp];
+  var center = clientSize / 2 - arrowRect[len] / 2 + centerToReference;
+  var offset = within(min, center, max); // Prevents breaking syntax highlighting...
 
   var axisProp = axis;
-  state.modifiersData[name] = (_state$modifiersData$ = {}, _state$modifiersData$[axisProp] = center, _state$modifiersData$);
+  state.modifiersData[name] = (_state$modifiersData$ = {}, _state$modifiersData$[axisProp] = offset, _state$modifiersData$.centerOffset = offset - center, _state$modifiersData$);
 }
 
 function effect$2(_ref2) {
@@ -1624,13 +1672,24 @@ function effect$2(_ref2) {
   var _options$element = options.element,
       arrowElement = _options$element === void 0 ? '[data-popper-arrow]' : _options$element,
       _options$padding = options.padding,
-      padding = _options$padding === void 0 ? 0 : _options$padding; // CSS selector
+      padding = _options$padding === void 0 ? 0 : _options$padding;
+
+  if (arrowElement == null) {
+    return;
+  } // CSS selector
+
 
   if (typeof arrowElement === 'string') {
     arrowElement = state.elements.popper.querySelector(arrowElement);
 
     if (!arrowElement) {
       return;
+    }
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    if (!isHTMLElement(arrowElement)) {
+      console.error(['Popper: "arrow" element must be an HTMLElement (not an SVGElement).', 'To use an SVG arrow, wrap it in an HTMLElement that will be used as', 'the arrow.'].join(' '));
     }
   }
 
@@ -1646,7 +1705,8 @@ function effect$2(_ref2) {
   state.modifiersData[name + "#persistent"] = {
     padding: mergePaddingObject(typeof padding !== 'number' ? padding : expandToHashMap(padding, basePlacements))
   };
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var arrow$1 = {
   name: 'arrow',
@@ -1706,7 +1766,8 @@ function hide(_ref) {
     'data-popper-reference-hidden': isReferenceHidden,
     'data-popper-escaped': hasPopperEscaped
   });
-}
+} // eslint-disable-next-line import/no-unused-modules
+
 
 var hide$1 = {
   name: 'hide',
@@ -1717,28 +1778,26 @@ var hide$1 = {
 };
 
 var defaultModifiers = [eventListeners, popperOffsets$1, computeStyles$1, applyStyles$1, offset$1, flip$1, preventOverflow$1, arrow$1, hide$1];
-var createPopper =
-/*#__PURE__*/
-popperGenerator({
+var createPopper = /*#__PURE__*/popperGenerator({
   defaultModifiers: defaultModifiers
 }); // eslint-disable-next-line import/no-unused-modules
 
 /**!
-* tippy.js v6.1.0
+* tippy.js v6.2.3
 * (c) 2017-2020 atomiks
 * MIT License
 */
 
-var PASSIVE = {
-  passive: true
-};
 var ROUND_ARROW = '<svg width="16" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M0 6s1.796-.013 4.67-3.615C5.851.9 6.93.006 8 0c1.07-.006 2.148.887 3.343 2.385C14.233 6.005 16 6 16 6H0z"></svg>';
-var IOS_CLASS = "tippy-iOS";
 var BOX_CLASS = "tippy-box";
 var CONTENT_CLASS = "tippy-content";
 var BACKDROP_CLASS = "tippy-backdrop";
 var ARROW_CLASS = "tippy-arrow";
 var SVG_ARROW_CLASS = "tippy-svg-arrow";
+var TOUCH_OPTIONS = {
+  passive: true,
+  capture: true
+};
 
 function hasOwnProperty(obj, key) {
   return {}.hasOwnProperty.call(obj, key);
@@ -1806,7 +1865,9 @@ function div() {
   return document.createElement('div');
 }
 function isElement$1(value) {
-  return isType(value, 'Element');
+  return ['Element', 'Fragment'].some(function (type) {
+    return isType(value, type);
+  });
 }
 function isNodeList(value) {
   return isType(value, 'NodeList');
@@ -1944,16 +2005,13 @@ function onWindowBlur() {
   }
 }
 function bindGlobalEventListeners() {
-  document.addEventListener('touchstart', onDocumentTouchStart, Object.assign({}, PASSIVE, {
-    capture: true
-  }));
+  document.addEventListener('touchstart', onDocumentTouchStart, TOUCH_OPTIONS);
   window.addEventListener('blur', onWindowBlur);
 }
 
 var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
 var ua = isBrowser ? navigator.userAgent : '';
 var isIE = /MSIE |Trident\//.test(ua);
-var isIOS = isBrowser && /iPhone|iPad|iPod/.test(navigator.platform);
 
 function createMemoryLeakWarning(method) {
   var txt = method === 'destroy' ? 'n already-' : ' ';
@@ -1974,36 +2032,35 @@ function getFormattedMessage(message) {
   'color: #00C584; font-size: 1.3em; font-weight: bold;', // message
   'line-height: 1.5', // footer
   'color: #a6a095;'];
-}
-/**
- * Helpful wrapper around `console.warn()`.
- * TODO: Should we use a cache so it only warns a single time and not spam the
- * console? (Need to consider hot reloading and invalidation though). Chrome
- * already batches warnings as well.
- */
+} // Assume warnings and errors never have the same message
 
+var visitedMessages;
+
+if (process.env.NODE_ENV !== "production") {
+  resetVisitedMessages();
+}
+
+function resetVisitedMessages() {
+  visitedMessages = new Set();
+}
 function warnWhen(condition, message) {
-  if (condition) {
+  if (condition && !visitedMessages.has(message)) {
     var _console;
+
+    visitedMessages.add(message);
 
     (_console = console).warn.apply(_console, getFormattedMessage(message));
   }
 }
-/**
- * Helpful wrapper around `console.error()`
- */
-
 function errorWhen(condition, message) {
-  if (condition) {
+  if (condition && !visitedMessages.has(message)) {
     var _console2;
+
+    visitedMessages.add(message);
 
     (_console2 = console).error.apply(_console2, getFormattedMessage(message));
   }
 }
-/**
- * Validates the `targets` value passed to `tippy()`
- */
-
 function validateTargets(targets) {
   var didPassFalsyValue = !targets;
   var didPassPlainObject = Object.prototype.toString.call(targets) === '[object Object]' && !targets.addEventListener;
@@ -2036,7 +2093,6 @@ var defaultProps = Object.assign({
     content: 'auto',
     expanded: 'auto'
   },
-  content: '',
   delay: 0,
   duration: [300, 250],
   getReferenceClientRect: null,
@@ -2254,7 +2310,7 @@ function render(instance) {
       box.removeAttribute('role');
     }
 
-    if (prevProps.content !== nextProps.content) {
+    if (prevProps.content !== nextProps.content || prevProps.allowHTML !== nextProps.allowHTML) {
       setContent(content, instance.props);
     }
 
@@ -2293,6 +2349,7 @@ function createTippy(reference, passedProps) {
   var scheduleHideAnimationFrame;
   var isVisibleFromClick = false;
   var didHideDueToDocumentMouseDown = false;
+  var didTouchMove = false;
   var ignoreOnFirstUpdate = false;
   var lastTriggerEvent;
   var currentTransitionEndListener;
@@ -2334,6 +2391,7 @@ function createTippy(reference, passedProps) {
     setContent: setContent,
     show: show,
     hide: hide,
+    hideWithInteractivity: hideWithInteractivity,
     enable: enable,
     disable: disable,
     unmount: unmount,
@@ -2433,11 +2491,6 @@ function createTippy(reference, passedProps) {
     popper.style.zIndex = "" + instance.props.zIndex;
   }
 
-  function updateIOSClass(isAdd) {
-    var shouldAdd = isAdd && isIOS && currentInput.isTouch;
-    doc.body.classList[shouldAdd ? 'add' : 'remove'](IOS_CLASS);
-  }
-
   function invokeHook(hook, args, shouldInvokePropsHook) {
     if (shouldInvokePropsHook === void 0) {
       shouldInvokePropsHook = true;
@@ -2506,8 +2559,15 @@ function createTippy(reference, passedProps) {
     });
   }
 
-  function onDocumentMouseDown(event) {
-    // Clicked on interactive popper
+  function onDocumentPress(event) {
+    // Moved finger to scroll instead of an intentional tap outside
+    if (currentInput.isTouch) {
+      if (didTouchMove || event.type === 'mousedown') {
+        return;
+      }
+    } // Clicked on interactive popper
+
+
     if (instance.props.interactive && popper.contains(event.target)) {
       return;
     } // Clicked on the event listeners target
@@ -2522,7 +2582,7 @@ function createTippy(reference, passedProps) {
         return;
       }
     } else {
-      instance.props.onClickOutside(instance, event);
+      invokeHook('onClickOutside', [instance, event]);
     }
 
     if (instance.props.hideOnClick === true) {
@@ -2540,17 +2600,31 @@ function createTippy(reference, passedProps) {
       // from being cleaned up
 
       if (!instance.state.isMounted) {
-        removeDocumentMouseDownListener();
+        removeDocumentPress();
       }
     }
   }
 
-  function addDocumentMouseDownListener() {
-    doc.addEventListener('mousedown', onDocumentMouseDown, true);
+  function onTouchMove() {
+    didTouchMove = true;
   }
 
-  function removeDocumentMouseDownListener() {
-    doc.removeEventListener('mousedown', onDocumentMouseDown, true);
+  function onTouchStart() {
+    didTouchMove = false;
+  }
+
+  function addDocumentPress() {
+    doc.addEventListener('mousedown', onDocumentPress, true);
+    doc.addEventListener('touchend', onDocumentPress, TOUCH_OPTIONS);
+    doc.addEventListener('touchstart', onTouchStart, TOUCH_OPTIONS);
+    doc.addEventListener('touchmove', onTouchMove, TOUCH_OPTIONS);
+  }
+
+  function removeDocumentPress() {
+    doc.removeEventListener('mousedown', onDocumentPress, true);
+    doc.removeEventListener('touchend', onDocumentPress, TOUCH_OPTIONS);
+    doc.removeEventListener('touchstart', onTouchStart, TOUCH_OPTIONS);
+    doc.removeEventListener('touchmove', onTouchMove, TOUCH_OPTIONS);
   }
 
   function onTransitionedOut(duration, callback) {
@@ -2605,8 +2679,12 @@ function createTippy(reference, passedProps) {
 
   function addListeners() {
     if (getIsCustomTouchBehavior()) {
-      on('touchstart', onTrigger, PASSIVE);
-      on('touchend', onMouseLeave, PASSIVE);
+      on('touchstart', onTrigger, {
+        passive: true
+      });
+      on('touchend', onMouseLeave, {
+        passive: true
+      });
     }
 
     splitBySpaces(instance.props.trigger).forEach(function (eventType) {
@@ -2644,12 +2722,15 @@ function createTippy(reference, passedProps) {
   }
 
   function onTrigger(event) {
+    var _lastTriggerEvent;
+
     var shouldScheduleClickHide = false;
 
     if (!instance.state.isEnabled || isEventListenerStopped(event) || didHideDueToDocumentMouseDown) {
       return;
     }
 
+    var wasFocused = ((_lastTriggerEvent = lastTriggerEvent) == null ? void 0 : _lastTriggerEvent.type) === 'focus';
     lastTriggerEvent = event;
     currentTarget = event.currentTarget;
     handleAriaExpandedAttribute();
@@ -2668,26 +2749,14 @@ function createTippy(reference, passedProps) {
     if (event.type === 'click' && (instance.props.trigger.indexOf('mouseenter') < 0 || isVisibleFromClick) && instance.props.hideOnClick !== false && instance.state.isVisible) {
       shouldScheduleClickHide = true;
     } else {
-      var _getNormalizedTouchSe = getNormalizedTouchSettings(),
-          value = _getNormalizedTouchSe[0],
-          duration = _getNormalizedTouchSe[1];
-
-      if (currentInput.isTouch && value === 'hold' && duration) {
-        // We can hijack the show timeout here, it will be cleared by
-        // `scheduleHide()` when necessary
-        showTimeout = setTimeout(function () {
-          scheduleShow(event);
-        }, duration);
-      } else {
-        scheduleShow(event);
-      }
+      scheduleShow(event);
     }
 
     if (event.type === 'click') {
       isVisibleFromClick = !shouldScheduleClickHide;
     }
 
-    if (shouldScheduleClickHide) {
+    if (shouldScheduleClickHide && !wasFocused) {
       scheduleHide(event);
     }
   }
@@ -2731,10 +2800,7 @@ function createTippy(reference, passedProps) {
     }
 
     if (instance.props.interactive) {
-      doc.body.addEventListener('mouseleave', scheduleHide);
-      doc.addEventListener('mousemove', debouncedOnMouseMove);
-      pushIfUnique(mouseMoveListeners, debouncedOnMouseMove);
-      debouncedOnMouseMove(event);
+      instance.hideWithInteractivity(event);
       return;
     }
 
@@ -2768,7 +2834,8 @@ function createTippy(reference, passedProps) {
         moveTransition = _instance$props2.moveTransition;
     var arrow = getIsDefaultRenderFn() ? getChildren(popper).arrow : null;
     var computedReference = getReferenceClientRect ? {
-      getBoundingClientRect: getReferenceClientRect
+      getBoundingClientRect: getReferenceClientRect,
+      contextElement: getReferenceClientRect.contextElement || getCurrentTarget()
     } : reference;
     var tippyModifier = {
       name: '$$tippy',
@@ -2797,14 +2864,6 @@ function createTippy(reference, passedProps) {
         }
       }
     };
-    var arrowModifier = {
-      name: 'arrow',
-      enabled: !!arrow,
-      options: {
-        element: arrow,
-        padding: 3
-      }
-    };
     var modifiers = [{
       name: 'offset',
       options: {
@@ -2830,7 +2889,19 @@ function createTippy(reference, passedProps) {
       options: {
         adaptive: !moveTransition
       }
-    }].concat(getIsDefaultRenderFn() ? [arrowModifier] : [], (popperOptions == null ? void 0 : popperOptions.modifiers) || [], [tippyModifier]);
+    }, tippyModifier];
+
+    if (getIsDefaultRenderFn() && arrow) {
+      modifiers.push({
+        name: 'arrow',
+        options: {
+          element: arrow,
+          padding: 3
+        }
+      });
+    }
+
+    modifiers.push.apply(modifiers, (popperOptions == null ? void 0 : popperOptions.modifiers) || []);
     instance.popperInstance = createPopper(computedReference, popper, Object.assign({}, popperOptions, {
       placement: placement,
       onFirstUpdate: onFirstUpdate,
@@ -2887,8 +2958,16 @@ function createTippy(reference, passedProps) {
       invokeHook('onTrigger', [instance, event]);
     }
 
-    addDocumentMouseDownListener();
+    addDocumentPress();
     var delay = getDelay(true);
+
+    var _getNormalizedTouchSe = getNormalizedTouchSettings(),
+        touchValue = _getNormalizedTouchSe[0],
+        touchDelay = _getNormalizedTouchSe[1];
+
+    if (currentInput.isTouch && touchValue === 'hold' && touchDelay) {
+      delay = touchDelay;
+    }
 
     if (delay) {
       showTimeout = setTimeout(function () {
@@ -2904,7 +2983,7 @@ function createTippy(reference, passedProps) {
     invokeHook('onUntrigger', [instance, event]);
 
     if (!instance.state.isVisible) {
-      removeDocumentMouseDownListener();
+      removeDocumentPress();
       return;
     } // For interactive tippies, scheduleHide is added to a document.body handler
     // from onMouseLeave so must intercept scheduled hides from mousemove/leave
@@ -3052,7 +3131,7 @@ function createTippy(reference, passedProps) {
     }
 
     handleStyles();
-    addDocumentMouseDownListener();
+    addDocumentPress();
 
     if (!instance.state.isMounted) {
       popper.style.transition = 'none';
@@ -3090,7 +3169,6 @@ function createTippy(reference, passedProps) {
       handleAriaContentAttribute();
       handleAriaExpandedAttribute();
       pushIfUnique(mountedInstances, instance);
-      updateIOSClass(true);
       instance.state.isMounted = true;
       invokeHook('onMount', [instance]);
 
@@ -3136,7 +3214,7 @@ function createTippy(reference, passedProps) {
     }
 
     cleanupInteractiveMouseListeners();
-    removeDocumentMouseDownListener();
+    removeDocumentPress();
     handleStyles();
 
     if (getIsDefaultRenderFn()) {
@@ -3162,7 +3240,24 @@ function createTippy(reference, passedProps) {
     }
   }
 
+  function hideWithInteractivity(event) {
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== "production") {
+      warnWhen(instance.state.isDestroyed, createMemoryLeakWarning('hideWithInteractivity'));
+    }
+
+    doc.body.addEventListener('mouseleave', scheduleHide);
+    doc.addEventListener('mousemove', debouncedOnMouseMove);
+    pushIfUnique(mouseMoveListeners, debouncedOnMouseMove);
+    debouncedOnMouseMove(event);
+  }
+
   function unmount() {
+    /* istanbul ignore else */
+    if (process.env.NODE_ENV !== "production") {
+      warnWhen(instance.state.isDestroyed, createMemoryLeakWarning('unmount'));
+    }
+
     if (instance.state.isVisible) {
       instance.hide();
     }
@@ -3186,11 +3281,6 @@ function createTippy(reference, passedProps) {
     mountedInstances = mountedInstances.filter(function (i) {
       return i !== instance;
     });
-
-    if (mountedInstances.length === 0) {
-      updateIOSClass(false);
-    }
-
     instance.state.isMounted = false;
     invokeHook('onHidden', [instance]);
   }
@@ -3293,20 +3383,34 @@ var createSingleton = function createSingleton(tippyInstances, optionalProps) {
     errorWhen(!Array.isArray(tippyInstances), ['The first argument passed to createSingleton() must be an array of', 'tippy instances. The passed value was', String(tippyInstances)].join(' '));
   }
 
-  tippyInstances.forEach(function (instance) {
-    instance.disable();
-  });
+  var mutTippyInstances = tippyInstances;
+  var references = [];
   var currentTarget;
-  var references = tippyInstances.map(function (instance) {
-    return instance.reference;
-  });
+  var overrides = optionalProps.overrides;
+
+  function setReferences() {
+    references = mutTippyInstances.map(function (instance) {
+      return instance.reference;
+    });
+  }
+
+  function enableInstances(isEnabled) {
+    mutTippyInstances.forEach(function (instance) {
+      if (isEnabled) {
+        instance.enable();
+      } else {
+        instance.disable();
+      }
+    });
+  }
+
+  enableInstances(false);
+  setReferences();
   var singleton = {
     fn: function fn() {
       return {
         onDestroy: function onDestroy() {
-          tippyInstances.forEach(function (instance) {
-            instance.enable();
-          });
+          enableInstances(true);
         },
         onTrigger: function onTrigger(instance, event) {
           var target = event.currentTarget;
@@ -3317,8 +3421,8 @@ var createSingleton = function createSingleton(tippyInstances, optionalProps) {
           }
 
           currentTarget = target;
-          var overrideProps = (optionalProps.overrides || []).concat('content').reduce(function (acc, prop) {
-            acc[prop] = tippyInstances[index].props[prop];
+          var overrideProps = (overrides || []).concat('content').reduce(function (acc, prop) {
+            acc[prop] = mutTippyInstances[index].props[prop];
             return acc;
           }, {});
           instance.setProps(Object.assign({}, overrideProps, {
@@ -3330,10 +3434,28 @@ var createSingleton = function createSingleton(tippyInstances, optionalProps) {
       };
     }
   };
-  return tippy(div(), Object.assign({}, removeProperties(optionalProps, ['overrides']), {
+  var instance = tippy(div(), Object.assign({}, removeProperties(optionalProps, ['overrides']), {
     plugins: [singleton].concat(optionalProps.plugins || []),
     triggerTarget: references
   }));
+  var originalSetProps = instance.setProps;
+
+  instance.setProps = function (props) {
+    overrides = props.overrides || overrides;
+    originalSetProps(props);
+  };
+
+  instance.setInstances = function (nextInstances) {
+    enableInstances(true);
+    mutTippyInstances = nextInstances;
+    enableInstances(false);
+    setReferences();
+    instance.setProps({
+      triggerTarget: references
+    });
+  };
+
+  return instance;
 };
 
 var BUBBLING_EVENTS_MAP = {
@@ -3357,7 +3479,8 @@ function delegate(targets, props) {
   var target = props.target;
   var nativeProps = removeProperties(props, ['target']);
   var parentProps = Object.assign({}, nativeProps, {
-    trigger: 'manual'
+    trigger: 'manual',
+    touch: false
   });
   var childProps = Object.assign({}, nativeProps, {
     showOnCreate: true
@@ -3380,11 +3503,17 @@ function delegate(targets, props) {
     // 3. Fallback to `defaultProps.trigger`
 
 
-    var trigger = targetNode.getAttribute('data-tippy-trigger') || props.trigger || defaultProps.trigger; // Only create the instance if the bubbling event matches the trigger type,
-    // or the node already has a tippy instance attached
+    var trigger = targetNode.getAttribute('data-tippy-trigger') || props.trigger || defaultProps.trigger; // @ts-ignore
 
-    if (trigger.indexOf(BUBBLING_EVENTS_MAP[event.type]) < 0 || // @ts-ignore
-    targetNode._tippy) {
+    if (targetNode._tippy) {
+      return;
+    }
+
+    if (event.type === 'touchstart' && typeof childProps.touch === 'boolean') {
+      return;
+    }
+
+    if (event.type !== 'touchstart' && trigger.indexOf(BUBBLING_EVENTS_MAP[event.type])) {
       return;
     }
 
@@ -3411,6 +3540,7 @@ function delegate(targets, props) {
 
   function addEventListeners(instance) {
     var reference = instance.reference;
+    on(reference, 'touchstart', onTrigger);
     on(reference, 'mouseover', onTrigger);
     on(reference, 'focusin', onTrigger);
     on(reference, 'click', onTrigger);
@@ -3671,7 +3801,18 @@ var followCursor = {
   }
 };
 
-// position.
+function getProps(props, modifier) {
+  var _props$popperOptions;
+
+  return {
+    popperOptions: Object.assign({}, props.popperOptions, {
+      modifiers: [].concat((((_props$popperOptions = props.popperOptions) == null ? void 0 : _props$popperOptions.modifiers) || []).filter(function (_ref) {
+        var name = _ref.name;
+        return name !== modifier.name;
+      }), [modifier])
+    })
+  };
+}
 
 var inlinePositioning = {
   name: 'inlinePositioning',
@@ -3684,12 +3825,14 @@ var inlinePositioning = {
     }
 
     var placement;
+    var cursorRectIndex = -1;
+    var isInternalUpdate = false;
     var modifier = {
       name: 'tippyInlinePositioning',
       enabled: true,
       phase: 'afterWrite',
-      fn: function fn(_ref) {
-        var state = _ref.state;
+      fn: function fn(_ref2) {
+        var state = _ref2.state;
 
         if (isEnabled()) {
           if (placement !== state.placement) {
@@ -3706,26 +3849,48 @@ var inlinePositioning = {
     };
 
     function _getReferenceClientRect(placement) {
-      return getInlineBoundingClientRect(getBasePlacement$1(placement), reference.getBoundingClientRect(), arrayFrom(reference.getClientRects()));
+      return getInlineBoundingClientRect(getBasePlacement$1(placement), reference.getBoundingClientRect(), arrayFrom(reference.getClientRects()), cursorRectIndex);
+    }
+
+    function setInternalProps(partialProps) {
+      isInternalUpdate = true;
+      instance.setProps(partialProps);
+      isInternalUpdate = false;
+    }
+
+    function addModifier() {
+      if (!isInternalUpdate) {
+        setInternalProps(getProps(instance.props, modifier));
+      }
     }
 
     return {
-      onCreate: function onCreate() {
-        var _instance$props$poppe;
-
-        instance.setProps({
-          popperOptions: Object.assign({}, instance.props.popperOptions, {
-            modifiers: [].concat(((_instance$props$poppe = instance.props.popperOptions) == null ? void 0 : _instance$props$poppe.modifiers) || [], [modifier])
-          })
-        });
+      onCreate: addModifier,
+      onAfterUpdate: addModifier,
+      onTrigger: function onTrigger(_, event) {
+        if (isMouseEvent(event)) {
+          var rects = arrayFrom(instance.reference.getClientRects());
+          var cursorRect = rects.find(function (rect) {
+            return rect.left - 2 <= event.clientX && rect.right + 2 >= event.clientX && rect.top - 2 <= event.clientY && rect.bottom + 2 >= event.clientY;
+          });
+          cursorRectIndex = rects.indexOf(cursorRect);
+        }
+      },
+      onUntrigger: function onUntrigger() {
+        cursorRectIndex = -1;
       }
     };
   }
 };
-function getInlineBoundingClientRect(currentBasePlacement, boundingRect, clientRects) {
+function getInlineBoundingClientRect(currentBasePlacement, boundingRect, clientRects, cursorRectIndex) {
   // Not an inline element, or placement is not yet known
   if (clientRects.length < 2 || currentBasePlacement === null) {
     return boundingRect;
+  } // There are two rects and they are disjoined
+
+
+  if (clientRects.length === 2 && cursorRectIndex >= 0 && clientRects[0].left > clientRects[1].right) {
+    return clientRects[cursorRectIndex] || boundingRect;
   }
 
   switch (currentBasePlacement) {

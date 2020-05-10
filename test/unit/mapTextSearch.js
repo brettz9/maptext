@@ -1,5 +1,4 @@
 /* eslint-env mocha */
-import {expect} from 'chai';
 import {getBeginAndEndIndexes} from '../../behaviors/mapTextSearch.js';
 
 describe('getBeginAndEndIndexes', () => {

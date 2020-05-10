@@ -1,3 +1,4 @@
+const {join} = require('fs');
 const app = require('multipronged')();
 const passport = require('@passport-next/passport');
 const LocalStrategy = require('@passport-next/passport-local').Strategy;
@@ -7,8 +8,9 @@ const User = {
   async findOne ({username}) {
     return {
       verifyPassword (password) {
-        // eslint-disable-next-line global-require
-        require('maptext-admin.json');
+        // eslint-disable-next-line max-len
+        // eslint-disable-next-line node/global-require, import/no-dynamic-require
+        require(join(__dirname, './maptext-admin.json'));
       }
     };
   }
