@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
-import jqueryImageMaps from '../node_modules/imagemaps/dist/index.esm.js';
+import jqueryImageMaps from '../external/imagemaps/dist/index.esm.js';
 import {timeout} from '../external/dom-behaviors/dom-behaviors.js';
 
 const $ = jqueryImageMaps(jQuery);

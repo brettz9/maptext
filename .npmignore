@@ -3,3 +3,4 @@ snapshots
 !snapshots.README.md
 maptext.json
 maptext-admin.json
+rollup.config.js

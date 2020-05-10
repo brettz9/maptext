@@ -30,6 +30,12 @@ module.exports = {
   },
   overrides: [
     {
+      files: 'test/**',
+      globals: {
+        expect: true
+      }
+    },
+    {
       files: '.eslintrc.js',
       extends: ['plugin:node/recommended-script'],
       rules: {
@@ -38,6 +44,7 @@ module.exports = {
     },
     {
       files: ['server/**'],
+      extends: ['plugin:node/recommended-script'],
       rules: {
         strict: 'off',
         'import/unambiguous': 'off',
@@ -45,7 +52,7 @@ module.exports = {
       }
     }
   ],
-  extends: ['ash-nazg/sauron', 'plugin:testcafe/recommended'],
+  extends: ['ash-nazg/sauron-node', 'plugin:testcafe/recommended'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
