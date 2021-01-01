@@ -13,6 +13,7 @@
 - npm: Ignore rollup config file
 - npm: Switch to non-deprecated `@rollup/plugin-node-resolve`
 - npm: Update `eslint-config-ash-nazg`; add `browserslist`
+- npm: Update form-serialization, jamilih, simple-prefs
 - npm: Update devDeps, update tippy.js, and add deps:
   `imagemaps`/`jquery` for expected usage
 

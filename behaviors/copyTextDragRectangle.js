@@ -12,8 +12,6 @@ import * as ImageMaps from './jqueryImageMaps.js';
 function getShapeInfoForShapeAndProps ({shape, props}) {
   let shapeInfo;
   switch (shape) {
-  default:
-    throw new TypeError('Unexpected shape ' + shape);
   case 'rect': {
     shapeInfo = ShapeInfo.rectangle(props);
     break;
@@ -24,6 +22,8 @@ function getShapeInfoForShapeAndProps ({shape, props}) {
     shapeInfo = ShapeInfo.polygon(props.points);
     break;
   }
+  default:
+    throw new TypeError('Unexpected shape ' + shape);
   }
   return shapeInfo;
 }
@@ -60,7 +60,7 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
   default:
     throw new TypeError('Unexpected SVG element type!');
   }
-  // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+  // eslint-disable-next-line unicorn/no-array-callback-reference
   return propArr.reduce(getOffsetAdjustedAnimVal, {});
 };
 
@@ -93,8 +93,8 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
  *   https://github.com/thelonious/kld-intersections/issues/20
  * @param {SVGRect} rect Our copy-paste rectangle
  * @param {GenericArray} shapeInfo
- * @param {"rect"|"circle"|"polygon"} shapeInfo.0 The shape
- * @param {ShapeInfo} shapeInfo.1 The properties of the shape
+ * @param {"rect"|"circle"|"polygon"} shapeInfo."0" The shape
+ * @param {ShapeInfo} shapeInfo."1" The properties of the shape
  * @returns {boolean}
  */
 const svgContains = (rect, [shape, props]) => {
@@ -102,8 +102,6 @@ const svgContains = (rect, [shape, props]) => {
   const rectX2 = rectProps.x + rectProps.width;
   const rectY2 = rectProps.y + rectProps.height;
   switch (shape) {
-  default:
-    throw new Error('Unrecognized shape type');
   case 'rect':
     return (props.x >= rectProps.x &&
         props.y >= rectProps.y &&
@@ -122,6 +120,8 @@ const svgContains = (rect, [shape, props]) => {
         ? pt >= rectProps.x && pt <= rectX2
         : pt >= rectProps.y && pt <= rectY2;
     });
+  default:
+    throw new Error('Unrecognized shape type');
   }
 };
 
@@ -185,7 +185,7 @@ async function textDragRectangleMouseUp (e) {
       break;
     case 'denied':
       return;
-    default: case 'default':
+    case 'default': default:
       return;
     }
   }
@@ -262,14 +262,13 @@ function textDragRectangleMouseMove (e) {
       }
       if (xZoom !== 1 || yZoom !== 1) {
         Object.entries(props).forEach(([prop, val], i) => {
-          if (
+          val *= (
             (prop === 'points' && i % 0) ||
             ['cx', 'cx', 'width'].includes(prop)
-          ) {
-            val *= xZoom;
-          } else {
-            val *= yZoom;
-          }
+          )
+            ? xZoom
+            : yZoom;
+
           props[prop] = val;
         });
       }

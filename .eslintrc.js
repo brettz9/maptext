@@ -9,8 +9,10 @@ module.exports = {
       'Array.isArray',
       'console',
       'DataTransfer',
+      'document.createElementNS',
       'DOMParser',
       'Error',
+      'Event',
       'fetch',
       'JSON',
       'location.href',
@@ -63,5 +65,6 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
+    'eslint-comments/require-description': 0
   }
 };
