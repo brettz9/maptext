@@ -287,19 +287,18 @@ function setFormObjCoords ({
     }
   }
   switch (shape || oldShapeToDelete) {
-  default:
-    return;
   case 'circle':
-    // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+    // eslint-disable-next-line unicorn/no-array-callback-reference
     ['circlex', 'circley', 'circler'].forEach(circleOrRect);
     break;
   case 'rect':
-    // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+    // eslint-disable-next-line unicorn/no-array-callback-reference
     ['leftx', 'topy', 'rightx', 'bottomy'].forEach(circleOrRect);
     break;
   case 'poly':
     formObj[index + '_xy'] = coords;
     break;
+  default:
   }
 }
 
@@ -684,8 +683,6 @@ Views.findBar({
       async function blinkShape ({shape, coords}) {
         let attSel;
         switch (shape) {
-        default:
-          throw new Error('Unexpected shape ' + shape);
         case 'rect': {
           const [x, y, x2, y2] = coords;
           const width = x2 - x;
@@ -700,7 +697,10 @@ Views.findBar({
         }
         case 'polygon': {
           attSel = `[points=${coords.join(',')}]`;
+          break;
         }
+        default:
+          throw new Error('Unexpected shape ' + shape);
         }
         const matchedShape = $(shape + attSel);
         console.log('mat', shape + attSel, matchedShape);

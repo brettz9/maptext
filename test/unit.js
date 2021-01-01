@@ -29,7 +29,7 @@ const dirs = await fs.readdir(join(thisDirectory, 'unit'));
 dirs.forEach((file) => {
   // todo[engine:node@>14]: See about removing these warnings
   // eslint-disable-next-line max-len
-  // eslint-disable-next-line no-unused-expressions, node/no-unsupported-features/es-syntax
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax, no-unsanitized/method
   import('./' + join('unit', file));
 });
 //
