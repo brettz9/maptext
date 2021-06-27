@@ -26,6 +26,15 @@ npm i maptext
 1. **Find across multiple files**, with the highlighted
       results showing the word regions only (with
       ability to click to enlarge for full image)
+1. Allow the **find feature to scroll the result into view**
+1. As per <https://stackoverflow.com/a/36440879/271577> (which outlines usage
+    as `tesseract syllabus-page1.jpg syllabus-page1 hocr`), we should be able
+    to **prepopulate words and locations based on `tesseract`** which has a
+    [Node wrapper](https://github.com/desmondmorris/node-tesseract) or this
+    [Promise-based one](https://github.com/zapolnoch/node-tesseract-ocr). This
+    should be a huge time-saver, if we can parse and figure out from the
+    coordinates in the generated HTML file how to best place the rectangles
+    around the word.
 
 ## Medium priority to-dos
 
