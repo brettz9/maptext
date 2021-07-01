@@ -1,4 +1,5 @@
-/* eslint-disable no-console, import/no-dynamic-require */
+/* eslint-disable no-console -- CLI */
+'use strict';
 
 const util = require('util');
 const assert = require('assert');
@@ -7,6 +8,7 @@ const {writeFile: writeFileAsync} = require('fs');
 const {randomBytes: randomBytesAsync, pbkdf2: pbkdf2Async} = require('crypto');
 
 const adminJSONPath = './maptext-admin.json';
+// eslint-disable-next-line import/no-dynamic-require -- User path
 const adminJSON = require(adminJSONPath);
 
 const [, , user, pass, roles] = process.argv;
