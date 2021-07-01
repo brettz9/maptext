@@ -55,12 +55,13 @@ npm i maptext
     1. Local storage (including asking for names?) / IndexedDB (service
         worker intercepting json-server requests)
     1. Downloadable JSON file?
+1. **OCR.js**-type options for auto-populating text fields
+    - Tesseract has option to get coordinates: <https://stackoverflow.com/a/36440879/271577>
 
 ## Lower priority to-dos
 
 1. Add more **testcafe** tests
 1. Add **CLI** for generating
 1. Allow for **multiple image maps**?
-1. **OCR.js**-type options for auto-populating text fields
 1. **Reading and writing** from/to database and/or
     local Webappfind openable file
