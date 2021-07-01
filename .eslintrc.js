@@ -38,31 +38,20 @@ module.exports = {
       }
     },
     {
-      files: '.eslintrc.js',
-      extends: ['plugin:node/recommended-script'],
-      rules: {
-        'import/no-commonjs': 0
-      }
-    },
-    {
       files: ['server/**'],
-      extends: ['plugin:node/recommended-script'],
+      extends: ['ash-nazg/sauron-node-script'],
       rules: {
-        strict: 'off',
-        'import/unambiguous': 'off',
-        'import/no-commonjs': 'off'
       }
     }
   ],
-  extends: ['ash-nazg/sauron-node', 'plugin:testcafe/recommended'],
+  extends: ['ash-nazg/sauron-node-overrides', 'plugin:testcafe/recommended'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
   },
-  parser: 'babel-eslint',
+  parser: '@babel/eslint-parser',
   parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: 'module'
+    ecmaVersion: 2018
   },
   rules: {
     'eslint-comments/require-description': 0
