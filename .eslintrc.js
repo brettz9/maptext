@@ -38,6 +38,9 @@ module.exports = {
         browser: false
       },
       extends: ['ash-nazg/sauron-node-script'],
+      parserOptions: {
+        ecmaVersion: 2021
+      },
       rules: {
       }
     }
