@@ -1,4 +1,5 @@
 'use strict';
+
 module.exports = {
   env: {
     browser: true,
@@ -32,23 +33,16 @@ module.exports = {
   },
   overrides: [
     {
-      files: 'test/**',
-      globals: {
-        expect: true
-      }
-    },
-    {
       files: ['server/**'],
+      env: {
+        browser: false
+      },
       extends: ['ash-nazg/sauron-node-script'],
       rules: {
       }
     }
   ],
   extends: ['ash-nazg/sauron-node-overrides', 'plugin:testcafe/recommended'],
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly'
-  },
   parser: '@babel/eslint-parser',
   parserOptions: {
     ecmaVersion: 2018
