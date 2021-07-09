@@ -33,6 +33,20 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['cypress/**'],
+      extends: ['ash-nazg/sauron-node', 'plugin:cypress/recommended'],
+      rules: {
+        'import/unambiguous': 0
+      }
+    },
+    {
+      files: ['cypress/plugins/index.js'],
+      extends: ['ash-nazg/sauron-node-script', 'plugin:cypress/recommended'],
+      parserOptions: {
+        ecmaVersion: 2021
+      }
+    },
+    {
       files: ['server/**'],
       env: {
         browser: false
@@ -45,7 +59,7 @@ module.exports = {
       }
     }
   ],
-  extends: ['ash-nazg/sauron-node-overrides', 'plugin:testcafe/recommended'],
+  extends: ['ash-nazg/sauron-node-overrides'],
   parserOptions: {
     ecmaVersion: 2021
   },

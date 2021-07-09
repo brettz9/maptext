@@ -5,3 +5,5 @@ external
 !external/dom-behaviors
 !external/i18n
 !.*.js
+maptext-index.rollup.js
+coverage
