@@ -1,7 +1,7 @@
 // https://github.com/DevExpress/testcafe
 // https://devexpress.github.io/testcafe/documentation/test-api/
 // https://github.com/helen-dikareva/axe-testcafe
-import {axeCheck, createReport} from 'axe-testcafe';
+import {checkForViolations} from '@testcafe-community/axe';
 
 /**
 * @external AxeResult
@@ -14,7 +14,7 @@ import {axeCheck, createReport} from 'axe-testcafe';
  * @returns {Promise<external:AxeResult>}
  */
 async function axeCheckWithConfig (t) {
-  const /* error, */ {violations} = await axeCheck(
+  await checkForViolations(
     t,
     // context: https://github.com/dequelabs/axe-core/blob/develop/doc/API.md#context-parameter
     undefined,
@@ -26,7 +26,6 @@ async function axeCheckWithConfig (t) {
     }
     // , (err, results) {} // https://github.com/dequelabs/axe-core/blob/develop/doc/API.md#results-object
   );
-  await t.expect(violations.length === 0).ok(createReport(violations));
 }
 
 fixture`TestCafe Axe accessibility tests (Demo)`
