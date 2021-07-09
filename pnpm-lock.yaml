@@ -9,8 +9,8 @@ specifiers:
   '@passport-next/passport': git+https://github.com/brettz9/passport.git#promises
   '@passport-next/passport-local': git+https://github.com/brettz9/passport-local.git#es6-linting
   '@rollup/plugin-node-resolve': ^13.0.0
+  '@testcafe-community/axe': ^3.5.0
   axe-core: ^4.2.3
-  axe-testcafe: ^3.0.0
   babel-plugin-dynamic-import-node-babel-7: ^2.0.7
   chai: ^4.3.4
   cypress: ^7.7.0
@@ -36,7 +36,7 @@ specifiers:
   eslint-plugin-unicorn: ^34.0.1
   form-serialization: ^0.11.0
   htteepee: ^0.5.0
-  imagemaps: git+https://github.com/brettz9/ImageMaps.git#remove-all-shapes
+  imagemaps: github:brettz9/ImageMaps#remove-all-shapes
   jamilih: ^0.54.0
   jquery: ^3.6.0
   json-server: ^0.16.3
@@ -68,8 +68,8 @@ devDependencies:
   '@brettz9/eslint-plugin': 1.0.3_eslint@7.30.0
   '@cypress/code-coverage': 3.9.8_cypress@7.7.0
   '@rollup/plugin-node-resolve': 13.0.0_rollup@2.52.8
+  '@testcafe-community/axe': 3.5.0_axe-core@4.2.3+testcafe@1.15.0
   axe-core: 4.2.3
-  axe-testcafe: 3.0.0_axe-core@4.2.3+testcafe@1.15.0
   babel-plugin-dynamic-import-node-babel-7: 2.0.7_@babel+core@7.14.6
   chai: 4.3.4
   cypress: 7.7.0
@@ -93,7 +93,7 @@ devDependencies:
   eslint-plugin-standard: 4.1.0_eslint@7.30.0
   eslint-plugin-testcafe: 0.2.1
   eslint-plugin-unicorn: 34.0.1_eslint@7.30.0
-  imagemaps: github.com/brettz9/ImageMaps/317cda1eec18a942a7b558034770970d04699a37_jquery@3.6.0
+  imagemaps: github.com/brettz9/ImageMaps/c77f5aba6e72ecbce5af88e9f5cba8573d53b521_jquery@3.6.0
   jquery: 3.6.0
   json-server: 0.16.3
   kld-intersections: 0.7.0
@@ -2288,6 +2288,18 @@ packages:
       defer-to-connect: 1.1.3
     dev: true
 
+  /@testcafe-community/axe/3.5.0_axe-core@4.2.3+testcafe@1.15.0:
+    resolution: {integrity: sha512-JFYW8IYtvVZ2788y6d0kb3LGZAQZWgS82SrsFcd/4zJU7b9j2oPruLxpmPKqbM4HwQLk8RhyzkOmECRxRbrLhA==}
+    engines: {node: '>=8.9.0'}
+    peerDependencies:
+      axe-core: '>=2.2.3 <=5'
+      testcafe: '*'
+    dependencies:
+      axe-core: 4.2.3
+      chalk: 2.4.2
+      testcafe: 1.15.0
+    dev: true
+
   /@tokenizer/token/0.1.1:
     resolution: {integrity: sha512-XO6INPbZCxdprl+9qa/AAbFFOMzzwqYxpjPgLICrMD6C2FCw6qfJOPcBk6JqqPLSaZ/Qx87qn4rpPmPMwaAK6w==}
     dev: true
@@ -2740,18 +2752,6 @@ packages:
   /axe-core/4.2.3:
     resolution: {integrity: sha512-pXnVMfJKSIWU2Ml4JHP7pZEPIrgBO1Fd3WGx+fPBsS+KRGhE4vxooD8XBGWbQOIVSZsVK7pUDBBkCicNu80yzQ==}
     engines: {node: '>=4'}
-    dev: true
-
-  /axe-testcafe/3.0.0_axe-core@4.2.3+testcafe@1.15.0:
-    resolution: {integrity: sha512-zcDXA5oDYQSWRJHD/WTy9P79RkrO2m/N81x3eL158/GFzLbqUW/aRE538MwoSknmglh73SXs/ChRUwxDx6AgkA==}
-    engines: {node: '>=8.9.0'}
-    peerDependencies:
-      axe-core: '>=2.2.3 <4'
-      testcafe: '*'
-    dependencies:
-      axe-core: 4.2.3
-      chalk: 2.4.2
-      testcafe: 1.15.0
     dev: true
 
   /babel-plugin-add-module-exports/1.0.2:
@@ -9866,13 +9866,13 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/brettz9/ImageMaps/317cda1eec18a942a7b558034770970d04699a37_jquery@3.6.0:
-    resolution: {tarball: https://codeload.github.com/brettz9/ImageMaps/tar.gz/317cda1eec18a942a7b558034770970d04699a37}
-    id: github.com/brettz9/ImageMaps/317cda1eec18a942a7b558034770970d04699a37
+  github.com/brettz9/ImageMaps/c77f5aba6e72ecbce5af88e9f5cba8573d53b521_jquery@3.6.0:
+    resolution: {tarball: https://codeload.github.com/brettz9/ImageMaps/tar.gz/c77f5aba6e72ecbce5af88e9f5cba8573d53b521}
+    id: github.com/brettz9/ImageMaps/c77f5aba6e72ecbce5af88e9f5cba8573d53b521
     name: imagemaps
     version: 1.0.1
     peerDependencies:
-      jquery: ^3.5.1
+      jquery: ^3.6.0
     dependencies:
       jquery: 3.6.0
     dev: true
