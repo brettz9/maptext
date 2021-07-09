@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 import {getBeginAndEndIndexes} from '../../behaviors/mapTextSearch.js';
 
 describe('getBeginAndEndIndexes', () => {
