@@ -43,9 +43,8 @@ module.exports = {
     }
   ],
   extends: ['ash-nazg/sauron-node-overrides', 'plugin:testcafe/recommended'],
-  parser: '@babel/eslint-parser',
   parserOptions: {
-    ecmaVersion: 2018
+    ecmaVersion: 2021
   },
   rules: {
     'eslint-comments/require-description': 0
