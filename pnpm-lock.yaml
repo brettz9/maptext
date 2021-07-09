@@ -13,7 +13,6 @@ specifiers:
   axe-testcafe: ^3.0.0
   babel-plugin-dynamic-import-node-babel-7: ^2.0.7
   chai: ^4.3.4
-  core-js-bundle: ^3.15.2
   cypress: ^7.7.0
   cypress-axe-core: ^1.1.3
   eslint: ^7.30.0
@@ -47,7 +46,6 @@ specifiers:
   multipronged: ^0.1.0
   npm-run-all: ^4.1.5
   open-cli: ^7.0.0
-  regenerator-runtime: ^0.13.7
   rollup: ^2.52.8
   simple-prefs: ^0.7.0
   testcafe: ^1.15.0
@@ -74,7 +72,6 @@ devDependencies:
   axe-testcafe: 3.0.0_axe-core@4.2.3+testcafe@1.15.0
   babel-plugin-dynamic-import-node-babel-7: 2.0.7_@babel+core@7.14.6
   chai: 4.3.4
-  core-js-bundle: 3.15.2
   cypress: 7.7.0
   cypress-axe-core: 1.1.3_axe-core@4.2.3+cypress@7.7.0
   eslint: 7.30.0
@@ -103,7 +100,6 @@ devDependencies:
   mocha: 9.0.2
   npm-run-all: 4.1.5
   open-cli: 7.0.0
-  regenerator-runtime: 0.13.7
   rollup: 2.52.8
   testcafe: 1.15.0
   tippy.js: 6.3.1
@@ -3698,11 +3694,6 @@ packages:
   /copy-descriptor/0.1.1:
     resolution: {integrity: sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=}
     engines: {node: '>=0.10.0'}
-    dev: true
-
-  /core-js-bundle/3.15.2:
-    resolution: {integrity: sha512-C+S/a8h0oRcEzQeplo9lRx8V0XQUBXWbVO/NJL4RCyqRW4HPfDqXhes5YT/mrc+VH28+u8IX5+YngWEVBY0qDw==}
-    requiresBuild: true
     dev: true
 
   /core-js-compat/3.15.2:
