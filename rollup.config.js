@@ -17,5 +17,16 @@ export default [
       file: 'external/tippy.js/dist/tippy.esm.js'
     },
     plugins: [resolve()]
+  },
+  // Encountered problems trying to use `@rollup/plugin-babel`, so just
+  //  produce ESM and run `nyc instrument` on that
+  {
+    input: 'maptext-index.js',
+    output: {
+      format: 'iife',
+      sourcemap: true,
+      file: 'maptext-index.rollup.js'
+    },
+    plugins: [resolve()]
   }
 ];

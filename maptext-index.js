@@ -1,8 +1,8 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {jml, $, $$, body} from './node_modules/jamilih/dist/jml-es.js';
+import {jml, $, $$, body} from './external/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
-} from './node_modules/form-serialization/dist/index-es.js';
+} from './external/form-serialization/dist/index-es.js';
 
 import tippy from './external/tippy.js/dist/tippy.esm.js';
 // Todo: Switch to npm version
@@ -17,7 +17,7 @@ import {
   enableTextDragRectangle, disableTextDragRectangle
 } from './behaviors/copyTextDragRectangle.js';
 
-import {SimplePrefs} from './node_modules/simple-prefs/dist/index.esm.js';
+import {SimplePrefs} from './external/simple-prefs/dist/index.esm.js';
 
 // Todo: Could allow for multiple image maps
 const mapID = 0;

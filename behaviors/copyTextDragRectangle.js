@@ -1,9 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {$, $$} from '../node_modules/jamilih/dist/jml-es.js';
+import {$, $$} from '../external/jamilih/dist/jml-es.js';
 // import _ from '../external/i18n/i18n.js';
 import {
   Intersection, ShapeInfo
-} from '../node_modules/kld-intersections/dist/index-esm.js';
+} from '../external/kld-intersections/dist/index-esm.js';
 
 import * as ImageMaps from './jqueryImageMaps.js';
 

@@ -1,4 +1,4 @@
-import {jml, body, nbsp} from '../../node_modules/jamilih/dist/jml-es.js';
+import {jml, body, nbsp} from '../../external/jamilih/dist/jml-es.js';
 import _ from '../../external/i18n/i18n.js';
 
 export {

@@ -8,3 +8,4 @@ db
 cypress/screenshots
 nogin.js
 maptext-admin.json
+coverage
