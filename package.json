@@ -4,11 +4,9 @@
   "description": "Associate text to image regions for text search and within-image copy-paste",
   "main": "maptext-index.js",
   "scripts": {
-    "prepare": "npm run copy",
+    "prepublishOnly": "pnpm i && npm run copy",
     "open": "open-cli http://localhost:8050/ && npm start",
-    "start:coverage": "nyc --silent node server/server.js",
-    "start-nogin": "nogin --SERVE_COVERAGE --router server.js --PORT 8050 --localScripts --config nogin.js --fromURL=https://github.com/brettz9/nogin --fromText=brettz9",
-    "start": "json-server maptext.json --middlewares server/access.js server/text-search.js --snapshots snapshots --id name --watch --static . --port 8050",
+    "start": "nyc --silent nogin --SERVE_COVERAGE --router server.js --PORT 8050 --localScripts --config nogin.js --fromURL=https://github.com/brettz9/nogin --fromText=brettz9",
     "eslint": "eslint --ext=js,md,html .",
     "lint": "npm run eslint",
     "copy:form-serialization": "cp node_modules/form-serialization/dist/index-es.js external/form-serialization/dist/index-es.js",
@@ -20,7 +18,7 @@
     "copy:tippy.js": "npm run rollup",
     "copy:jquery": "cp node_modules/jquery/dist/jquery.js external/jquery/dist/jquery.js",
     "copy": "run-p copy:im copy:tippy.js copy:jquery copy:form-serialization copy:jamilih copy:kld-intersections copy:load-stylesheets copy:simple-prefs",
-    "cypress:run": "cypress run",
+    "cypress:run": "cypress run && npm run report",
     "cypress:open": "cypress open",
     "report": "nyc report",
     "rollup": "rollup -c && nyc instrument maptext-index.rollup.js .",
@@ -104,10 +102,7 @@
     "tippy.js": "^6.3.1"
   },
   "dependencies": {
-    "@passport-next/passport": "git+https://github.com/brettz9/passport.git#promises",
-    "@passport-next/passport-local": "git+https://github.com/brettz9/passport-local.git#es6-linting",
     "json-server": "^0.16.3",
-    "multipronged": "^0.1.0",
     "nogin": "^2.4.0"
   }
 }
