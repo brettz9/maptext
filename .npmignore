@@ -7,3 +7,5 @@ rollup.config.js
 lgtm.yml
 cypress
 coverage
+nogin.js
+db
