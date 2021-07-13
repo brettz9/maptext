@@ -7,7 +7,7 @@
     "prepublishOnly": "pnpm i && npm run copy",
     "open": "open-cli http://localhost:8050/ && npm start",
     "start-db": "mongod --port=27017 --dbpath=db --bind_ip=127.0.0.1",
-    "start": "nyc --silent nogin --SERVE_COVERAGE --router server.js --PORT 8050 --localScripts --config nogin.js --fromURL=https://github.com/brettz9/nogin --fromText=brettz9",
+    "start": "nyc --silent nogin --SERVE_COVERAGE --router ./server/server.js --PORT 8050 --localScripts --config nogin.js --fromURL=https://github.com/brettz9/nogin --fromText=brettz9",
     "eslint": "eslint --ext=js,md,html .",
     "lint": "npm run eslint",
     "copy:form-serialization": "cp node_modules/form-serialization/dist/index-es.js external/form-serialization/dist/index-es.js",
@@ -104,6 +104,6 @@
   },
   "dependencies": {
     "json-server": "^0.16.3",
-    "nogin": "^2.5.0"
+    "nogin": "^2.5.1"
   }
 }
