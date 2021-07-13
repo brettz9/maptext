@@ -21,8 +21,9 @@
     "copy": "run-p copy:im copy:tippy.js copy:jquery copy:form-serialization copy:jamilih copy:kld-intersections copy:load-stylesheets copy:simple-prefs",
     "cypress:run": "cypress run && npm run report",
     "cypress:open": "cypress open",
+    "instrument": "nyc instrument maptext-index.rollup.js .",
     "report": "nyc report",
-    "rollup": "rollup -c && nyc instrument maptext-index.rollup.js .",
+    "rollup": "rollup -c",
     "test": "run-s eslint cypress:run"
   },
   "nyc": {

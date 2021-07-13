@@ -12,5 +12,5 @@ module.exports = (app) => {
     static: path.join(process.cwd(), '.')
   });
   app.use('/maps', [textSearchMiddleware, ...middlewares]);
-  app.use(router);
+  app.use('/maps', router);
 };
