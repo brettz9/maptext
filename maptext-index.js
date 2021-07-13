@@ -388,7 +388,7 @@ async function getMapData ({url, method}) {
 function mapDataByName ({name, method = 'GET'}) {
   return getMapData({
     method,
-    url: '/maps/' + encodeURIComponent(name)
+    url: '/maps/maps/' + encodeURIComponent(name)
   });
 }
 
@@ -497,12 +497,12 @@ form = Views.mainForm({
       const cfg = map.name
         // Overwrite
         ? {
-          url: '/maps/' + encodeURIComponent(mapName),
+          url: '/maps/maps/' + encodeURIComponent(mapName),
           method: 'PUT'
         }
         // Create new
         : {
-          url: '/maps',
+          url: '/maps/maps/',
           method: 'POST'
         };
 
