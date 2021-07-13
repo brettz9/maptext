@@ -60,10 +60,10 @@
     "@babel/preset-env": "^7.14.7",
     "@babel/register": "^7.14.5",
     "@brettz9/eslint-plugin": "^1.0.3",
-    "@cypress/code-coverage": "^3.9.8",
+    "@cypress/code-coverage": "^3.9.9",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
-    "axe-core": "^4.2.3",
+    "axe-core": "^4.3.0",
     "babel-plugin-dynamic-import-node-babel-7": "^2.0.7",
     "babel-plugin-istanbul": "^6.0.0",
     "chai": "^4.3.4",
@@ -78,7 +78,7 @@
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-html": "^6.1.2",
     "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jsdoc": "^35.4.1",
+    "eslint-plugin-jsdoc": "^35.4.3",
     "eslint-plugin-markdown": "^2.2.0",
     "eslint-plugin-no-unsanitized": "^3.1.5",
     "eslint-plugin-no-use-extend-native": "^0.5.0",
@@ -97,12 +97,12 @@
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
     "open-cli": "^7.0.0",
-    "rollup": "^2.52.8",
+    "rollup": "^2.53.1",
     "simple-prefs": "^0.7.0",
     "tippy.js": "^6.3.1"
   },
   "dependencies": {
     "json-server": "^0.16.3",
-    "nogin": "^2.4.0"
+    "nogin": "^2.5.0"
   }
 }
