@@ -11987,8 +11987,11 @@
           }
         } else if (itemType === "object") {
           if ("x" in item && "y" in item) {
-            result = new Point2D(item.x, item.y);
-            args.shift();
+            result = new Point2D(item.x, item.y); // eslint-disable-next-line compat/compat
+
+            if (Object.keys(item).length === 2) {
+              args.shift();
+            }
           } else {
             var _iterator3 = _createForOfIteratorHelper(names),
                 _step3;
@@ -13995,6 +13998,7 @@
     let shapeInfo;
     switch (shape) {
     case 'rect': {
+      console.log('props', props);
       shapeInfo = ShapeInfo.rectangle(props);
       break;
     } case 'circle': {
