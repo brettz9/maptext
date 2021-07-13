@@ -93,7 +93,7 @@
     "imagemaps": "github:brettz9/ImageMaps#remove-all-shapes",
     "jamilih": "^0.54.0",
     "jquery": "^3.6.0",
-    "kld-intersections": "^0.7.0",
+    "kld-intersections": "https://github.com/thelonious/kld-intersections#development",
     "load-stylesheets": "^0.10.0",
     "mocha": "^9.0.2",
     "npm-run-all": "^4.1.5",

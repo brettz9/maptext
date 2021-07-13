@@ -38,7 +38,7 @@ specifiers:
   jamilih: ^0.54.0
   jquery: ^3.6.0
   json-server: ^0.16.3
-  kld-intersections: ^0.7.0
+  kld-intersections: https://github.com/thelonious/kld-intersections#development
   load-stylesheets: ^0.10.0
   mocha: ^9.0.2
   nogin: ^2.5.1
@@ -90,7 +90,7 @@ devDependencies:
   imagemaps: github.com/brettz9/ImageMaps/c77f5aba6e72ecbce5af88e9f5cba8573d53b521_jquery@3.6.0
   jamilih: 0.54.0
   jquery: 3.6.0
-  kld-intersections: 0.7.0
+  kld-intersections: github.com/thelonious/kld-intersections/3e329985e2f997fdae84396a3a0839b9a1652371
   load-stylesheets: 0.10.0
   mocha: 9.0.2
   npm-run-all: 4.1.5
@@ -6319,15 +6319,6 @@ packages:
     engines: {node: '>= 10.15.3'}
     dev: true
 
-  /kld-intersections/0.7.0:
-    resolution: {integrity: sha512-/KuBU7Y5bRPGfc0yQ3QIoXPKqOQ6cBWDRl1XVMMa3pm4V6Ydbgy9e2fZoRxlSIU0gZSBt1c6gWLOzSGKbU8I3A==}
-    engines: {node: '>= 10.15.3'}
-    dependencies:
-      kld-affine: 2.1.1
-      kld-path-parser: 0.2.1
-      kld-polynomial: 0.3.0
-    dev: true
-
   /kld-path-parser/0.2.1:
     resolution: {integrity: sha512-C1EqY6vzqv5tdKeMF31L+JXq97n5zo67LiSEhZf4sPq8YeM+8ytp/qMGSKN8VdSPvFa6h1SR35aF4+T2JtxZww==}
     engines: {node: '>= 10.15.3'}
@@ -9543,3 +9534,14 @@ packages:
     dependencies:
       jquery: 3.6.0
     dev: false
+
+  github.com/thelonious/kld-intersections/3e329985e2f997fdae84396a3a0839b9a1652371:
+    resolution: {tarball: https://codeload.github.com/thelonious/kld-intersections/tar.gz/3e329985e2f997fdae84396a3a0839b9a1652371}
+    name: kld-intersections
+    version: 0.7.0
+    engines: {node: '>= 10.15.3'}
+    dependencies:
+      kld-affine: 2.1.1
+      kld-path-parser: 0.2.1
+      kld-polynomial: 0.3.0
+    dev: true
