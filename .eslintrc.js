@@ -47,7 +47,7 @@ module.exports = {
       }
     },
     {
-      files: ['server/**'],
+      files: ['server/**', 'nogin.js'],
       env: {
         browser: false
       },
