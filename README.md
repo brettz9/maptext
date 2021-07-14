@@ -10,19 +10,6 @@ npm i maptext
 
 ## Immediate to-dos
 
-1. **Bugs**
-    1. **Highlight copy-pasted blocks as mouse goes through them** should
-        de-highlight when moved off
-    1. **Sticky rectangles** staying together sometimes?
-    1. **Buttons not working immediately**?
-    1. **Duplicate rectangles** sometimes being created with
-        **duplicate textboxes**
-    1. **Can't highlight indefinitely vertically** without guides disappearing
-1. Add more **Cypress** tests
-    1. Allow **highlighted text search** (optionally overriding browser
-        find) with highlight of image regions (single or multiple select)
-1. **Demo with RTL and Chinese/Korean text**, adding special
-    handling/options if necessary
 1. **Access control** middleware
     1. Ensure `db`, `nogin.js`, `.git` don't show up when serving static files
     1. Let access level (with URL params--see below) determine what
@@ -42,6 +29,20 @@ npm i maptext
             results showing the word regions only (with
             ability to click to enlarge for full image)
             1. Allow the **find feature to scroll the result into view**
+            1. Allow **highlighted text search** (optionally overriding browser
+                find) with highlight of image regions (single or multiple
+                select)
+1. **Demo with RTL and Chinese/Korean text**, adding special
+    handling/options if necessary
+1. **Bugs**
+    1. **Highlight copy-pasted blocks as mouse goes through them** should
+        de-highlight when moved off
+    1. **Sticky rectangles** staying together sometimes?
+    1. **Buttons not working immediately**?
+    1. **Duplicate rectangles** sometimes being created with
+        **duplicate textboxes**
+    1. **Can't highlight indefinitely vertically** without guides disappearing
+1. Add more **Cypress** tests
 
 ## Medium priority to-dos
 
