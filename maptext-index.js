@@ -454,7 +454,7 @@ form = Views.mainForm({
       const results = await mapDataByName({
         name: mapName, method: 'DELETE'
       });
-      console.log('delete results', results);
+
       await ImageMaps.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
@@ -703,7 +703,6 @@ Views.findBar({
           throw new Error('Unexpected shape ' + shape);
         }
         const matchedShape = $(shape + attSel);
-        console.log('mat', shape + attSel, matchedShape);
         matchedShape.classList.add('borderBlink');
         await timeout(3000);
         matchedShape.classList.remove('borderBlink');
