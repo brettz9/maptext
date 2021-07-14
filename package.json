@@ -65,7 +65,7 @@
     "@cypress/code-coverage": "^3.9.9",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
-    "axe-core": "^4.3.0",
+    "axe-core": "^4.3.1",
     "babel-plugin-dynamic-import-node-babel-7": "^2.0.7",
     "babel-plugin-istanbul": "^6.0.0",
     "chai": "^4.3.4",
@@ -104,7 +104,13 @@
     "tippy.js": "^6.3.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "@popperjs/core": "2.9.2",
+    "bootstrap": "^5.0.2",
+    "github-fork-ribbon-css": "^0.2.3",
+    "intl-dom": "^0.13.4",
+    "jquery-form": "https://github.com/brettz9/form#xss",
     "json-server": "^0.16.3",
-    "nogin": "^2.5.1"
+    "nogin": "^2.5.3"
   }
 }
