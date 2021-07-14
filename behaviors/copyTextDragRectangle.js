@@ -13,6 +13,12 @@ function getShapeInfoForShapeAndProps ({shape, props}) {
   let shapeInfo;
   switch (shape) {
   case 'rect': {
+    // https://github.com/thelonious/kld-intersections/issues/65
+    if (!('top' in props)) {
+      props = {
+        top: props.y, left: props.x, width: props.width, height: props.height
+      };
+    }
     shapeInfo = ShapeInfo.rectangle(props);
     break;
   } case 'circle': {
@@ -273,15 +279,20 @@ function textDragRectangleMouseMove (e) {
         });
       }
 
+      const userRectInfo = getShapeInfoForShapeAndProps({
+        shape: 'rect', props: getOffsetAdjustedPropsObject(rect)
+      });
+
+      const areaMapInfo = getShapeInfoForShapeAndProps({shape, props});
+
       const intersection = Intersection.intersect(
         // SvgShapes.element(rect),
-        getShapeInfoForShapeAndProps({
-          shape: 'rect', props: getOffsetAdjustedPropsObject(rect)
-        }),
-        getShapeInfoForShapeAndProps({shape, props})
+        userRectInfo,
+        areaMapInfo
       );
-      const contained = svgContains(rect, [shape, props]);
-      const areaMatched = intersection.points.length || contained;
+
+      const areaMatched = intersection.points.length ||
+        svgContains(rect, [shape, props]);
       if (areaMatched) {
         const json = JSON.stringify([shape, {coords: coordArr}]);
         // Don't keep adding when reencountering same shape
