@@ -451,7 +451,7 @@ form = Views.mainForm({
       if (!ok) {
         return;
       }
-      const results = await mapDataByName({
+      /* const results = */ await mapDataByName({
         name: mapName, method: 'DELETE'
       });
 
