@@ -2,6 +2,17 @@
 
 ***This project is currently only minimally functional***
 
+MapText allows annotating images of text (e.g., of historical documents,
+calligraphy, etc.) with text that can be copied out (as in copy-paste) while
+viewing the image and which can be searched for text so as to display the
+relevant portion(s) of the original document.
+
+It is similar to PDFs whose text can be copied out or searched, but MapText
+seeks to provide a ready means for providing such documents in a way whereby
+a location can be bookmarked and shared so as to bring others online to the
+same point in the document by URL, along with the text highlighted, the
+search results shown, etc.
+
 ## Installation
 
 ```
@@ -17,7 +28,7 @@ npm i maptext
 1. **URL params**
     1. Allow **URL params to designate map info to pre-load**
         1. Could try changing components to SFC-style
-    1. **Highlight specific block(s)**
+    1. **Highlight specific block(s)** based on URL
 1. **Pages**
     1. **View map** (with find and copy-paste)
         1. Ensure highlighted text search **works with zoom**
