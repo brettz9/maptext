@@ -47,7 +47,7 @@ specifiers:
   kld-intersections: https://github.com/thelonious/kld-intersections#development
   load-stylesheets: ^0.10.0
   mocha: ^9.0.2
-  nogin: ^2.5.3
+  nogin: ^2.5.4
   npm-run-all: ^4.1.5
   nyc: ^15.1.0
   open-cli: ^7.0.0
@@ -63,7 +63,7 @@ dependencies:
   intl-dom: 0.13.4
   jquery-form: github.com/brettz9/form/6f65366180b31c49984469ddb1e409f2664a585b
   json-server: 0.16.3
-  nogin: 2.5.3_4100046ff32c9d0feaffd5d3942fcc5e
+  nogin: 2.5.4_4100046ff32c9d0feaffd5d3942fcc5e
 
 devDependencies:
   '@babel/core': 7.14.6
@@ -7007,8 +7007,8 @@ packages:
       update-notifier: 4.1.3
     dev: false
 
-  /nogin/2.5.3_4100046ff32c9d0feaffd5d3942fcc5e:
-    resolution: {integrity: sha512-YEndiDFgrwUzWvYdqKPuTeJVKefdFE/peLHZq/Uquc7vep5vkOIHP4VAfOftZQAqXYxs0cqwqR6Q9TwnwNez5w==}
+  /nogin/2.5.4_4100046ff32c9d0feaffd5d3942fcc5e:
+    resolution: {integrity: sha512-jClpcP+CNq8PMLrGsLs8ror5etvvaoV3mCB2rYJUWnKUadT/9JvTv8NVlViUbh7gH5oPJwMw1vB6UXe3G3Smng==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     peerDependencies:
