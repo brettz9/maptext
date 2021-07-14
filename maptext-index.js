@@ -38,7 +38,7 @@ async function setTextRectangleByEditMode () {
   }
 }
 
-// Todo: Detect locale and set this in such a utility, etc.
+// Todo: Detect locale and use https://github.com/brettz9/i18nizeElement
 document.documentElement.lang = 'en-US';
 document.documentElement.dir = 'ltr';
 

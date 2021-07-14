@@ -29,6 +29,7 @@ npm i maptext
         panels are shown (hide all but view from unlogged-in)
 1. **URL params**
     1. Allow **URL params to designate map info to pre-load**
+        1. Could try changing components to SFC-style
     1. **Highlight specific block(s)**
 1. **Pages**
     1. **View map** (with find and copy-paste)
