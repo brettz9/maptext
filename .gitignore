@@ -9,5 +9,6 @@ cypress/screenshots
 nogin.js
 maptext-admin.json
 coverage
-nogin.js
+maptext.json
 db
+nogin.js
