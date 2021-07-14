@@ -11,6 +11,12 @@ module.exports = (app) => {
   const middlewares = jsonServer.defaults({
     static: path.join(process.cwd(), '.')
   });
-  app.use('/maps', [textSearchMiddleware, ...middlewares]);
-  app.use('/maps', router);
+  app.use('/maps', [(req, res, next) => {
+    // Todo: Change this so only restricting editing
+    if (!req.session.user) {
+      res.redirect('/');
+      return;
+    }
+    next();
+  }, textSearchMiddleware, ...middlewares, router]);
 };
