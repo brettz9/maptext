@@ -14966,7 +14966,7 @@
         if (!ok) {
           return;
         }
-        await mapDataByName({
+        /* const results = */ await mapDataByName({
           name: mapName, method: 'DELETE'
         });
 
