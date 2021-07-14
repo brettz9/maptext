@@ -107,6 +107,7 @@
     "@fortawesome/fontawesome-free": "^5.15.3",
     "@popperjs/core": "2.9.2",
     "bootstrap": "^5.0.2",
+    "express": "^4.17.1",
     "github-fork-ribbon-css": "^0.2.3",
     "intl-dom": "^0.13.4",
     "jquery-form": "https://github.com/brettz9/form#xss",

@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const express = require('express');
 const jsonServer = require('json-server');
 const textSearchMiddleware = require('./text-search.js');
 
@@ -11,12 +12,22 @@ module.exports = (app) => {
   const middlewares = jsonServer.defaults({
     static: path.join(process.cwd(), '.')
   });
+
+  const restMiddleware = [
+    textSearchMiddleware, ...middlewares, router
+  ];
+
+  // Single Page Application
+  app.use('/maps/main', express.static('index.html'));
+  app.use('/maps/view', express.static('index.html'));
+
+  // No login required for GET
+  // app.get('/maps', [...restMiddleware]);
   app.use('/maps', [(req, res, next) => {
-    // Todo: Change this so only restricting editing
     if (!req.session.user) {
       res.redirect('/');
       return;
     }
     next();
-  }, textSearchMiddleware, ...middlewares, router]);
+  }, ...restMiddleware]);
 };
