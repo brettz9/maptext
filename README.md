@@ -21,15 +21,15 @@ npm i maptext
 
 ## Immediate to-dos
 
-1. **Access control** middleware
-    1. Let access level (with URL params--see below) determine what
-        panels are shown (hide all but view from unlogged-in)
-1. **URL params**
-    1. Allow **URL params to designate map info to pre-load**
-        1. Could try changing components to SFC-style
-    1. **Highlight specific block(s)** based on URL
 1. **Pages**
-    1. **View map** (with find and copy-paste)
+    1. **View map** (Just show the view, with find and copy-paste)
+        1. Allow **URL params to designate map info to pre-load**
+            1. Could try changing components to SFC-style
+        1. **Access control** middleware
+            1. Let access level (with URL params--see below) determine what
+                panels are shown (hide all but view from unlogged-in)
+        1. **Highlight specific block(s)** based on URL
+        1. Option to show guides?
         1. Ensure highlighted text search **works with zoom**
         1. Find-all changes view entry to add query param to open to specific
             location(s) within file and highlighting them
