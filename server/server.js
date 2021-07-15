@@ -24,10 +24,15 @@ module.exports = (app) => {
   // No login required for GET
   // app.get('/maps', [...restMiddleware]);
   app.use('/maps', [(req, res, next) => {
+    if ((/^\/(?:\.git|nogin\.js|db)/u).test(req.url)) {
+      res.status(404).send('Bad request');
+      return;
+    }
     if (!req.session.user) {
       res.redirect('/');
       return;
     }
+
     next();
   }, ...restMiddleware]);
 };
