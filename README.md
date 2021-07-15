@@ -22,7 +22,6 @@ npm i maptext
 ## Immediate to-dos
 
 1. **Access control** middleware
-    1. Ensure `db`, `nogin.js`, `.git` don't show up when serving static files
     1. Let access level (with URL params--see below) determine what
         panels are shown (hide all but view from unlogged-in)
 1. **URL params**
