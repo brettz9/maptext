@@ -1,4 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
+import './components/imagePreview/imagePreview.js';
+
 import {jml, $, $$, body} from './external/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
@@ -11,7 +13,7 @@ import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
 
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
-import * as ImageMaps from './behaviors/jqueryImageMaps.js';
+import * as ImageMaps from './components/imagePreview/jqueryImageMaps.js';
 import * as TextSearch from './behaviors/mapTextSearch.js';
 import {
   enableTextDragRectangle, disableTextDragRectangle
@@ -135,7 +137,7 @@ function updateSerializedHTML (removeAll) {
     $('#serializedHTML').value = '';
     return;
   }
-  const clonedImagePreview = $('#imagePreview').cloneNode(true);
+  const clonedImagePreview = $('.imagePreview').cloneNode(true);
   clonedImagePreview.querySelector('svg').remove();
   $('#serializedHTML').value =
     clonedImagePreview.outerHTML;
@@ -312,17 +314,14 @@ async function setFormObjCoordsAndUpdateViewForMap ({
 
 async function formToPreview (formObj) {
   const defaultImageSrc = await prefs.getPref('lastImageSrc');
-  const imagePreview = $('#imagePreview');
+  const imagePreview = $('image-preview');
   const {name} = formObj;
-  imagePreview.replaceWith(
-    Views.imagePreview({
-      name,
-      src: $('input[name=mapURL]').value || (
-        defaultImageSrc.startsWith('http')
-          ? defaultImageSrc
-          : location.href + '/' + defaultImageSrc
-      )
-    })
+
+  imagePreview.name = name;
+  imagePreview.src = $('input[name=mapURL]').value || (
+    defaultImageSrc.startsWith('http')
+      ? defaultImageSrc
+      : location.href + '/' + defaultImageSrc
   );
 
   ImageMaps.setShapeStrokeFillOptions(Styles.shapeStyle);

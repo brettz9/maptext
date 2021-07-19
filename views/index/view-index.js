@@ -117,7 +117,7 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
     ]],
     ['br'],
     ['div', {id: 'imagePreviewHolder'}, [
-      ['div', {id: 'imagePreview'}]
+      ['image-preview']
     ]]
   ]]
 ]];
@@ -132,22 +132,4 @@ export const buildArea = ({shape, alt, coords, behaviors}) => {
     atts.alt = alt;
   }
   return ['area', atts];
-};
-
-export const imagePreview = ({src, name}) => {
-  return jml('div', {id: 'imagePreview'}, [
-    ['map', {name}],
-    ['img', {
-      id: 'preview',
-      alt: _('Selected image for map'),
-      usemap: '#' + name,
-      src,
-      $on: {
-        // Todo: We could scale using this:
-        load () {
-          // this.naturalWidth, this.naturalHeight
-        }
-      }
-    }]
-  ]);
 };

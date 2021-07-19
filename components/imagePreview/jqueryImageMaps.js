@@ -2,8 +2,8 @@
 /* eslint-disable jsdoc/require-jsdoc */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
-import jqueryImageMaps from '../external/imagemaps/dist/index.esm.js';
-import {timeout} from '../external/dom-behaviors/dom-behaviors.js';
+import jqueryImageMaps from '../../external/imagemaps/dist/index.esm.js';
+import {timeout} from '../../external/dom-behaviors/dom-behaviors.js';
 
 const $ = jqueryImageMaps(jQuery);
 
@@ -38,14 +38,14 @@ export async function addShape (shape, {sharedBehaviors, coords}) {
   //   the shape that is set is regularly hidden (especially
   //   when following `removeAllShapes`?)
   await timeout(200);
-  $('#preview').setShapeStyle(
+  $('.preview').setShapeStyle(
     _shapeStrokeFillOptions
   ).addShape(
     coords, $('input[name=mapURL]')[0].value, shape
   );
   if (sharedBehaviors) {
     const newIndex = Number.parseInt(
-      $('#preview').imageMaps().shapeEl.data('index')
+      $('.preview').imageMaps().shapeEl.data('index')
     );
     await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
       index: newIndex,
@@ -71,7 +71,7 @@ export function addCircle ({
 }
 export async function removeAllShapes ({sharedBehaviors} = {}) {
   try {
-    $('#preview').removeAllShapes();
+    $('.preview').removeAllShapes();
     setFormObj({
       name: _formObj.name,
       mapURL: _formObj.mapURL
@@ -94,7 +94,7 @@ export async function removeAllShapes ({sharedBehaviors} = {}) {
   }
 }
 export async function removeShape ({sharedBehaviors} = {}) {
-  const imageMaps = $('#preview').imageMaps();
+  const imageMaps = $('.preview').imageMaps();
   if (imageMaps.svgEl.find('._shape_face').length <= 1) {
     // Follow this routine instead which will at least set
     //   a single empty rect set rather than removing the form
@@ -107,9 +107,9 @@ export async function removeShape ({sharedBehaviors} = {}) {
   );
   const {
     type: oldShapeToDelete
-  } = $('#preview').imageMaps().getShapeInfo(oldIndex);
+  } = $('.preview').imageMaps().getShapeInfo(oldIndex);
 
-  $('#preview').removeShape();
+  $('.preview').removeShape();
   if (sharedBehaviors) {
     await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
       index: oldIndex,
@@ -159,14 +159,14 @@ export function setImageMaps ({formObj, editMode, sharedBehaviors}) {
     }
   };
 
-  $('#preview').imageMaps(settings);
-  // $('#preview')[editMode === 'edit' ? 'show' : 'hide']();
+  $('.preview').imageMaps(settings);
+  // $('.preview')[editMode === 'edit' ? 'show' : 'hide']();
 
   showGuidesUnlessViewMode(editMode);
 }
 
 export function getPreviewInfo () {
-  const previewElement = $('#preview');
+  const previewElement = $('.preview');
   const width = previewElement.width();
   const height = previewElement.height();
   const shapes = previewElement.getAllShapes();
@@ -186,34 +186,34 @@ export function getPreviewInfo () {
  * @returns {void}
  */
 export function copyImageMapsToPreview (sourceInfo) {
-  $.imageMaps.copyImageMaps(sourceInfo, $('#preview'));
+  $.imageMaps.copyImageMaps(sourceInfo, $('.preview'));
 }
 export function showGuidesUnlessViewMode (editMode) {
-  $('map[name=map0] > svg').css(
+  $('map[name] > svg').css(
     'visibility',
     editMode !== 'view' ? 'visible' : 'hidden'
   );
 }
 
 export function zoomPreviewAndResize (val) {
-  const preview = $('#preview');
+  const preview = $('.preview');
   preview.zoom([val]);
 
   // for image resize
-  $('#imagePreview').css({
+  $('.imagePreview').css({
     width: val * 0.01 * preview.width(),
     height: val * 0.01 * preview.height()
   });
 }
 
 export function getPosition () {
-  return $('#preview').position();
+  return $('.preview').position();
 }
 
 let originalPreviewWidth;
 let originalPreviewHeight;
 export function getZoom () {
-  const preview = $('#preview');
+  const preview = $('.preview');
   if (originalPreviewWidth === undefined) {
     originalPreviewWidth = preview.width();
     originalPreviewHeight = preview.height();

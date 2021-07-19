@@ -5,7 +5,7 @@ import {
   Intersection, ShapeInfo
 } from '../external/kld-intersections/dist/index-esm.js';
 
-import * as ImageMaps from './jqueryImageMaps.js';
+import * as ImageMaps from '../components/imagePreview/jqueryImageMaps.js';
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?
@@ -228,7 +228,7 @@ function textDragRectangleMouseMove (e) {
   if (e.buttons !== 1) {
     return;
   }
-  // Thouh we could put this in mouseDown, it interferes with normal
+  // Though we could put this in mouseDown, it interferes with normal
   //   clicking behavior of map areas
   if (svg.style.display !== 'block') {
     svg.style.display = 'block';
@@ -239,7 +239,7 @@ function textDragRectangleMouseMove (e) {
 
     const [xZoom, yZoom] = ImageMaps.getZoom();
 
-    lastText = $$('#imagePreview > map > area').reduce((s, area) => {
+    lastText = $$('.imagePreview > map > area').reduce((s, area) => {
       const {
         shape, coords, alt
       } = area;
@@ -316,17 +316,17 @@ export function enableTextDragRectangle (pos, editMode) {
     left: previewOffsetLeft,
     top: previewOffsetTop
   } = pos);
-  $('#imagePreview').before(svg);
+  $('.imagePreview').before(svg);
   _editMode = editMode;
   window.addEventListener('mouseup', textDragRectangleMouseUp);
   window.addEventListener('mousemove', textDragRectangleMouseMove);
-  $('#imagePreview').addEventListener('mousedown', textDragRectangleMouseDown);
+  $('.imagePreview').addEventListener('mousedown', textDragRectangleMouseDown);
 }
 
 export function disableTextDragRectangle () {
   window.removeEventListener('mouseup', textDragRectangleMouseUp);
   window.removeEventListener('mousemove', textDragRectangleMouseMove);
-  $('#imagePreview').removeEventListener(
+  $('.imagePreview').removeEventListener(
     'mousedown',
     textDragRectangleMouseDown
   );
