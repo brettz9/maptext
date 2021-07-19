@@ -1,3 +1,6 @@
+import '../../components/ImagePreview/ImagePreview.js';
+import '../../components/FindBar/FindBar.js';
+
 import {jml, body, nbsp} from '../../external/jamilih/dist/jml-es.js';
 import _ from '../../external/i18n/i18n.js';
 
@@ -7,7 +10,9 @@ export {
   formText, makeFrom
 } from './view-formControls.js';
 
-export {findBar} from './view-find.js';
+export const findBar = () => {
+  return jml('find-bar', body);
+};
 
 export const title = () => _('MapText demo');
 

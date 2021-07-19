@@ -2,7 +2,8 @@ import _ from '../../external/i18n/i18n.js';
 
 import HyperHTMLElement from '../../external/hyperhtml-element/esm/index.js';
 
-import * as jqueryImageMaps from './jqueryImageMaps.js';
+import jqueryImageMaps from './jqueryImageMaps.js';
+import copyTextDragRectangle from './copyTextDragRectangle.js';
 
 /**
  *
@@ -15,14 +16,13 @@ class ImagePreview extends HyperHTMLElement {
 
   /**
    * @returns {void}
-  */
-  /*
+   */
   created () {
     // this.shadowRoot = this.attachShadow({mode: 'open'}); // `this.shadowRoot`
     // this.shadowRoot.append();
     // this.addEventListener();
+    this.init_copyTextDragRectangle();
   }
-  */
 
   /**
    * @returns {{name: string, src: string}}
@@ -57,9 +57,8 @@ class ImagePreview extends HyperHTMLElement {
         this.naturalWidth, this.naturalHeight;
       }}
     */
-
     return this.html`<div class="imagePreview">
-      <map name=${this.state.name}>
+      <map name=${this.state.name} />
       <img
         class="preview"
         alt=${_('Selected image for map')}
@@ -71,7 +70,7 @@ class ImagePreview extends HyperHTMLElement {
 }
 
 // Mixin is for compartmentalization of jQuery, not based on unique features
-Object.assign(ImagePreview.prototype, jqueryImageMaps);
+Object.assign(ImagePreview.prototype, jqueryImageMaps, copyTextDragRectangle);
 
 ImagePreview.define('image-preview'); // {extends: 'ul'}
 

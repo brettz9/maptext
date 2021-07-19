@@ -1,25 +1,17 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import './components/imagePreview/imagePreview.js';
-
-import {jml, $, $$, body} from './external/jamilih/dist/jml-es.js';
+import {jml, $, $$} from './external/jamilih/dist/jml-es.js';
 import {
   serialize, deserialize
 } from './external/form-serialization/dist/index-es.js';
-
 import tippy from './external/tippy.js/dist/tippy.esm.js';
 // Todo: Switch to npm version
 import _ from './external/i18n/i18n.js';
 import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
+import {SimplePrefs} from './external/simple-prefs/dist/index.esm.js';
 
+import * as TextSearch from './behaviors/mapTextSearch.js';
 import * as Views from './views/index/view-index.js';
 import * as Styles from './styles/styles-index.js';
-import * as ImageMaps from './components/imagePreview/jqueryImageMaps.js';
-import * as TextSearch from './behaviors/mapTextSearch.js';
-import {
-  enableTextDragRectangle, disableTextDragRectangle
-} from './behaviors/copyTextDragRectangle.js';
-
-import {SimplePrefs} from './external/simple-prefs/dist/index.esm.js';
 
 // Todo: Could allow for multiple image maps
 const mapID = 0;
@@ -31,12 +23,14 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
   editMode: 'edit'
 }});
 
-async function setTextRectangleByEditMode () {
+async function setTextRectangleByEditMode (imagePreview) {
   const editMode = await prefs.getPref('editMode');
   if (editMode !== 'edit') {
-    enableTextDragRectangle(ImageMaps.getPosition(), editMode);
+    imagePreview.enableTextDragRectangle({
+      pos: imagePreview.getPosition(), editMode
+    });
   } else {
-    disableTextDragRectangle();
+    imagePreview.disableTextDragRectangle();
   }
 }
 
@@ -210,6 +204,7 @@ async function updateViews (type, formObj, formControl, removeAll) {
   if (type !== 'form') {
     deserializeForm.call(formControl, formObj);
   }
+  const imagePreview = $('image-preview');
   if (!removeAll) {
     // Don't actually set the map and update
     if (type !== 'map') {
@@ -218,7 +213,7 @@ async function updateViews (type, formObj, formControl, removeAll) {
     // Even for map, we must update apparently because change in form
     //   control positions after adding controls changes positions within
     //   map as well
-    await updateMap(formObj);
+    await updateMap(imagePreview, formObj);
   }
   if (type !== 'html') {
     updateSerializedHTML(removeAll);
@@ -226,18 +221,18 @@ async function updateViews (type, formObj, formControl, removeAll) {
   if (type !== 'json') {
     updateSerializedJSON(removeAll ? {} : formObj);
   }
-  ImageMaps.setFormObj(formObj);
+  imagePreview.setFormObject(formObj);
 }
 
-async function updateMap (formObj) {
-  await ImageMaps.removeAllShapes();
+async function updateMap (imagePreview, formObj) {
+  await imagePreview.removeAllShapes();
   await Promise.all(
     imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-      return ImageMaps.addShape(shape, {coords});
+      return imagePreview.addShape(shape, {coords});
     })
   );
   const editMode = await prefs.getPref('editMode');
-  ImageMaps.showGuidesUnlessViewMode(editMode);
+  imagePreview.showGuidesUnlessViewMode(editMode);
 }
 
 function imageMapFormObjectInfo (formObj) {
@@ -324,8 +319,8 @@ async function formToPreview (formObj) {
       : location.href + '/' + defaultImageSrc
   );
 
-  ImageMaps.setShapeStrokeFillOptions(Styles.shapeStyle);
-  ImageMaps.setImageMaps({
+  imagePreview.setShapeStrokeFillOptions(Styles.shapeStyle);
+  imagePreview.setImageMaps({
     formObj,
     editMode: await prefs.getPref('editMode'),
     sharedBehaviors: {
@@ -345,7 +340,7 @@ async function formToPreview (formObj) {
     });
   }
 
-  await setTextRectangleByEditMode();
+  await setTextRectangleByEditMode(imagePreview);
 
   // Todo: Should find a better way around this
   // Wait until SVG is built
@@ -399,6 +394,7 @@ function rememberLastMap (map) {
 }
 
 async function mapNameChange (e, avoidSetting) {
+  const imagePreview = $('image-preview');
   if (!this.value) {
     updateSerializedJSON({});
     serializedJSONInput.call($('#serializedJSON'));
@@ -409,7 +405,7 @@ async function mapNameChange (e, avoidSetting) {
   // eslint-disable-next-line no-console
   console.log('maps', map);
   if (map.name) {
-    await ImageMaps.removeAllShapes({
+    await imagePreview.removeAllShapes({
       sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
     });
     updateSerializedJSON(map);
@@ -454,7 +450,8 @@ form = Views.mainForm({
         name: mapName, method: 'DELETE'
       });
 
-      await ImageMaps.removeAllShapes({
+      const imagePreview = $('image-preview');
+      await imagePreview.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
       await rememberLastMap({
@@ -547,12 +544,13 @@ Views.main({
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
 
-      await setTextRectangleByEditMode();
+      const imagePreview = $('image-preview');
+      await setTextRectangleByEditMode(imagePreview);
 
       $('input.zoom').disabled = editMode === 'edit';
       $('a.zoom').hidden = editMode === 'edit';
 
-      const {width, height, shapes} = ImageMaps.getPreviewInfo();
+      const {width, height, shapes} = imagePreview.getPreviewInfo();
       if (!width || !height) { // Nothing else to do yet
         return;
       }
@@ -560,7 +558,7 @@ Views.main({
 
       await formToPreview(getSerializedJSON());
       /*
-      ImageMaps.setImageMaps({
+      imagePreview.setImageMaps({
         formObj: getSerializedJSON(),
         editMode,
         sharedBehaviors: {
@@ -569,9 +567,9 @@ Views.main({
       });
       */
 
-      ImageMaps.copyImageMapsToPreview({width, height, shapes});
+      imagePreview.copyImageMapsToPreview({width, height, shapes});
 
-      ImageMaps.showGuidesUnlessViewMode(editMode);
+      imagePreview.showGuidesUnlessViewMode(editMode);
     },
     async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');
@@ -608,19 +606,22 @@ Views.main({
     serializedJSONInput,
     async rectClick (e) {
       e.preventDefault();
-      await ImageMaps.addRect({
+      const imagePreview = $('image-preview');
+      await imagePreview.addRect({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
     async circleClick (e) {
       e.preventDefault();
-      await ImageMaps.addCircle({
+      const imagePreview = $('image-preview');
+      await imagePreview.addCircle({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
     async removeClick (e) {
       e.preventDefault();
-      await ImageMaps.removeShape({
+      const imagePreview = $('image-preview');
+      await imagePreview.removeShape({
         sharedBehaviors: {
           setFormObjCoordsAndUpdateViewForMap
         }
@@ -628,7 +629,8 @@ Views.main({
     },
     async removeAllClick (e) {
       e.preventDefault();
-      await ImageMaps.removeAllShapes({
+      const imagePreview = $('image-preview');
+      await imagePreview.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
@@ -645,7 +647,8 @@ Views.main({
         return;
       }
 
-      ImageMaps.zoomPreviewAndResize(val);
+      const imagePreview = $('image-preview');
+      imagePreview.zoomPreviewAndResize(val);
     }
   }
 });
@@ -654,101 +657,82 @@ addImageRegion(imgRegionID++);
 
 await mapNameChange.call($('input[name="name"]'), true);
 
-Views.findBar({
-  // Left-facing:
-  // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
-  // Or for right-facing:
-  // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
-  magnifyingGlassText: '\u{1F50D}',
-  behaviors: {
-    async input () {
-      const {value} = this;
-      const formObj = getSerializedJSON();
+const findBar = Views.findBar();
+findBar.querySelector(
+  'input.findBar'
+).addEventListener('input', async function () {
+  const {value} = this;
+  const formObj = getSerializedJSON();
 
-      // Todo: Allow `all` mode
-      // Todo: Even for "first" mode, we need to get "next"
-      const mode = 'first';
-      const isFirstMode = mode === 'first';
+  // Todo: Allow `all` mode
+  // Todo: Even for "first" mode, we need to get "next"
+  const mode = 'first';
+  const isFirstMode = mode === 'first';
 
-      const formObjectInfo = imageMapFormObjectInfo(formObj);
-      const [
-        beginSegmentIndexIndex, endSegmentIndexIndex
-      ] = TextSearch.getBeginAndEndIndexes({
-        formObjectInfo, value, isFirstMode
-      });
+  const formObjectInfo = imageMapFormObjectInfo(formObj);
+  const [
+    beginSegmentIndexIndex, endSegmentIndexIndex
+  ] = TextSearch.getBeginAndEndIndexes({
+    formObjectInfo, value, isFirstMode
+  });
 
-      const viewMode = (await prefs.getPref('editMode')) === 'view';
+  const viewMode = (await prefs.getPref('editMode')) === 'view';
 
-      async function blinkShape ({shape, coords}) {
-        let attSel;
-        switch (shape) {
-        case 'rect': {
-          const [x, y, x2, y2] = coords;
-          const width = x2 - x;
-          const height = y2 - y;
-          attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
-          break;
-        }
-        case 'circle': {
-          const [cx, cy, r] = coords;
-          attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
-          break;
-        }
-        case 'polygon': {
-          attSel = `[points=${coords.join(',')}]`;
-          break;
-        }
-        default:
-          throw new Error('Unexpected shape ' + shape);
-        }
-        const matchedShape = $(shape + attSel);
-        matchedShape.classList.add('borderBlink');
-        await timeout(3000);
-        matchedShape.classList.remove('borderBlink');
-        /*
-        // Gets correct <area>, but doesn't work to style apparently
-        const matchedArea = $(`area[coords="${coords.join(',')}"]`);
-        console.log('matchedArea', matchedArea);
-        matchedArea.classList.add('borderBlink');
-        await timeout(10000);
-        matchedArea.classList.remove('borderBlink');
-        */
-      }
-
-      formObjectInfo.slice(
-        beginSegmentIndexIndex, endSegmentIndexIndex + 1
-      ).forEach(async (
-        {shape, coords}
-      ) => {
-        // Todo: Highlight
-        // console.log('matching shape & coords', shape, coords);
-        if (viewMode) {
-          // We don't have displayed shapes now (with accurate dimensions),
-          //  so we have to build our own elements
-          ImageMaps.addShape(shape, {coords});
-          await timeout(500);
-        }
-        blinkShape({shape, coords});
-        if (viewMode) {
-          await timeout(2000);
-          ImageMaps.removeShape();
-        }
-      });
-    },
-    cancel () {
-      $('.findBar').style.display = 'none';
+  async function blinkShape ({shape, coords}) {
+    let attSel;
+    switch (shape) {
+    case 'rect': {
+      const [x, y, x2, y2] = coords;
+      const width = x2 - x;
+      const height = y2 - y;
+      attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
+      break;
     }
+    case 'circle': {
+      const [cx, cy, r] = coords;
+      attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
+      break;
+    }
+    case 'polygon': {
+      attSel = `[points=${coords.join(',')}]`;
+      break;
+    }
+    default:
+      throw new Error('Unexpected shape ' + shape);
+    }
+    const matchedShape = $(shape + attSel);
+    matchedShape.classList.add('borderBlink');
+    await timeout(3000);
+    matchedShape.classList.remove('borderBlink');
+    /*
+    // Gets correct <area>, but doesn't work to style apparently
+    const matchedArea = $(`area[coords="${coords.join(',')}"]`);
+    console.log('matchedArea', matchedArea);
+    matchedArea.classList.add('borderBlink');
+    await timeout(10000);
+    matchedArea.classList.remove('borderBlink');
+    */
   }
-});
 
-body.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    $('.findBar').style.display = 'none';
-    return;
-  }
-  if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
-    e.preventDefault();
-    $('.findBar').style.display = 'block';
-  }
+  const imagePreview = $('image-preview');
+  formObjectInfo.slice(
+    beginSegmentIndexIndex, endSegmentIndexIndex + 1
+  ).forEach(async (
+    {shape, coords}
+  ) => {
+    // Todo: Highlight
+    // console.log('matching shape & coords', shape, coords);
+    if (viewMode) {
+      // We don't have displayed shapes now (with accurate dimensions),
+      //  so we have to build our own elements
+      imagePreview.addShape(shape, {coords});
+      await timeout(500);
+    }
+    blinkShape({shape, coords});
+    if (viewMode) {
+      await timeout(2000);
+      imagePreview.removeShape();
+    }
+  });
 });
 })();

@@ -1,11 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {$, $$} from '../external/jamilih/dist/jml-es.js';
-// import _ from '../external/i18n/i18n.js';
+import {$} from '../../external/jamilih/dist/jml-es.js';
+// import _ from '../../external/i18n/i18n.js';
 import {
   Intersection, ShapeInfo
-} from '../external/kld-intersections/dist/index-esm.js';
-
-import * as ImageMaps from '../components/imagePreview/jqueryImageMaps.js';
+} from '../../external/kld-intersections/dist/index-esm.js';
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?
@@ -34,24 +32,24 @@ function getShapeInfoForShapeAndProps ({shape, props}) {
   return shapeInfo;
 }
 
-const getOffsetAdjustedPropsObject = (svgEl) => {
-  function getOffsetAdjustedAnimVal (o, prop) {
+function getOffsetAdjustedPropsObject (svgEl) {
+  const getOffsetAdjustedAnimVal = (o, prop) => {
     o[prop] = svgEl[prop].animVal.value;
 
     // Adjust for offsets
     if (prop === 'points') {
       o[prop] = o[prop].split(/,\s*/u).map((xOrY, i) => {
         return xOrY % 0
-          ? xOrY - previewOffsetLeft
-          : xOrY - previewOffsetTop;
+          ? xOrY - this.previewOffsetLeft
+          : xOrY - this.previewOffsetTop;
       }).join(',');
     } else if (['x', 'cx'].includes(prop)) {
-      o[prop] -= previewOffsetLeft;
+      o[prop] -= this.previewOffsetLeft;
     } else if (['y', 'cy'].includes(prop)) {
-      o[prop] -= previewOffsetTop;
+      o[prop] -= this.previewOffsetTop;
     }
     return o;
-  }
+  };
   let propArr;
   switch (svgEl.localName.toLowerCase()) {
   case 'rect':
@@ -68,7 +66,7 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
   }
   // eslint-disable-next-line unicorn/no-array-callback-reference
   return propArr.reduce(getOffsetAdjustedAnimVal, {});
-};
+}
 
 /**
 * @typedef {PlainObject} Rectangle
@@ -101,10 +99,11 @@ const getOffsetAdjustedPropsObject = (svgEl) => {
  * @param {GenericArray} shapeInfo
  * @param {"rect"|"circle"|"polygon"} shapeInfo."0" The shape
  * @param {ShapeInfo} shapeInfo."1" The properties of the shape
+ * @throws {Error}
  * @returns {boolean}
  */
-const svgContains = (rect, [shape, props]) => {
-  const rectProps = getOffsetAdjustedPropsObject(rect);
+function svgContains (rect, [shape, props]) {
+  const rectProps = getOffsetAdjustedPropsObject.call(this, rect);
   const rectX2 = rectProps.x + rectProps.width;
   const rectY2 = rectProps.y + rectProps.height;
   switch (shape) {
@@ -129,42 +128,18 @@ const svgContains = (rect, [shape, props]) => {
   default:
     throw new Error('Unrecognized shape type');
   }
-};
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const svg = document.createElementNS(SVG_NS, 'svg');
-const maxWidth = 2000;
-const maxHeight = maxWidth;
-svg.setAttribute('width', maxWidth);
-svg.setAttribute('height', maxHeight);
-svg.setAttribute('class', 'selector');
-const rect = document.createElementNS(SVG_NS, 'rect');
-rect.setAttribute('x', 10);
-rect.setAttribute('y', 10);
-rect.setAttribute('class', 'selector');
-svg.append(rect);
-
-resetRect();
-
-function resetRect () {
-  rect.setAttribute('width', 10);
-  rect.setAttribute('height', 10);
-  svg.style.display = 'none';
 }
 
-let originalX, originalY, previewOffsetLeft, previewOffsetTop;
-let lastText = '';
-
 function textDragRectangleMouseDown (e) {
-  shapesAdded = new Map();
+  this.shapesAdded = new Map();
   e.preventDefault();
   // Todo: Jamilih should support SVG (through options mode); then use here
 
-  originalX = e.pageX;
-  originalY = e.pageY;
+  this.originalX = e.pageX;
+  this.originalY = e.pageY;
 
-  rect.setAttribute('x', originalX);
-  rect.setAttribute('y', originalY);
+  this.rect.setAttribute('x', this.originalX);
+  this.rect.setAttribute('y', this.originalY);
 
   /*
   // Todo: Works to restore triangle, but causes selected rectangles to
@@ -175,15 +150,15 @@ function textDragRectangleMouseDown (e) {
   rect.setAttribute('y', 10);
   */
 
-  if (_editMode === 'view') {
-    ImageMaps.showGuidesUnlessViewMode('view-guides');
-    ImageMaps.removeAllShapes();
+  if (this._editMode === 'view') {
+    this.showGuidesUnlessViewMode('view-guides');
+    this.removeAllShapes();
   }
 }
 
 async function textDragRectangleMouseUp (e) {
   e.preventDefault();
-  resetRect();
+  this.resetRect();
   if (Notification.permission !== 'granted') {
     const permission = await Notification.requestPermission();
     switch (permission) {
@@ -195,7 +170,7 @@ async function textDragRectangleMouseUp (e) {
       return;
     }
   }
-  $('textarea.textToCopy').value = lastText;
+  $('textarea.textToCopy').value = this.lastText;
   /*
   // Not yet supported
   const clipboardPermission =
@@ -204,25 +179,24 @@ async function textDragRectangleMouseUp (e) {
   if (clipboardPermission === 'granted') {
     const data = new DataTransfer();
     // Todo: Option to switch between `text/html` and `text/plain`?
-    data.items.add('text/html', lastText);
+    data.items.add('text/html', this.lastText);
     await navigator.clipboard.write(data);
     // See https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
     new Notification( // eslint-disable-line no-new
       // Todo: This i18n should accept a formatted string
-      _('Copied ') + lastText, {
+      _('Copied ') + this.lastText, {
         lang: document.documentElement.lang,
         dir: document.documentElement.dir
       }
     );
   }
   */
-  if (_editMode === 'view') {
-    ImageMaps.removeAllShapes();
-    ImageMaps.showGuidesUnlessViewMode('view');
+  if (this._editMode === 'view') {
+    this.removeAllShapes();
+    this.showGuidesUnlessViewMode('view');
   }
 }
 
-let shapesAdded;
 function textDragRectangleMouseMove (e) {
   e.preventDefault();
   if (e.buttons !== 1) {
@@ -230,16 +204,17 @@ function textDragRectangleMouseMove (e) {
   }
   // Though we could put this in mouseDown, it interferes with normal
   //   clicking behavior of map areas
-  if (svg.style.display !== 'block') {
-    svg.style.display = 'block';
+  if (this.svg.style.display !== 'block') {
+    this.svg.style.display = 'block';
   }
-  if (e.pageX > originalX && e.pageY > originalY) {
-    rect.setAttribute('width', e.pageX - originalX);
-    rect.setAttribute('height', e.pageY - originalY);
+  if (e.pageX > this.originalX && e.pageY > this.originalY) {
+    this.rect.setAttribute('width', e.pageX - this.originalX);
+    this.rect.setAttribute('height', e.pageY - this.originalY);
 
-    const [xZoom, yZoom] = ImageMaps.getZoom();
-
-    lastText = $$('.imagePreview > map > area').reduce((s, area) => {
+    const [xZoom, yZoom] = this.getZoom();
+    this.lastText = [
+      ...this.querySelectorAll('.imagePreview > map > area')
+    ].reduce((s, area) => {
       const {
         shape, coords, alt
       } = area;
@@ -280,7 +255,8 @@ function textDragRectangleMouseMove (e) {
       }
 
       const userRectInfo = getShapeInfoForShapeAndProps({
-        shape: 'rect', props: getOffsetAdjustedPropsObject(rect)
+        shape: 'rect',
+        props: getOffsetAdjustedPropsObject.call(this, this.rect)
       });
 
       const areaMapInfo = getShapeInfoForShapeAndProps({shape, props});
@@ -292,13 +268,13 @@ function textDragRectangleMouseMove (e) {
       );
 
       const areaMatched = intersection.points.length ||
-        svgContains(rect, [shape, props]);
+        svgContains.call(this, this.rect, [shape, props]);
       if (areaMatched) {
         const json = JSON.stringify([shape, {coords: coordArr}]);
         // Don't keep adding when reencountering same shape
-        if (!shapesAdded.has(json)) {
-          ImageMaps.addShape(shape, {coords: coordArr});
-          shapesAdded.set(json, true);
+        if (!this.shapesAdded.has(json)) {
+          this.addShape(shape, {coords: coordArr});
+          this.shapesAdded.set(json, true);
         }
       }
       return s + ' ' + (
@@ -310,24 +286,69 @@ function textDragRectangleMouseMove (e) {
   }
 }
 
-let _editMode;
-export function enableTextDragRectangle (pos, editMode) {
-  ({
-    left: previewOffsetLeft,
-    top: previewOffsetTop
-  } = pos);
-  $('.imagePreview').before(svg);
-  _editMode = editMode;
-  window.addEventListener('mouseup', textDragRectangleMouseUp);
-  window.addEventListener('mousemove', textDragRectangleMouseMove);
-  $('.imagePreview').addEventListener('mousedown', textDragRectangleMouseDown);
-}
+const copyTextDragRectangle = {
+  /**
+   * Namespace the method as this is used as a mixin.
+   * @returns {void}
+   */
+  init_copyTextDragRectangle () {
+    this.setupSVG();
+    this.resetRect();
+    this.lastText = '';
+  },
+  setupSVG () {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    const maxWidth = 2000;
+    const maxHeight = maxWidth;
+    svg.setAttribute('width', maxWidth);
+    svg.setAttribute('height', maxHeight);
+    svg.setAttribute('class', 'selector');
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', 10);
+    rect.setAttribute('y', 10);
+    rect.setAttribute('class', 'selector');
+    svg.append(rect);
 
-export function disableTextDragRectangle () {
-  window.removeEventListener('mouseup', textDragRectangleMouseUp);
-  window.removeEventListener('mousemove', textDragRectangleMouseMove);
-  $('.imagePreview').removeEventListener(
-    'mousedown',
-    textDragRectangleMouseDown
-  );
-}
+    this.svg = svg;
+    this.rect = rect;
+  },
+  resetRect () {
+    this.rect.setAttribute('width', 10);
+    this.rect.setAttribute('height', 10);
+    this.svg.style.display = 'none';
+  },
+
+  enableTextDragRectangle ({pos, editMode}) {
+    const {left, top} = pos;
+    this.previewOffsetLeft = left;
+    this.previewOffsetTop = top;
+
+    this.querySelector('.imagePreview').before(this.svg);
+
+    this._editMode = editMode;
+
+    this.mouseupListener = textDragRectangleMouseUp.bind(this);
+    this.mousemoveListener = textDragRectangleMouseMove.bind(this);
+    this.mousedownListener = textDragRectangleMouseDown.bind(this);
+
+    window.addEventListener('mouseup', this.mouseupListener);
+    window.addEventListener('mousemove', this.mousemoveListener);
+
+    this.querySelector('.imagePreview').addEventListener(
+      'mousedown', this.mousedownListener
+    );
+  },
+
+  disableTextDragRectangle () {
+    window.removeEventListener('mouseup', this.mouseupListener);
+    window.removeEventListener('mousemove', this.mousemoveListener);
+
+    this.querySelector('.imagePreview').removeEventListener(
+      'mousedown',
+      this.mousedownListener
+    );
+  }
+};
+
+export default copyTextDragRectangle;
