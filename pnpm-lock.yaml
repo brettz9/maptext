@@ -39,6 +39,7 @@ specifiers:
   express: ^4.17.1
   form-serialization: ^0.11.0
   github-fork-ribbon-css: ^0.2.3
+  hyperhtml-element: ^3.14.1
   imagemaps: github:brettz9/ImageMaps#remove-all-shapes
   intl-dom: ^0.13.4
   jamilih: ^0.54.0
@@ -101,6 +102,7 @@ devDependencies:
   eslint-plugin-standard: 4.1.0_eslint@7.30.0
   eslint-plugin-unicorn: 34.0.1_eslint@7.30.0
   form-serialization: 0.11.0
+  hyperhtml-element: 3.14.1
   imagemaps: github.com/brettz9/ImageMaps/c77f5aba6e72ecbce5af88e9f5cba8573d53b521_jquery@3.6.0
   jamilih: 0.54.0
   jquery: 3.6.0
@@ -2237,8 +2239,52 @@ packages:
     dev: true
     optional: true
 
+  /@ungap/create-content/0.2.0:
+    resolution: {integrity: sha512-CvmX0Mr5PfFARDBbSef0B+SAqSeMKaHOG/twJi9nbPtp/MiNPgyBLqZndiyO3RXQ0RXy6TqwarvB6KWzTmc4MQ==}
+    dev: true
+
+  /@ungap/custom-event/0.3.1:
+    resolution: {integrity: sha512-6iFFSuCelNPovoqS53N6f2ohbILf5qqk1YPLgcs67rOTfUlkOJs7xWcX0ygk/iWEmCWkC38+bRNTzjM02eP8iw==}
+    dev: true
+
+  /@ungap/essential-map/0.3.2:
+    resolution: {integrity: sha512-3nKB3JV6GXjWfdRPvx1V8KQsyEtdYf9jmrpXu8U8G4RV4EzYWHcYVPHthiN+eYhtCXB7Qrzu+CPxHKPn8WBJ0Q==}
+    dev: true
+
+  /@ungap/essential-weakset/0.2.1:
+    resolution: {integrity: sha512-h5HsksOZ7KDYqr+oMtAIR3ZQgaEbbSD6p4tVqaM1jCzWhbXkW6X6RpwfLQLqjfrRNTRqQtcwfsdwQMrpWbdp5A==}
+    dev: true
+
+  /@ungap/import-node/0.2.0:
+    resolution: {integrity: sha512-VuWVBAMRjoOc63n8Cc19brS7KlhYJ+57790LF+lVw60nMRemCrz1T6HnoNx74IEW3FS+TM+vveJ70C6NyTKODQ==}
+    dev: true
+
+  /@ungap/is-array/0.2.0:
+    resolution: {integrity: sha512-585x6xT7DmZDWzSog3ZEGJryN175zxPRQh8JvEqItlhOowGYU4xcv6qh/8623doCYI7vohJc/0R5OO2EqrV3+w==}
+    dev: true
+
   /@ungap/promise-all-settled/1.1.2:
     resolution: {integrity: sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==}
+    dev: true
+
+  /@ungap/template-literal/0.6.0:
+    resolution: {integrity: sha512-J8+vZofH0TWM8M0ZU8qN/3fl6ct5mrB82+OSLSYXYZI0abi8a0FYPC65YViU1D2gRHdHQ7zXSv+LJiTM212rDw==}
+    dependencies:
+      '@ungap/weakmap': 0.2.1
+    dev: true
+
+  /@ungap/template-tag-arguments/0.5.0:
+    resolution: {integrity: sha512-hyvUZuGy60qOLdg95BjxgwehbJ4UoIG+sAj7yie9coxeK/qLIcwKXp8cn2Cwm3ouLB9UKL2v/+eq9oRUjuBPJg==}
+    dependencies:
+      '@ungap/template-literal': 0.6.0
+    dev: true
+
+  /@ungap/trim/0.2.0:
+    resolution: {integrity: sha512-CfsUxeZ2R/O3EGCOe+IkAU32yHOdO+mCRmtavSIQ4HZN3Jiq/ynGzq8/asyamd28U26UJmpSV/TC7+p7qELKrg==}
+    dev: true
+
+  /@ungap/weakmap/0.2.1:
+    resolution: {integrity: sha512-GmVAWB+JuFKqSbzlofYK4qxk955gEv4Kd9/aj2hLOxneXMAm/J7OXcl5DlElS9tmkqwCcxGysSZGOrjzNvmjFQ==}
     dev: true
 
   /JSONStream/1.3.5:
@@ -4023,6 +4069,10 @@ packages:
       path-type: 4.0.0
     dev: true
 
+  /disconnected/0.2.1:
+    resolution: {integrity: sha512-483TUpj4dA7Ye42xrErztbw3PKpkboPf1aB9mG4+S+RGGxFVv72hQBbS8MqN8LZLWHzfcmk2tMTRR5CoyxNglg==}
+    dev: true
+
   /doctrine/2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
@@ -4050,6 +4100,16 @@ packages:
     engines: {node: '>=0.4', npm: '>=1.2'}
     dev: true
 
+  /domconstants/0.1.2:
+    resolution: {integrity: sha512-sPOoOckTxtwy5t8PFf6zl11gOEhOpl1k0ZCc/NfCNmHoMw8n9HnCQCzxWKX9gdBp+qM+2DTFkst++Yw6C41izQ==}
+    dev: true
+
+  /domdiff/2.2.2:
+    resolution: {integrity: sha512-Pv7aH5JfjNIkLRKkah+T3Kd41Gy+7GU+5dmPsOZZXsCJ34QR1i7CCiWraUn1c/a40htShxAQ8mHJR2OqPd12+Q==}
+    dependencies:
+      uarray: 1.0.0
+    dev: true
+
   /domelementtype/2.2.0:
     resolution: {integrity: sha512-DtBMo82pv1dFtUmHyr48beiuq792Sxohr+8Hm9zoxklYPfa6n0Z3Byjj2IV7bmr2IyqClnqEQhfgHJJ5QF0R5A==}
     dev: true
@@ -4066,6 +4126,24 @@ packages:
     engines: {node: '>= 4'}
     dependencies:
       domelementtype: 2.2.0
+    dev: true
+
+  /domsanitizer/0.2.3:
+    resolution: {integrity: sha512-qglHc+5k5C2+WSEzck0WGbpa2exCKZuZKb0n4RU2Wuy7BPkpmf67mHD1BJWGxs0iJYl709f2YVeJMh06c1ILlA==}
+    dependencies:
+      domconstants: 0.1.2
+    dev: true
+
+  /domtagger/0.7.0:
+    resolution: {integrity: sha512-ljf2FYn4DPbMP2RN2YD8VsuW1Rm5N7x3iV0QRmlu5JqoY6Zn/gcwI8j4NV91YOlmqIHzONA+TEFOWQ4oX89G4Q==}
+    dependencies:
+      '@ungap/create-content': 0.2.0
+      '@ungap/import-node': 0.2.0
+      '@ungap/trim': 0.2.0
+      '@ungap/weakmap': 0.2.1
+      domconstants: 0.1.2
+      domsanitizer: 0.2.3
+      umap: 1.0.2
     dev: true
 
   /domutils/2.7.0:
@@ -5501,6 +5579,37 @@ packages:
   /human-signals/1.1.1:
     resolution: {integrity: sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==}
     engines: {node: '>=8.12.0'}
+    dev: true
+
+  /hyperhtml-element/3.14.1:
+    resolution: {integrity: sha512-sKfQVXoQFY2fk/QABXgopKoaXt6lwRla5m3FNGDbGeFgrhthNLF+Vz2EGJDzygOuHCdlZdDs2ns6vJb5MTqHdA==}
+    dependencies:
+      hyperhtml: 2.34.0
+    dev: true
+
+  /hyperhtml-style/0.1.2:
+    resolution: {integrity: sha512-ZDRYNClEaqUS0a8RAED0nQRqWmZk7ctdyij3Iw/PqUUef6xhYO87nx9vJNuxg7Yc6J2FdJjXRKbB0iud2ZyzwQ==}
+    dev: true
+
+  /hyperhtml-wire/2.1.1:
+    resolution: {integrity: sha512-6rOTnb+BSWIsNaqiji01BdV8qyhwyCT38aGmG5k37JQeI9n+lwgvFsq0/G7wNAh5NuGdAaWUl1umbjrW7fj++w==}
+    dev: true
+
+  /hyperhtml/2.34.0:
+    resolution: {integrity: sha512-3aUoh8Pc8b4V/ttqLMfCUdW5nr+sgaeuhI0Z0T1vnOdhbutc7aP2Xlj96FA/GLA2xdnGpBcBKV5IlwM4hLkl7g==}
+    dependencies:
+      '@ungap/create-content': 0.2.0
+      '@ungap/custom-event': 0.3.1
+      '@ungap/essential-map': 0.3.2
+      '@ungap/essential-weakset': 0.2.1
+      '@ungap/is-array': 0.2.0
+      '@ungap/template-tag-arguments': 0.5.0
+      '@ungap/weakmap': 0.2.1
+      disconnected: 0.2.1
+      domdiff: 2.2.2
+      domtagger: 0.7.0
+      hyperhtml-style: 0.1.2
+      hyperhtml-wire: 2.1.1
     dev: true
 
   /iconv-lite/0.4.24:
@@ -9040,12 +9149,20 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /uarray/1.0.0:
+    resolution: {integrity: sha512-LHmiAd5QuAv7pU2vbh+Zq9YOnqVK0H764p2Ozinpfy9ka58OID4IsGLiXsitqH7n0NAIDxvax1A/kDXpii/Ckg==}
+    dev: true
+
   /uid-safe/2.1.5:
     resolution: {integrity: sha512-KPHm4VL5dDXKz01UuEd88Df+KzynaohSL9fBh096KWAxSKZQDI2uBrVqtvRM4rwrIrRRKsdLNML/lnaaVSRioA==}
     engines: {node: '>= 0.8'}
     dependencies:
       random-bytes: 1.0.0
     dev: false
+
+  /umap/1.0.2:
+    resolution: {integrity: sha512-bW127HgG4H4VAD6qlqO5vCC+7bnlYvZ6A6BdwyGblkWvlEG7VYpj1bcpf3iJpvyKmkPZWDIeZDmoULz67ec7NA==}
+    dev: true
 
   /umd/3.0.3:
     resolution: {integrity: sha512-4IcGSufhFshvLNcMCV80UnQVlZ5pMOC8mvNPForqwA4+lzYQuetTESLDQkeLmihq8bRcnpbQa48Wb8Lh16/xow==}

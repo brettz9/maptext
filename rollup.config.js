@@ -18,6 +18,14 @@ export default [
     },
     plugins: [resolve()]
   },
+  {
+    input: 'node_modules/hyperhtml-element/esm/index.js',
+    output: {
+      format: 'esm',
+      file: 'external/hyperhtml-element/esm/index.js'
+    },
+    plugins: [resolve()]
+  },
   // Encountered problems trying to use `@rollup/plugin-babel`, so just
   //  produce ESM and run `nyc instrument` on that
   {
