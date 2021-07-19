@@ -38,10 +38,10 @@ npm i maptext
         1. **Find across multiple files**, with the highlighted
             results showing the word regions only (with
             ability to click to enlarge for full image)
-            1. Allow the **find feature to scroll the result into view**
+            1. Allow the **find feature to scroll the result into view by URL**
             1. Allow **highlighted text search** (optionally overriding browser
                 find) with highlight of image regions (single or multiple
-                select)
+                select) and bookmarkable by URL
 1. **Demo with RTL and Chinese/Korean text**, adding special
     handling/options if necessary
 1. **Bugs**
@@ -60,8 +60,8 @@ npm i maptext
     1. **Saving copy of image** (as Data URL?); needed for offline
 1. Show **preview of image next to coordinates** and/or on image
     preview (so load preview as soon as URL entered)
-1. URL param to **scroll to specific coordinates within long image** (and use
-    within search)
+1. Allow **saving from HTML**
+    1. Downloadable JSON file?
 
 ## Lower priority to-dos
 
@@ -76,10 +76,6 @@ npm i maptext
         This should be a huge time-saver, if we can parse and figure out from
         the coordinates in the generated HTML file how to best place the
         rectangles around the word.
-1. Allow **saving from HTML**
-    1. Local storage (including asking for names?) / IndexedDB (service
-        worker intercepting json-server requests)
-    1. Downloadable JSON file?
 1. Allow **citation format** for text selection, e.g., pars. 5-10 and
     fully representative canonical form (including ellipses)
     1. (Also begin related [dom-on-the-range](http://github.com/brettz9/dom-on-the-range)
@@ -89,4 +85,6 @@ npm i maptext
 1. Allow for **multiple image map layers** (e.g., English and Arabic)
 1. **Reading and writing** from/to database and/or local Webappfind
     openable file
+    1. Local storage (including asking for names?) / IndexedDB (service
+        worker intercepting json-server requests)
 1. Add **CLI** for generating

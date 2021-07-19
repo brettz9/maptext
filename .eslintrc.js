@@ -9,6 +9,7 @@ module.exports = {
     polyfills: [
       'Array.isArray',
       'console',
+      'CustomEvent',
       'DataTransfer',
       'document.createElementNS',
       'DOMParser',
