@@ -37,14 +37,14 @@ const jqueryImageMaps = {
     //   when following `removeAllShapes`?); try again in case
     //   `this.src` includes default now
     await timeout(200);
-    jq('.preview', this).setShapeStyle(
+    jq('img.textImageMap', this).setShapeStyle(
       this._shapeStrokeFillOptions
     ).addShape(
       coords, this.src, shape
     );
     if (sharedBehaviors) {
       const newIndex = Number.parseInt(
-        jq('.preview', this).imageMaps().shapeEl.data('index')
+        jq('img.textImageMap', this).imageMaps().shapeEl.data('index')
       );
       await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
         index: newIndex,
@@ -73,7 +73,7 @@ const jqueryImageMaps = {
 
   async removeAllShapes ({sharedBehaviors} = {}) {
     try {
-      jq('.preview', this).removeAllShapes();
+      jq('img.textImageMap', this).removeAllShapes();
       this.setFormObject({
         name: this._formObj.name,
         mapURL: this._formObj.mapURL
@@ -97,7 +97,7 @@ const jqueryImageMaps = {
   },
 
   async removeShape ({sharedBehaviors} = {}) {
-    const imageMap = jq('.preview', this).imageMaps();
+    const imageMap = jq('img.textImageMap', this).imageMaps();
     if (imageMap.svgEl.find('._shape_face').length <= 1) {
       // Follow this routine instead which will at least set
       //   a single empty rect set rather than removing the form
@@ -110,9 +110,9 @@ const jqueryImageMaps = {
     );
     const {
       type: oldShapeToDelete
-    } = jq('.preview', this).imageMaps().getShapeInfo(oldIndex);
+    } = jq('img.textImageMap', this).imageMaps().getShapeInfo(oldIndex);
 
-    jq('.preview', this).removeShape();
+    jq('img.textImageMap', this).removeShape();
     if (sharedBehaviors) {
       await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
         index: oldIndex,
@@ -162,17 +162,17 @@ const jqueryImageMaps = {
       }
     };
 
-    jq('.preview', this).imageMaps(settings);
-    // jq('.preview', this)[editMode === 'edit' ? 'show' : 'hide']();
+    jq('img.textImageMap', this).imageMaps(settings);
+    // jq('img.textImageMap', this)[editMode === 'edit' ? 'show' : 'hide']();
 
     this.showGuidesUnlessViewMode(editMode);
   },
 
-  getPreviewInfo () {
-    const previewElement = jq('.preview', this);
-    const width = previewElement.width();
-    const height = previewElement.height();
-    const shapes = previewElement.getAllShapes();
+  getImageMapInfo () {
+    const imageMapElement = jq('img.textImageMap', this);
+    const width = imageMapElement.width();
+    const height = imageMapElement.height();
+    const shapes = imageMapElement.getAllShapes();
     return {width, height, shapes};
   },
 
@@ -188,8 +188,8 @@ const jqueryImageMaps = {
    * @param {SourceInfo} sourceInfo
    * @returns {void}
    */
-  copyImageMapsToPreview (sourceInfo) {
-    jq.imageMaps.copyImageMaps(sourceInfo, jq('.preview', this));
+  copyImageMapsToImageMap (sourceInfo) {
+    jq.imageMaps.copyImageMaps(sourceInfo, jq('img.textImageMap', this));
   },
 
   showGuidesUnlessViewMode (editMode) {
@@ -200,28 +200,28 @@ const jqueryImageMaps = {
     }
   },
 
-  zoomPreviewAndResize (val) {
-    const preview = jq('.preview', this);
-    preview.zoom([val]);
+  zoomImageMapAndResize (val) {
+    const imageMap = jq('img.textImageMap', this);
+    imageMap.zoom([val]);
 
     // for image resize
-    const imagePreview = this.querySelector('.imagePreview', this);
-    imagePreview.style.width = val * 0.01 * preview.width();
-    imagePreview.style.height = val * 0.01 * preview.height();
+    const textImageMap = this.querySelector('.textImageMap', this);
+    textImageMap.style.width = val * 0.01 * imageMap.width();
+    textImageMap.style.height = val * 0.01 * imageMap.height();
   },
 
   getPosition () {
-    return jq('.preview', this).position();
+    return jq('img.textImageMap', this).position();
   },
 
   getZoom () {
-    const preview = jq('.preview', this);
-    if (this.originalPreviewWidth === undefined) {
-      this.originalPreviewWidth = preview.width();
-      this.originalPreviewHeight = preview.height();
+    const imageMap = jq('img.textImageMap', this);
+    if (this.originalImageMapWidth === undefined) {
+      this.originalImageMapWidth = imageMap.width();
+      this.originalImageMapHeight = imageMap.height();
     }
-    const xZoom = preview.width() / this.originalPreviewWidth;
-    const yZoom = preview.height() / this.originalPreviewHeight;
+    const xZoom = imageMap.width() / this.originalImageMapWidth;
+    const yZoom = imageMap.height() / this.originalImageMapHeight;
     return [xZoom, yZoom];
   }
 };

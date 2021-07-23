@@ -1,8 +1,9 @@
-import '../../components/ImagePreview/ImagePreview.js';
-import '../../components/FindBar/FindBar.js';
+import '../components/TextImageMap/TextImageMap.js';
+import './view-components/FindImageRegionBar/FindImageRegionBar.js';
+import '../components/CopiedText/CopiedText.js';
 
-import {jml, body, nbsp} from '../../external/jamilih/dist/jml-es.js';
-import _ from '../../external/i18n/i18n.js';
+import {jml, body, nbsp} from '../external/jamilih/dist/jml-es.js';
+import _ from '../external/i18n/i18n.js';
 
 export {
   mainForm, formShapeSelection, polyXYDiv,
@@ -10,8 +11,11 @@ export {
   formText, makeFrom
 } from './view-formControls.js';
 
-export const findBar = () => {
-  return jml('find-bar', body);
+export const findImageRegionBar = () => {
+  return jml('find-image-region-bar', {
+    // Point to our selector (could be a more precise selector)
+    textImageMap: 'text-image-map'
+  }, body);
 };
 
 export const title = () => _('MapText demo');
@@ -41,13 +45,13 @@ export const main = ({form, editMode, behaviors}) => {
           $on: {input: behaviors.serializedJSONInput}
         }]
       ]],
-      imagePreviewContainer({editMode, behaviors})
+      textImageMapContainer({editMode, behaviors})
     ]]
   ], body);
 };
 
-export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
-  ['h2', [_('Image preview')]],
+export const textImageMapContainer = ({editMode, behaviors}) => ['section', [
+  ['h2', [_('Image map')]],
   ['div', [
     ['div', [
       ['div', {class: 'shapeControls'}, [
@@ -76,6 +80,7 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
           $on: {click: behaviors.removeAllClick}
         }, [_('Remove all shapes')]]
       ]],
+      ['br', 'br'],
       ['fieldset', {class: 'shapeControls'}, [
         ['legend', [_('Edit mode?')]],
         ...[
@@ -114,16 +119,11 @@ export const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
           _('zoom')
         ]]
       ]],
-      ['textarea', {
-        class: 'textToCopy',
-        'aria-label': _('Text to copy'),
-        placeholder: _('Text to copy')
-      }]
+      ['copied-text']
     ]],
-    ['br'],
-    ['div', {id: 'imagePreviewHolder'}, [
-      ['image-preview']
-    ]]
+    ['text-image-map', {
+      copiedText: 'copied-text'
+    }]
   ]]
 ]];
 

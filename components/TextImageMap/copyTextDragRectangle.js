@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {$} from '../../external/jamilih/dist/jml-es.js';
+import {$} from '../../utils/DOMUtils.js';
 // import _ from '../../external/i18n/i18n.js';
 import {
   Intersection, ShapeInfo
@@ -40,13 +40,13 @@ function getOffsetAdjustedPropsObject (svgEl) {
     if (prop === 'points') {
       o[prop] = o[prop].split(/,\s*/u).map((xOrY, i) => {
         return xOrY % 0
-          ? xOrY - this.previewOffsetLeft
-          : xOrY - this.previewOffsetTop;
+          ? xOrY - this.imageMapOffsetLeft
+          : xOrY - this.imageMapOffsetTop;
       }).join(',');
     } else if (['x', 'cx'].includes(prop)) {
-      o[prop] -= this.previewOffsetLeft;
+      o[prop] -= this.imageMapOffsetLeft;
     } else if (['y', 'cy'].includes(prop)) {
-      o[prop] -= this.previewOffsetTop;
+      o[prop] -= this.imageMapOffsetTop;
     }
     return o;
   };
@@ -170,7 +170,7 @@ async function textDragRectangleMouseUp (e) {
       return;
     }
   }
-  $('textarea.textToCopy').value = this.lastText;
+  $(this.copiedText).value = this.lastText;
   /*
   // Not yet supported
   const clipboardPermission =
@@ -213,7 +213,7 @@ function textDragRectangleMouseMove (e) {
 
     const [xZoom, yZoom] = this.getZoom();
     this.lastText = [
-      ...this.querySelectorAll('.imagePreview > map > area')
+      ...this.querySelectorAll('.textImageMap > map > area')
     ].reduce((s, area) => {
       const {
         shape, coords, alt
@@ -321,10 +321,10 @@ const copyTextDragRectangle = {
 
   enableTextDragRectangle ({pos, editMode}) {
     const {left, top} = pos;
-    this.previewOffsetLeft = left;
-    this.previewOffsetTop = top;
+    this.imageMapOffsetLeft = left;
+    this.imageMapOffsetTop = top;
 
-    this.querySelector('.imagePreview').before(this.svg);
+    this.querySelector('.textImageMap').before(this.svg);
 
     this._editMode = editMode;
 
@@ -335,7 +335,7 @@ const copyTextDragRectangle = {
     window.addEventListener('mouseup', this.mouseupListener);
     window.addEventListener('mousemove', this.mousemoveListener);
 
-    this.querySelector('.imagePreview').addEventListener(
+    this.querySelector('.textImageMap').addEventListener(
       'mousedown', this.mousedownListener
     );
   },
@@ -344,7 +344,7 @@ const copyTextDragRectangle = {
     window.removeEventListener('mouseup', this.mouseupListener);
     window.removeEventListener('mousemove', this.mousemoveListener);
 
-    this.querySelector('.imagePreview').removeEventListener(
+    this.querySelector('.textImageMap').removeEventListener(
       'mousedown',
       this.mousedownListener
     );

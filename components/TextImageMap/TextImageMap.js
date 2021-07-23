@@ -8,11 +8,11 @@ import copyTextDragRectangle from './copyTextDragRectangle.js';
 /**
  *
  */
-class ImagePreview extends HyperHTMLElement {
+class TextImageMap extends HyperHTMLElement {
   /**
    * @returns {string[]}
    */
-  static get observedAttributes () { return ['name', 'src']; }
+  static get observedAttributes () { return ['name', 'src', 'copiedText']; }
 
   /**
    * @returns {void}
@@ -57,10 +57,10 @@ class ImagePreview extends HyperHTMLElement {
         this.naturalWidth, this.naturalHeight;
       }}
     */
-    return this.html`<div class="imagePreview">
+    return this.html`<div class="textImageMap">
       <map name=${this.state.name} />
       <img
-        class="preview"
+        class="textImageMap"
         alt=${_('Selected image for map')}
         usemap=${'#' + this.state.name}
         src=${this.state.src}
@@ -70,8 +70,8 @@ class ImagePreview extends HyperHTMLElement {
 }
 
 // Mixin is for compartmentalization of jQuery, not based on unique features
-Object.assign(ImagePreview.prototype, jqueryImageMaps, copyTextDragRectangle);
+Object.assign(TextImageMap.prototype, jqueryImageMaps, copyTextDragRectangle);
 
-ImagePreview.define('image-preview'); // {extends: 'ul'}
+TextImageMap.define('text-image-map'); // {extends: 'ul'}
 
-export default ImagePreview;
+export default TextImageMap;

@@ -9,8 +9,9 @@ import _ from './external/i18n/i18n.js';
 import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
 import {SimplePrefs} from './external/simple-prefs/dist/index.esm.js';
 
-import * as TextSearch from './behaviors/mapTextSearch.js';
-import * as Views from './views/index/view-index.js';
+import imageMapFormObjectInfo from './behaviors/imageMapFormObjectInfo.js';
+
+import * as Views from './views/view-index.js';
 import * as Styles from './styles/styles-index.js';
 
 // Todo: Could allow for multiple image maps
@@ -23,14 +24,14 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
   editMode: 'edit'
 }});
 
-async function setTextRectangleByEditMode (imagePreview) {
+async function setTextRectangleByEditMode (textImageMap) {
   const editMode = await prefs.getPref('editMode');
   if (editMode !== 'edit') {
-    imagePreview.enableTextDragRectangle({
-      pos: imagePreview.getPosition(), editMode
+    textImageMap.enableTextDragRectangle({
+      pos: textImageMap.getPosition(), editMode
     });
   } else {
-    imagePreview.disableTextDragRectangle();
+    textImageMap.disableTextDragRectangle();
   }
 }
 
@@ -131,10 +132,10 @@ function updateSerializedHTML (removeAll) {
     $('#serializedHTML').value = '';
     return;
   }
-  const clonedImagePreview = $('.imagePreview').cloneNode(true);
-  clonedImagePreview.querySelector('svg').remove();
+  const clonedTextImageMap = $('.textImageMap').cloneNode(true);
+  clonedTextImageMap.querySelector('svg').remove();
   $('#serializedHTML').value =
-    clonedImagePreview.outerHTML;
+    clonedTextImageMap.outerHTML;
 }
 
 function getSerializedJSON () {
@@ -189,12 +190,16 @@ function deserializeForm (formObj) {
   // this.reportValidity();
 }
 
+/**
+* @typedef {PlainObject<string, string>} FormObject
+*/
+
 // Todo: We could use OOP with polymorphic methods instead,
 //   avoiding its own instance method
 /**
  *
  * @param {"form"|"map"|"html"|"json"} type
- * @param {PlainObject} formObj
+ * @param {FormObject} formObj
  * @param {HTMLElement} [formControl] Control on which to report errors in
  *   form-building. Not needed if this is a change to the whole form.
  * @param {boolean} removeAll
@@ -204,16 +209,16 @@ async function updateViews (type, formObj, formControl, removeAll) {
   if (type !== 'form') {
     deserializeForm.call(formControl, formObj);
   }
-  const imagePreview = $('image-preview');
+  const textImageMap = $('text-image-map');
   if (!removeAll) {
     // Don't actually set the map and update
     if (type !== 'map') {
-      await formToPreview(formObj); // Sets preview
+      await formToImageMap(formObj); // Sets text image map
     }
     // Even for map, we must update apparently because change in form
     //   control positions after adding controls changes positions within
     //   map as well
-    await updateMap(imagePreview, formObj);
+    await updateMap(textImageMap, formObj);
   }
   if (type !== 'html') {
     updateSerializedHTML(removeAll);
@@ -221,46 +226,18 @@ async function updateViews (type, formObj, formControl, removeAll) {
   if (type !== 'json') {
     updateSerializedJSON(removeAll ? {} : formObj);
   }
-  imagePreview.setFormObject(formObj);
+  textImageMap.setFormObject(formObj);
 }
 
-async function updateMap (imagePreview, formObj) {
-  await imagePreview.removeAllShapes();
+async function updateMap (textImageMap, formObj) {
+  await textImageMap.removeAllShapes();
   await Promise.all(
     imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-      return imagePreview.addShape(shape, {coords});
+      return textImageMap.addShape(shape, {coords});
     })
   );
   const editMode = await prefs.getPref('editMode');
-  imagePreview.showGuidesUnlessViewMode(editMode);
-}
-
-function imageMapFormObjectInfo (formObj) {
-  const formObjKeys = Object.keys(formObj);
-  const shapeIDS = formObjKeys.filter((item) => {
-    return item.endsWith('_shape');
-  });
-
-  return shapeIDS.map((shapeID) => {
-    const shape = formObj[shapeID];
-    const setNum = shapeID.slice(0, -('_shape'.length));
-    const alt = formObj[setNum + '_text'];
-    const coords = shape === 'circle'
-      ? ['circlex', 'circley', 'circler'].map((item) => {
-        return formObj[setNum + '_' + item];
-      })
-      : shape === 'rect'
-        ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
-          return formObj[setNum + '_' + item];
-        })
-        // Poly
-        : formObjKeys.filter((item) => {
-          return item.startsWith(setNum) && item.endsWith('_xy');
-        }).map((item) => {
-          return formObj[item];
-        });
-    return {shape, alt, coords};
-  });
+  textImageMap.showGuidesUnlessViewMode(editMode);
 }
 
 function setFormObjCoords ({
@@ -307,20 +284,20 @@ async function setFormObjCoordsAndUpdateViewForMap ({
   await updateViews('map', formObj, formControl, removeAll);
 }
 
-async function formToPreview (formObj) {
+async function formToImageMap (formObj) {
   const defaultImageSrc = await prefs.getPref('lastImageSrc');
-  const imagePreview = $('image-preview');
+  const textImageMap = $('text-image-map');
   const {name} = formObj;
 
-  imagePreview.name = name;
-  imagePreview.src = $('input[name=mapURL]').value || (
+  textImageMap.name = name;
+  textImageMap.src = $('input[name=mapURL]').value || (
     defaultImageSrc.startsWith('http')
       ? defaultImageSrc
       : location.href + '/' + defaultImageSrc
   );
 
-  imagePreview.setShapeStrokeFillOptions(Styles.shapeStyle);
-  imagePreview.setImageMaps({
+  textImageMap.setShapeStrokeFillOptions(Styles.shapeStyle);
+  textImageMap.setImageMaps({
     formObj,
     editMode: await prefs.getPref('editMode'),
     sharedBehaviors: {
@@ -340,7 +317,7 @@ async function formToPreview (formObj) {
     });
   }
 
-  await setTextRectangleByEditMode(imagePreview);
+  await setTextRectangleByEditMode(textImageMap);
 
   // Todo: Should find a better way around this
   // Wait until SVG is built
@@ -393,8 +370,8 @@ function rememberLastMap (map) {
   ]);
 }
 
-async function mapNameChange (e, avoidSetting) {
-  const imagePreview = $('image-preview');
+async function mapNameChange () {
+  const textImageMap = $('text-image-map');
   if (!this.value) {
     updateSerializedJSON({});
     serializedJSONInput.call($('#serializedJSON'));
@@ -405,7 +382,7 @@ async function mapNameChange (e, avoidSetting) {
   // eslint-disable-next-line no-console
   console.log('maps', map);
   if (map.name) {
-    await imagePreview.removeAllShapes({
+    await textImageMap.removeAllShapes({
       sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
     });
     updateSerializedJSON(map);
@@ -450,8 +427,8 @@ form = Views.mainForm({
         name: mapName, method: 'DELETE'
       });
 
-      const imagePreview = $('image-preview');
-      await imagePreview.removeAllShapes({
+      const textImageMap = $('text-image-map');
+      await textImageMap.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
       await rememberLastMap({
@@ -544,21 +521,21 @@ Views.main({
       const editMode = e.target.value;
       await prefs.setPref('editMode', editMode);
 
-      const imagePreview = $('image-preview');
-      await setTextRectangleByEditMode(imagePreview);
+      const textImageMap = $('text-image-map');
+      await setTextRectangleByEditMode(textImageMap);
 
       $('input.zoom').disabled = editMode === 'edit';
       $('a.zoom').hidden = editMode === 'edit';
 
-      const {width, height, shapes} = imagePreview.getPreviewInfo();
+      const {width, height, shapes} = textImageMap.getImageMapInfo();
       if (!width || !height) { // Nothing else to do yet
         return;
       }
       // console.log('width', width, height, shapes, editMode);
 
-      await formToPreview(getSerializedJSON());
+      await formToImageMap(getSerializedJSON());
       /*
-      imagePreview.setImageMaps({
+      textImageMap.setImageMaps({
         formObj: getSerializedJSON(),
         editMode,
         sharedBehaviors: {
@@ -567,9 +544,9 @@ Views.main({
       });
       */
 
-      imagePreview.copyImageMapsToPreview({width, height, shapes});
+      textImageMap.copyImageMapsToImageMap({width, height, shapes});
 
-      imagePreview.showGuidesUnlessViewMode(editMode);
+      textImageMap.showGuidesUnlessViewMode(editMode);
     },
     async serializedHTMLInput () {
       const html = new DOMParser().parseFromString(this.value, 'text/html');
@@ -606,22 +583,22 @@ Views.main({
     serializedJSONInput,
     async rectClick (e) {
       e.preventDefault();
-      const imagePreview = $('image-preview');
-      await imagePreview.addRect({
+      const textImageMap = $('text-image-map');
+      await textImageMap.addRect({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
     async circleClick (e) {
       e.preventDefault();
-      const imagePreview = $('image-preview');
-      await imagePreview.addCircle({
+      const textImageMap = $('text-image-map');
+      await textImageMap.addCircle({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
     async removeClick (e) {
       e.preventDefault();
-      const imagePreview = $('image-preview');
-      await imagePreview.removeShape({
+      const textImageMap = $('text-image-map');
+      await textImageMap.removeShape({
         sharedBehaviors: {
           setFormObjCoordsAndUpdateViewForMap
         }
@@ -629,8 +606,8 @@ Views.main({
     },
     async removeAllClick (e) {
       e.preventDefault();
-      const imagePreview = $('image-preview');
-      await imagePreview.removeAllShapes({
+      const textImageMap = $('text-image-map');
+      await textImageMap.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
     },
@@ -647,92 +624,22 @@ Views.main({
         return;
       }
 
-      const imagePreview = $('image-preview');
-      imagePreview.zoomPreviewAndResize(val);
+      const textImageMap = $('text-image-map');
+      textImageMap.zoomImageMapAndResize(val);
     }
   }
 });
 
 addImageRegion(imgRegionID++);
 
-await mapNameChange.call($('input[name="name"]'), true);
+await mapNameChange.call($('input[name="name"]'));
 
-const findBar = Views.findBar();
-findBar.querySelector(
-  'input.findBar'
-).addEventListener('input', async function () {
-  const {value} = this;
-  const formObj = getSerializedJSON();
-
-  // Todo: Allow `all` mode
-  // Todo: Even for "first" mode, we need to get "next"
-  const mode = 'first';
-  const isFirstMode = mode === 'first';
-
-  const formObjectInfo = imageMapFormObjectInfo(formObj);
-  const [
-    beginSegmentIndexIndex, endSegmentIndexIndex
-  ] = TextSearch.getBeginAndEndIndexes({
-    formObjectInfo, value, isFirstMode
-  });
-
-  const viewMode = (await prefs.getPref('editMode')) === 'view';
-
-  async function blinkShape ({shape, coords}) {
-    let attSel;
-    switch (shape) {
-    case 'rect': {
-      const [x, y, x2, y2] = coords;
-      const width = x2 - x;
-      const height = y2 - y;
-      attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
-      break;
-    }
-    case 'circle': {
-      const [cx, cy, r] = coords;
-      attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
-      break;
-    }
-    case 'polygon': {
-      attSel = `[points=${coords.join(',')}]`;
-      break;
-    }
-    default:
-      throw new Error('Unexpected shape ' + shape);
-    }
-    const matchedShape = $(shape + attSel);
-    matchedShape.classList.add('borderBlink');
-    await timeout(3000);
-    matchedShape.classList.remove('borderBlink');
-    /*
-    // Gets correct <area>, but doesn't work to style apparently
-    const matchedArea = $(`area[coords="${coords.join(',')}"]`);
-    console.log('matchedArea', matchedArea);
-    matchedArea.classList.add('borderBlink');
-    await timeout(10000);
-    matchedArea.classList.remove('borderBlink');
-    */
-  }
-
-  const imagePreview = $('image-preview');
-  formObjectInfo.slice(
-    beginSegmentIndexIndex, endSegmentIndexIndex + 1
-  ).forEach(async (
-    {shape, coords}
-  ) => {
-    // Todo: Highlight
-    // console.log('matching shape & coords', shape, coords);
-    if (viewMode) {
-      // We don't have displayed shapes now (with accurate dimensions),
-      //  so we have to build our own elements
-      imagePreview.addShape(shape, {coords});
-      await timeout(500);
-    }
-    blinkShape({shape, coords});
-    if (viewMode) {
-      await timeout(2000);
-      imagePreview.removeShape();
-    }
-  });
-});
+const findImageRegionBar = Views.findImageRegionBar();
+// Supply our implementations (simpler than passing events around)
+findImageRegionBar.getFormObject = () => {
+  return getSerializedJSON();
+};
+findImageRegionBar.useViewMode = async () => {
+  return (await prefs.getPref('editMode')) === 'view';
+};
 })();

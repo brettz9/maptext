@@ -12,6 +12,8 @@ module.exports = {
       'CustomEvent',
       'DataTransfer',
       'document.createElementNS',
+      'document.querySelector',
+      'document.querySelectorAll',
       'DOMParser',
       'Error',
       'Event',

@@ -41,8 +41,9 @@ div.imageRegions, .preferences {
   font-size: 20px;
 }
 
-textarea.textToCopy {
+fieldset.textToCopy {
   float: left;
+  margin-top: 10px;
   width: 20%;
 }
 div.shapeControls {
@@ -54,7 +55,7 @@ fieldset.shapeControls {
 }
 fieldset.shapeControls, fieldset.zoom {
   float: left;
-  margin-top: -10px;
+  margin-top: 10px;
   margin-bottom: 10px;
   text-align: center;
 }
