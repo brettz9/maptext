@@ -4,6 +4,7 @@ external
 # Items to move to own repos
 !external/dom-behaviors
 !external/i18n
+!external/get-styles
 !.*.js
 maptext-index.rollup.js
 coverage

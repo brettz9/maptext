@@ -4305,5 +4305,4 @@ tippy.setDefaultProps({
   render: render
 });
 
-export default tippy;
-export { animateFill, createSingleton, delegate, followCursor, hideAll, inlinePositioning, ROUND_ARROW as roundArrow, sticky };
+export { animateFill, createSingleton, tippy as default, delegate, followCursor, hideAll, inlinePositioning, ROUND_ARROW as roundArrow, sticky };

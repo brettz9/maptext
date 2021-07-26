@@ -65,6 +65,9 @@ npm i maptext
 
 ## Lower priority to-dos
 
+1. Change any remaining model + views to single **model-view files**
+1. **Convert into web components** the jml-based parts of the code (including
+    model-view components)?
 1. **OCR.js**-type options for auto-populating (more easily recognized) text
     fields
     1. Tesseract has option to get coordinates. As per

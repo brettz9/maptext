@@ -1,3 +1,10 @@
+/* This rule is only queried dynamically */
+.shape-style-defaults {
+  fill: transparent;
+  stroke: red;
+  stroke-width: 2;
+}
+
 .serialized {
   float: left;
   width: 50%;

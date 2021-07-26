@@ -1,21 +1,30 @@
-/* eslint-disable jsdoc/require-jsdoc */
-import {jml, $, $$} from '../external/jamilih/dist/jml-es.js';
-// import {$, $$} from '../external/query-dollar/dollar.js';
-import {
-  serialize, deserialize
-} from '../external/form-serialization/dist/index-es.js';
-import tippy from '../external/tippy.js/dist/tippy.esm.js';
+import {$, $$} from '../external/query-dollar/dollar.js';
+import {deserialize} from '../external/form-serialization/dist/index-es.js';
 // Todo: Switch to npm version
 import _ from '../external/i18n/i18n.js';
-import {empty, timeout} from '../external/dom-behaviors/dom-behaviors.js';
+import {empty} from '../external/dom-behaviors/dom-behaviors.js';
 import {SimplePrefs} from '../external/simple-prefs/dist/index.esm.js';
+import getStyles from '../external/get-styles/getStyles.js';
 
-import imageMapFormObjectInfo from './behaviors/imageMapFormObjectInfo.js';
+import imageMapFormObjectInfo from
+  './components/TextImageMap/imageMapFormObjectInfo.js';
+import getFormToImageMap from './behaviors/getFormToImageMap.js';
 
 import findImageRegionBar from './model-views/findImageRegionBar.js';
+import editPolyXY from './model-views/editPolyXY.js';
+import formShapeSelection, {
+  setImageRegionID, setRequireText
+} from './model-views/formShapeSelection.js';
+import mainForm from './model-views/mainForm.js';
+import main from './model-views/main.js';
 
-import * as Views from './views/view-index.js';
-import * as Styles from './styles/styles-index.js';
+let editableFormToImageMap;
+let requireText;
+let form;
+
+const styles = getStyles([
+  'index.css'
+]);
 
 // Todo: Could allow for multiple image maps
 const mapID = 0;
@@ -24,112 +33,13 @@ const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
   lastMapName: `map${mapID}`,
   lastImageSrc: 'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg',
   requireText: true,
-  editMode: 'edit'
+  mode: 'edit'
 }});
 
-async function setTextRectangleByEditMode (textImageMap) {
-  const editMode = await prefs.getPref('editMode');
-  if (editMode !== 'edit') {
-    textImageMap.enableTextDragRectangle({
-      pos: textImageMap.getPosition(), editMode
-    });
-  } else {
-    textImageMap.disableTextDragRectangle();
-  }
-}
-
-// Todo: Detect locale and use https://github.com/brettz9/i18nizeElement
-document.documentElement.lang = 'en-US';
-document.documentElement.dir = 'ltr';
-
-let imgRegionID = 0;
-let form;
-
-function makePolyXY (currImageRegionID, from = false) {
-  const polyDiv = Views.polyXYDiv({
-    from,
-    currImageRegionID,
-    behaviors: {
-      addPolyClick (e) {
-        e.preventDefault();
-        polyDiv.after(makePolyXY(currImageRegionID));
-      },
-      removePolyClick (e) {
-        e.preventDefault();
-        const buttonSets = polyDiv.parentElement;
-        if (buttonSets.children.length <= 2) {
-          return;
-        }
-        polyDiv.remove();
-        const firstButtonSet = buttonSets.firstElementChild;
-        const fromOrTo = firstButtonSet.firstElementChild;
-        if (fromOrTo.className !== 'from') {
-          fromOrTo.replaceWith(jml(...Views.makeFrom()));
-        }
-      }
-    }
-  });
-  return polyDiv;
-}
-
-function addImageRegion (imageRegionID, prevElement) {
-  const currentImageRegionID = imageRegionID;
-  const li = Views.formShapeSelection({
-    currentImageRegionID,
-    behaviors: {
-      shapeSelectionChange ({target}) {
-        const outputArea = this.nextElementSibling;
-        empty(outputArea);
-        switch (target.value) {
-        case 'rect':
-          Views.formControlsRect({currentImageRegionID, outputArea});
-          break;
-        case 'circle':
-          Views.formControlsCircle({currentImageRegionID, outputArea});
-          break;
-        case 'poly': {
-          const div = Views.formControlsPoly({
-            outputArea, li,
-            behaviors: {
-              makePolyXY () {
-                return makePolyXY(currentImageRegionID, true);
-              }
-            }
-          });
-          div.querySelector('button.addPoly').click();
-          break;
-        } default:
-          break;
-        }
-        Views.formText({
-          requireText,
-          currentImageRegionID, outputArea,
-          behaviors: {
-            addImageRegionClick (e) {
-              e.preventDefault();
-              addImageRegion(imgRegionID++, li);
-            },
-            removeImageRegionClick (e) {
-              e.preventDefault();
-              const imageRegions = $('#imageRegions');
-              if (imageRegions.children.length === 1) {
-                return;
-              }
-              li.remove();
-            }
-          }
-        });
-      }
-    }
-  });
-  if (prevElement) {
-    prevElement.after(li);
-  } else {
-    jml(li, $('#imageRegions'));
-  }
-  li.firstElementChild.dispatchEvent(new Event('change'));
-}
-
+/**
+ * @param {boolean} removeAll
+ * @returns {void}
+ */
 function updateSerializedHTML (removeAll) {
   if (removeAll) {
     $('#serializedHTML').value = '';
@@ -141,15 +51,26 @@ function updateSerializedHTML (removeAll) {
     clonedTextImageMap.outerHTML;
 }
 
+/**
+ * @returns {string}
+ */
 function getSerializedJSON () {
   return JSON.parse($('#serializedJSON').value);
 }
 
+/**
+ * @param {FormObject} formObj
+ * @returns {void}
+ */
 function updateSerializedJSON (formObj) {
   $('#serializedJSON').value =
     JSON.stringify(formObj, null, 2);
 }
 
+/**
+ * @param {FormObject} formObj
+ * @returns {void}
+ */
 function deserializeForm (formObj) {
   const imageRegions = $('#imageRegions');
   empty(imageRegions);
@@ -159,18 +80,22 @@ function deserializeForm (formObj) {
       return;
     }
     const currID = Number.parseInt(key.slice(0, -('_shape'.length)));
-    addImageRegion(currID);
+    formShapeSelection({
+      requireText,
+      prefs,
+      imageRegionID: currID
+    });
     const lastRegion = imageRegions.lastElementChild;
     const shapeSelector = lastRegion.querySelector('select');
     shapeSelector.name = key; // Number in key may differ
-    shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
+    shapeSelector.selectedIndex = ['rect', 'circle', 'poly'].indexOf(shape);
     shapeSelector.dispatchEvent(new Event('change'));
     if (shape === 'poly') {
       const polySetsStart = formObj[currID + '_xy'].length / 2;
       let polySets = polySetsStart;
       while (polySets > 2) { // Always have at least 2
         $('.polyDivHolder').append(
-          makePolyXY(currID, polySets === polySetsStart)
+          editPolyXY(currID, polySets === polySetsStart)
         );
         polySets--;
       }
@@ -179,7 +104,7 @@ function deserializeForm (formObj) {
       highestID = currID;
     }
   });
-  imgRegionID = highestID + 1;
+  setImageRegionID(highestID + 1);
   try {
     deserialize(form, formObj);
   } catch (err) {
@@ -216,7 +141,10 @@ async function updateViews (type, formObj, formControl, removeAll) {
   if (!removeAll) {
     // Don't actually set the map and update
     if (type !== 'map') {
-      await formToImageMap(formObj); // Sets text image map
+      await editableFormToImageMap({
+        formObj,
+        textImageMap: $('text-image-map')
+      }); // Sets text image map
     }
     // Even for map, we must update apparently because change in form
     //   control positions after adding controls changes positions within
@@ -232,6 +160,11 @@ async function updateViews (type, formObj, formControl, removeAll) {
   textImageMap.setFormObject(formObj);
 }
 
+/**
+ * @param {TextImageMap} textImageMap
+ * @param {FormObject} formObj
+ * @returns {Promise<void>}
+ */
 async function updateMap (textImageMap, formObj) {
   await textImageMap.removeAllShapes();
   await Promise.all(
@@ -239,10 +172,14 @@ async function updateMap (textImageMap, formObj) {
       return textImageMap.addShape(shape, {coords});
     })
   );
-  const editMode = await prefs.getPref('editMode');
-  textImageMap.showGuidesUnlessViewMode(editMode);
+  const mode = await prefs.getPref('mode');
+  textImageMap.showGuidesUnlessViewMode(mode);
 }
 
+/**
+* @param {FormObjectInfo} cfg
+* @returns {void}
+*/
 function setFormObjCoords ({
   index, shape, coords, text, formObj, oldShapeToDelete
 }) {
@@ -256,6 +193,12 @@ function setFormObjCoords ({
   } else {
     formObj[index + '_text'] = text;
   }
+
+  /**
+   * @param {string} item
+   * @param {Integer} i
+   * @returns {void}
+   */
   function circleOrRect (item, i) {
     if (coords[i] === undefined) {
       delete formObj[index + '_' + item];
@@ -265,11 +208,11 @@ function setFormObjCoords ({
   }
   switch (shape || oldShapeToDelete) {
   case 'circle':
-    // eslint-disable-next-line unicorn/no-array-callback-reference
+    // eslint-disable-next-line unicorn/no-array-callback-reference -- Safe
     ['circlex', 'circley', 'circler'].forEach(circleOrRect);
     break;
   case 'rect':
-    // eslint-disable-next-line unicorn/no-array-callback-reference
+    // eslint-disable-next-line unicorn/no-array-callback-reference -- Safe
     ['leftx', 'topy', 'rightx', 'bottomy'].forEach(circleOrRect);
     break;
   case 'poly':
@@ -279,93 +222,81 @@ function setFormObjCoords ({
   }
 }
 
+/**
+* @typedef {PlainObject} FormObjectInfo
+* @todo Complete
+* @property {Integer} index
+* @property {ImageDataShape} shape
+* @property {Integer[]} coords
+* @property {string} text
+* @property {FormObject} formObj
+* @property {ImageDataShape} oldShapeToDelete
+*/
+
+/**
+* @typedef {FormObjectInfo} FormObjectEditInfo
+* @property {HTMLElement} formControl
+* @property {boolean} removeAll
+*/
+
+/**
+ * @param {FormObjectInfo} cfg
+ * @returns {Promise<void>}
+*/
 async function setFormObjCoordsAndUpdateViewForMap ({
-  index, shape, coords, text, formObj, formControl, oldShapeToDelete,
-  removeAll
+  index, shape, coords, text, formObj, oldShapeToDelete,
+  formControl, removeAll
 }) {
   setFormObjCoords({index, shape, coords, text, formObj, oldShapeToDelete});
   await updateViews('map', formObj, formControl, removeAll);
 }
 
-async function formToImageMap (formObj) {
-  const defaultImageSrc = await prefs.getPref('lastImageSrc');
-  const textImageMap = $('text-image-map');
-  const {name} = formObj;
-
-  textImageMap.name = name;
-  textImageMap.src = $('input[name=mapURL]').value || (
-    defaultImageSrc.startsWith('http')
-      ? defaultImageSrc
-      : location.href + '/' + defaultImageSrc
-  );
-
-  textImageMap.setShapeStrokeFillOptions(Styles.shapeStyle);
-  textImageMap.setImageMaps({
-    formObj,
-    editMode: await prefs.getPref('editMode'),
-    sharedBehaviors: {
-      setFormObjCoordsAndUpdateViewForMap
-    }
+/**
+ * @returns {Promise<void>}
+ */
+async function requireTextBehavior () {
+  requireText = this.checked;
+  setRequireText(requireText);
+  $$('.requireText').forEach((textarea) => {
+    textarea.required = requireText;
   });
-
-  // Todo: Only build a new area if not one for the same coords already
-  //   (in which case, supplement it with `alt` and `mouseover`)
-  const map = $(`map[name=${name}]`);
-  function mouseover () {
-    this.dataset.tippyContent = this.alt;
-    tippy('[data-tippy-content]', {
-      followCursor: true,
-      distance: 10,
-      placement: 'right'
-    });
-  }
-
-  await setTextRectangleByEditMode(textImageMap);
-
-  // Todo: Should find a better way around this
-  // Wait until SVG is built
-  await timeout(500);
-  imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-    return {shape, alt, coords: coords.join(',')};
-  }).filter(({shape, alt, coords}) => {
-    const existingArea = map.querySelector(
-      `area[shape="${shape}"][coords="${coords}"]`
-    );
-    if (existingArea) {
-      existingArea.alt = alt || '';
-      existingArea.addEventListener('mouseover', mouseover);
-    }
-    return !existingArea;
-  }).forEach(({shape, alt, coords}) => {
-    jml(...Views.buildArea({
-      shape,
-      alt,
-      coords,
-      behaviors: {mouseover}
-    }), map);
-  });
+  await prefs.setPref('requireText', requireText);
 }
 
-document.title = Views.title();
-
-let requireText;
-(async () => {
-await Styles.load();
-
-requireText = await prefs.getPref('requireText');
-
-async function getMapData ({url, method}) {
+/**
+ * @param {PlainObject} cfg
+ * @param {string} cfg.url
+ * @param {"GET"|"DELETE"} cfg.method
+ * @returns {JSON}
+ */
+async function fetchJSON ({url, method}) {
   const response = await fetch(url, {method});
   return response.json();
 }
 
-function mapDataByName ({name, method = 'GET'}) {
-  return getMapData({
+/**
+* @param {PlainObject} cfg
+* @param {string} cfg.name
+* @param {"GET"|"DELETE"} [cfg.method="GET"]
+* @returns {FormObject}
+*/
+function getMapDataByName ({name, method = 'GET'}) {
+  return fetchJSON({
     method,
     url: '/maps/maps/' + encodeURIComponent(name)
   });
 }
 
+/**
+* @typedef {GenericArray} LastPrefs
+* @property {string} 0
+* @property {string} 1
+*/
+
+/**
+* @param {FormData} map
+* @returns {Promise<LastPrefs>}
+*/
 function rememberLastMap (map) {
   return Promise.all([
     prefs.setPref('lastMapName', map.name),
@@ -373,131 +304,9 @@ function rememberLastMap (map) {
   ]);
 }
 
-async function mapNameChange () {
-  const textImageMap = $('text-image-map');
-  if (!this.value) {
-    updateSerializedJSON({});
-    serializedJSONInput.call($('#serializedJSON'));
-    return;
-  }
-  form.disabled = true;
-  const map = await mapDataByName({name: this.value});
-  // eslint-disable-next-line no-console
-  console.log('maps', map);
-  if (map.name) {
-    await textImageMap.removeAllShapes({
-      sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-    });
-    updateSerializedJSON(map);
-    serializedJSONInput.call($('#serializedJSON'));
-    await rememberLastMap(map);
-  }
-  form.disabled = false;
-}
-
-async function saveMapData ({url, method, data}) {
-  const response = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  });
-  return response.json();
-}
-
-form = Views.mainForm({
-  defaultMapName: await prefs.getPref('lastMapName'),
-  defaultImageSrc: await prefs.getPref('lastImageSrc'),
-  initialPrefs: {requireText},
-  behaviors: {
-    async mapDelete (e) {
-      e.preventDefault();
-      const mapName = $('input[name="name"]').value;
-      if (!mapName) {
-        // eslint-disable-next-line no-alert
-        alert(_('You must provide a map name'));
-        return;
-      }
-      // eslint-disable-next-line no-alert
-      const ok = confirm(
-        _(`Are you sure you wish to delete the map: ${mapName} ?`)
-      );
-      if (!ok) {
-        return;
-      }
-      /* const results = */ await mapDataByName({
-        name: mapName, method: 'DELETE'
-      });
-
-      const textImageMap = $('text-image-map');
-      await textImageMap.removeAllShapes({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-      await rememberLastMap({
-        name: null,
-        mapURL: null
-      });
-
-      // eslint-disable-next-line no-alert
-      alert(_('Map deleted!'));
-    },
-    mapNameChange,
-    async requireText () {
-      requireText = this.checked;
-      $$('.requireText').forEach((textarea) => {
-        textarea.required = requireText;
-      });
-      await prefs.setPref('requireText', requireText);
-    },
-    async imageFormSubmit (e) {
-      e.preventDefault();
-      const formObj = serialize(this, {hash: true});
-      const mapName = $('input[name="name"]').value;
-      if (!mapName) {
-        // eslint-disable-next-line no-alert
-        alert(_('You must provide a map name'));
-        return;
-      }
-      const map = await mapDataByName({name: mapName});
-      if (map.name) {
-        // eslint-disable-next-line no-alert
-        const ok = confirm(
-          _(`Do you wish to overwrite the existing map: ${mapName}?`)
-        );
-        if (!ok) {
-          return;
-        }
-      }
-
-      const cfg = map.name
-        // Overwrite
-        ? {
-          url: '/maps/maps/' + encodeURIComponent(mapName),
-          method: 'PUT'
-        }
-        // Create new
-        : {
-          url: '/maps/maps/',
-          method: 'POST'
-        };
-
-      await saveMapData({...cfg, data: formObj});
-      await updateViews('form', formObj);
-      await rememberLastMap(formObj);
-
-      // eslint-disable-next-line no-alert
-      alert(map.name ? _('Map overwritten!') : _('Map created!'));
-    },
-    submitFormClick () {
-      // To try again, we reset invalid forms, e.g., from previous bad JSON
-      [...form.elements].forEach((ctrl) => {
-        ctrl.setCustomValidity('');
-      });
-    }
-  }
-});
-
+/**
+ * @returns {Promise<void>}
+ */
 async function serializedJSONInput () {
   let formObj;
   try {
@@ -512,128 +321,78 @@ async function serializedJSONInput () {
   await updateViews('json', formObj, this);
 }
 
-// const imageHeightWidthRatio = 1001 / 1024;
-// const width = 450; // 1024;
-// const height = width * imageHeightWidthRatio;
-
-Views.main({
-  form,
-  editMode: await prefs.getPref('editMode'),
-  behaviors: {
-    async setEditMode (e) {
-      const editMode = e.target.value;
-      await prefs.setPref('editMode', editMode);
-
-      const textImageMap = $('text-image-map');
-      await setTextRectangleByEditMode(textImageMap);
-
-      $('input.zoom').disabled = editMode === 'edit';
-      $('a.zoom').hidden = editMode === 'edit';
-
-      const {width, height, shapes} = textImageMap.getImageMapInfo();
-      if (!width || !height) { // Nothing else to do yet
-        return;
-      }
-      // console.log('width', width, height, shapes, editMode);
-
-      await formToImageMap(getSerializedJSON());
-      /*
-      textImageMap.setImageMaps({
-        formObj: getSerializedJSON(),
-        editMode,
-        sharedBehaviors: {
-          setFormObjCoordsAndUpdateViewForMap
-        }
-      });
-      */
-
-      textImageMap.copyImageMapsToImageMap({width, height, shapes});
-
-      textImageMap.showGuidesUnlessViewMode(editMode);
-    },
-    async serializedHTMLInput () {
-      const html = new DOMParser().parseFromString(this.value, 'text/html');
-      const map = html.querySelector('map[name]');
-      const img = html.querySelector(
-        `img[usemap="#${map.name}"][src]`
-      );
-      const areas = [...map.querySelectorAll('area')];
-      if (!map || !areas.length || !img) {
-        this.setCustomValidity(!map
-          ? _('Missing <map name=> element ')
-          : (!areas.length)
-            ? _('Missing <area>')
-            : _('Missing matching <img usemap= src=>'));
-        this.reportValidity();
-        return;
-      }
-      this.setCustomValidity('');
-
-      const formObj = {
-        name: map.name,
-        mapURL: img.src
-      };
-      areas.forEach(({shape, coords, alt}, index) => {
-        if (!shape || !coords) {
-          return;
-        }
-        coords = coords.split(/,\s*/u);
-        setFormObjCoords({index, shape, coords, text: alt || '', formObj});
-      });
-      // alert(JSON.stringify(formObj, null, 2));
-      await updateViews('html', formObj, this);
-    },
-    serializedJSONInput,
-    async rectClick (e) {
-      e.preventDefault();
-      const textImageMap = $('text-image-map');
-      await textImageMap.addRect({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-    },
-    async circleClick (e) {
-      e.preventDefault();
-      const textImageMap = $('text-image-map');
-      await textImageMap.addCircle({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-    },
-    async removeClick (e) {
-      e.preventDefault();
-      const textImageMap = $('text-image-map');
-      await textImageMap.removeShape({
-        sharedBehaviors: {
-          setFormObjCoordsAndUpdateViewForMap
-        }
-      });
-    },
-    async removeAllClick (e) {
-      e.preventDefault();
-      const textImageMap = $('text-image-map');
-      await textImageMap.removeAllShapes({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-    },
-    zoomClick (e) {
-      e.preventDefault();
-
-      const zoomInput = $('input.zoom');
-      const val = Number(zoomInput.value || 100);
-
-      if (typeof val !== 'number' || Number.isNaN(val) || val <= 0) {
-        alert( // eslint-disable-line no-alert
-          _('You must enter a number and one greater than 0.')
-        );
-        return;
-      }
-
-      const textImageMap = $('text-image-map');
-      textImageMap.zoomImageMapAndResize(val);
-    }
+/**
+ * @returns {Promise<void>}
+ */
+async function mapNameChange () {
+  const textImageMap = $('text-image-map');
+  if (!this.value) {
+    updateSerializedJSON({});
+    serializedJSONInput.call($('#serializedJSON'));
+    return;
   }
+  form.disabled = true;
+  const map = await getMapDataByName({name: this.value});
+  // eslint-disable-next-line no-console -- Debugging
+  console.log('maps', map);
+  if (map.name) {
+    await textImageMap.removeAllShapes({
+      sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+    });
+    updateSerializedJSON(map);
+    serializedJSONInput.call($('#serializedJSON'));
+    await rememberLastMap(map);
+  }
+  form.disabled = false;
+}
+
+document.title = _('MapText demo');
+// Todo: Detect locale and use https://github.com/brettz9/i18nizeElement
+document.documentElement.lang = 'en-US';
+document.documentElement.dir = 'ltr';
+
+(async () => {
+const [
+  reqText,
+  mode,
+  lastMapName,
+  lastImageSrc
+] = await Promise.all([
+  prefs.getPref('requireText'),
+  prefs.getPref('mode'),
+  prefs.getPref('lastMapName'),
+  prefs.getPref('lastImageSrc'),
+  styles.load()
+]);
+
+({editableFormToImageMap} = getFormToImageMap({
+  prefs, styles, setFormObjCoordsAndUpdateViewForMap
+}));
+
+requireText = reqText;
+setRequireText(requireText);
+
+form = mainForm({
+  defaultMapName: lastMapName,
+  defaultImageSrc: lastImageSrc,
+  initialPrefs: {requireText},
+  updateViews, getMapDataByName, setFormObjCoordsAndUpdateViewForMap,
+  rememberLastMap, requireTextBehavior, mapNameChange
 });
 
-addImageRegion(imgRegionID++);
+main({
+  form,
+  prefs,
+  mode,
+  getSerializedJSON,
+  editableFormToImageMap,
+  setFormObjCoords,
+  updateViews,
+  serializedJSONInput,
+  setFormObjCoordsAndUpdateViewForMap
+});
+
+formShapeSelection({prefs, requireText});
 
 await mapNameChange.call($('input[name="name"]'));
 

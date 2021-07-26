@@ -1,14 +1,12 @@
 // import _ from '../../../external/i18n/i18n.js';
-import {$} from '../../../../external/query-dollar/dollar.js';
-
+import {$} from '../../../external/query-dollar/dollar.js';
 import HyperHTMLElement from
-  '../../../../external/hyperhtml-element/esm/index.js';
-import {timeout} from '../../../../external/dom-behaviors/dom-behaviors.js';
+  '../../../external/hyperhtml-element/esm/index.js';
+import {timeout} from '../../../external/dom-behaviors/dom-behaviors.js';
 
+import '../../components/FindBar/FindBar.js';
 import imageMapFormObjectInfo from
-  '../../../behaviors/imageMapFormObjectInfo.js';
-
-import '../../../components/FindBar/FindBar.js';
+  '../../components/TextImageMap/imageMapFormObjectInfo.js';
 
 import * as TextSearch from './mapTextSearch.js';
 
@@ -39,9 +37,14 @@ class FindImageRegionBar extends HyperHTMLElement {
     this.render();
     this.querySelector(
       'input.findBar'
-    ).addEventListener('input', async (e) => {
+    ).addEventListener('input', (e) => {
       // Function must be set by user
-      const formObj = this.getFormObject();
+      let formObj;
+      this.dispatchEvent(new CustomEvent('get-form-object', {
+        detail (obj) {
+          formObj = obj;
+        }
+      }));
 
       const {value} = e.target;
 
@@ -56,8 +59,6 @@ class FindImageRegionBar extends HyperHTMLElement {
       ] = TextSearch.getBeginAndEndIndexes({
         formObjectInfo, value, isFirstMode
       });
-
-      const viewMode = await this.useViewMode();
 
       /**
        * @param {{shape: ImageDataShape, coords}} cfg
@@ -101,26 +102,32 @@ class FindImageRegionBar extends HyperHTMLElement {
         */
       };
 
-      const textImageMap = $(this.textImageMap);
-      formObjectInfo.slice(
-        beginSegmentIndexIndex, endSegmentIndexIndex + 1
-      ).forEach(async (
-        {shape, coords}
-      ) => {
-        // Todo: Highlight
-        // console.log('matching shape & coords', shape, coords);
-        if (viewMode) {
-          // We don't have displayed shapes now (with accurate dimensions),
-          //  so we have to build our own elements
-          textImageMap.addShape(shape, {coords});
-          await timeout(500);
+      let viewMode;
+      this.dispatchEvent(new CustomEvent('use-view-mode', {
+        detail: (obj) => {
+          viewMode = obj;
+          const textImageMap = $(this.textImageMap);
+          formObjectInfo.slice(
+            beginSegmentIndexIndex, endSegmentIndexIndex + 1
+          ).forEach(async (
+            {shape, coords}
+          ) => {
+            // Todo: Highlight
+            // console.log('matching shape & coords', shape, coords);
+            if (viewMode) {
+              // We don't have displayed shapes now (with accurate
+              //  dimensions), so we have to build our own elements
+              textImageMap.addShape(shape, {coords});
+              await timeout(500);
+            }
+            blinkShape({shape, coords});
+            if (viewMode) {
+              await timeout(2000);
+              textImageMap.removeShape();
+            }
+          });
         }
-        blinkShape({shape, coords});
-        if (viewMode) {
-          await timeout(2000);
-          textImageMap.removeShape();
-        }
-      });
+      }));
     });
   }
 

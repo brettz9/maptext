@@ -14,6 +14,7 @@ module.exports = {
       'document.createElementNS',
       'document.querySelector',
       'document.querySelectorAll',
+      'document.title',
       'DOMParser',
       'Error',
       'Event',
@@ -60,13 +61,36 @@ module.exports = {
       },
       rules: {
       }
+    },
+    {
+      files: ['src/components/**', 'src/view-components/**'],
+      rules: {
+        'jsdoc/require-jsdoc': ['error', {
+          require: {
+            // ArrowFunctionExpression: true,
+            ClassDeclaration: true,
+            ClassExpression: true,
+            FunctionDeclaration: true, // Default is true
+            // FunctionExpression: true,
+            MethodDefinition: false
+          },
+          contexts: [
+            'MethodDefinition:not([' +
+              // hyperHTML-Element lifecycle
+              'key.name=/created|render|observedAttributes/' +
+            ']) > FunctionExpression'
+          ]
+        }],
+        // Generally want to grab from instance method
+        'class-methods-use-this': 0
+      }
     }
   ],
   extends: ['ash-nazg/sauron-node-overrides'],
+  parser: '@babel/eslint-parser',
   parserOptions: {
     ecmaVersion: 2021
   },
   rules: {
-    'eslint-comments/require-description': 0
   }
 };

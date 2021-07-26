@@ -82,3 +82,73 @@ Cypress.Commands.add(
     checkAccessibility();
   }
 );
+
+Cypress.Commands.add(
+  'login',
+  ({
+    user, ip,
+    secure = false,
+    badSecret = null // For testing forging attempts
+  } = {}) => {
+    return cy.task('generateLoginKey', {
+      user, ip, badSecret
+      // eslint-disable-next-line promise/prefer-await-to-then -- Cypress
+    }).then((key) => {
+      // eslint-disable-next-line promise/no-nesting -- Pass on `key`
+      return cy.setCookie('login', key, {
+        secure
+      // eslint-disable-next-line promise/prefer-await-to-then -- Cypress
+      }).then(() => {
+        return key;
+      });
+    });
+  }
+);
+
+Cypress.Commands.add(
+  'getToken',
+  (url = '/') => {
+    cy.visit(url);
+    let token;
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress
+    return cy.get('meta[name=csrf-token]').then(($meta) => {
+      token = $meta[0].getAttribute('content');
+      return cy.log(token);
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress
+    }).then(() => {
+      return token;
+    });
+  }
+);
+
+Cypress.Commands.add(
+  'loginWithSession',
+  () => {
+    const NL_EMAIL_PASS = Cypress.env('NL_EMAIL_PASS');
+    cy.task('deleteAllAccounts');
+    cy.task('addAccount');
+
+    const url = '/';
+
+    // Not just login, but get session, so will be shown `/home`
+    //   without redirect upon visit
+
+    // It is no longer sufficient to make a request now that we have CSRF, and
+    //   we don't want to expose an API to get the token
+    // eslint-disable-next-line promise/prefer-await-to-then -- Cypress
+    return cy.getToken(url).then((token) => {
+      return cy.request({
+        url,
+        method: 'POST',
+        timeout: 50000,
+        headers: {
+          'X-XSRF-Token': token
+        },
+        body: {
+          user: 'bretto',
+          pass: NL_EMAIL_PASS
+        }
+      });
+    });
+  }
+);

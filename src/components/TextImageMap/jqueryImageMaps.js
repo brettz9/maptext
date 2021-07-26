@@ -1,4 +1,4 @@
-/* globals jQuery */
+/* globals jQuery -- No true ESM yet */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
 import imageMaps from '../../../external/imagemaps/dist/index.esm.js';
@@ -10,7 +10,8 @@ const mockFormForValidation = {
   reportValidity () {
     if (this.$message) {
       // alert(this.$message); // eslint-disable-line no-alert
-      console.log('alert:', this.$message); // eslint-disable-line no-console, max-len
+      // eslint-disable-next-line no-console -- Debugging
+      console.log('alert:', this.$message);
     }
   },
   setCustomValidity (msg) {
@@ -126,14 +127,14 @@ const jqueryImageMaps = {
     }
   },
 
-  setImageMaps ({formObj, editMode, sharedBehaviors}) {
+  setImageMaps ({formObj, mode, sharedBehaviors}) {
     this.setFormObject(formObj);
     const settings = {
-      isEditMode: editMode === 'edit',
+      isEditMode: mode === 'edit',
       shape: 'rect',
       shapeStyle: this._shapeStrokeFillOptions,
       onClick (e, targetAreaHref) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- Debugging
         console.log('click-targetAreaHref', targetAreaHref);
       },
       // onMouseDown (e, shapeType, coords) {},
@@ -145,7 +146,7 @@ const jqueryImageMaps = {
         // Won't change shape (and we don't change text here),
         //   so we only worry about coords (and only for the moved
         //   element)
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- Debugging
         console.log('updatedCoords', updatedCoords);
 
         await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
@@ -158,14 +159,13 @@ const jqueryImageMaps = {
         });
       },
       onSelect (e, data) {
-        console.log(data); // eslint-disable-line no-console
+        console.log(data); // eslint-disable-line no-console -- Debugging
       }
     };
 
     jq('img.textImageMap', this).imageMaps(settings);
-    // jq('img.textImageMap', this)[editMode === 'edit' ? 'show' : 'hide']();
-
-    this.showGuidesUnlessViewMode(editMode);
+    // jq('img.textImageMap', this)[mode === 'edit' ? 'show' : 'hide']();
+    this.showGuidesUnlessViewMode(mode);
   },
 
   getImageMapInfo () {
@@ -192,11 +192,11 @@ const jqueryImageMaps = {
     jq.imageMaps.copyImageMaps(sourceInfo, jq('img.textImageMap', this));
   },
 
-  showGuidesUnlessViewMode (editMode) {
+  showGuidesUnlessViewMode (mode) {
     const svg = this.querySelector('map[name] > svg');
     if (svg) {
       svg.style.visibility =
-        editMode !== 'view' ? 'visible' : 'hidden';
+        mode !== 'view' ? 'visible' : 'hidden';
     }
   },
 

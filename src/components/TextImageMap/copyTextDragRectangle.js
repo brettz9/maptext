@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-jsdoc */
 import {$} from '../../../external/query-dollar/dollar.js';
 // import _ from '../../external/i18n/i18n.js';
 import {
@@ -7,6 +6,13 @@ import {
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?
+/**
+ * @param {PlainObject} cfg
+ * @param {ImageDataShape} cfg.shape
+ * @param {ShapeInfo} cfg.props
+ * @throws {TypeError} Unexpected shape
+ * @returns {external:KLDRectangle|external:KLDCircle|external:KLDPolygon}
+ */
 function getShapeInfoForShapeAndProps ({shape, props}) {
   let shapeInfo;
   switch (shape) {
@@ -32,6 +38,11 @@ function getShapeInfoForShapeAndProps ({shape, props}) {
   return shapeInfo;
 }
 
+/**
+* @param {SVGRect} svgEl
+* @throws {TypeError} Unexepcted element type
+* @returns {Object<string, number>}
+*/
 function getOffsetAdjustedPropsObject (svgEl) {
   const getOffsetAdjustedAnimVal = (o, prop) => {
     o[prop] = svgEl[prop].animVal.value;
@@ -64,7 +75,7 @@ function getOffsetAdjustedPropsObject (svgEl) {
   default:
     throw new TypeError('Unexpected SVG element type!');
   }
-  // eslint-disable-next-line unicorn/no-array-callback-reference
+  // eslint-disable-next-line unicorn/no-array-callback-reference -- Safe
   return propArr.reduce(getOffsetAdjustedAnimVal, {});
 }
 
@@ -97,7 +108,7 @@ function getOffsetAdjustedPropsObject (svgEl) {
  *   https://github.com/thelonious/kld-intersections/issues/20
  * @param {SVGRect} rect Our copy-paste rectangle
  * @param {GenericArray} shapeInfo
- * @param {"rect"|"circle"|"polygon"} shapeInfo."0" The shape
+ * @param {ImageDataShape} shapeInfo."0" The shape
  * @param {ShapeInfo} shapeInfo."1" The properties of the shape
  * @throws {Error}
  * @returns {boolean}
@@ -130,6 +141,10 @@ function svgContains (rect, [shape, props]) {
   }
 }
 
+/**
+ * @param {Event} e
+ * @returns {void}
+ */
 function textDragRectangleMouseDown (e) {
   this.shapesAdded = new Map();
   e.preventDefault();
@@ -150,12 +165,16 @@ function textDragRectangleMouseDown (e) {
   rect.setAttribute('y', 10);
   */
 
-  if (this._editMode === 'view') {
+  if (this._mode === 'view') {
     this.showGuidesUnlessViewMode('view-guides');
     this.removeAllShapes();
   }
 }
 
+/**
+ * @param {Event} e
+ * @returns {Promise<void>}
+ */
 async function textDragRectangleMouseUp (e) {
   e.preventDefault();
   this.resetRect();
@@ -191,12 +210,16 @@ async function textDragRectangleMouseUp (e) {
     );
   }
   */
-  if (this._editMode === 'view') {
+  if (this._mode === 'view') {
     this.removeAllShapes();
     this.showGuidesUnlessViewMode('view');
   }
 }
 
+/**
+ * @param {Event} e
+ * @returns {void}
+ */
 function textDragRectangleMouseMove (e) {
   e.preventDefault();
   if (e.buttons !== 1) {
@@ -319,14 +342,14 @@ const copyTextDragRectangle = {
     this.svg.style.display = 'none';
   },
 
-  enableTextDragRectangle ({pos, editMode}) {
+  enableTextDragRectangle ({pos, mode}) {
     const {left, top} = pos;
     this.imageMapOffsetLeft = left;
     this.imageMapOffsetTop = top;
 
     this.querySelector('.textImageMap').before(this.svg);
 
-    this._editMode = editMode;
+    this._mode = mode;
 
     this.mouseupListener = textDragRectangleMouseUp.bind(this);
     this.mousemoveListener = textDragRectangleMouseMove.bind(this);
@@ -348,6 +371,25 @@ const copyTextDragRectangle = {
       'mousedown',
       this.mousedownListener
     );
+  },
+
+  /**
+   * @typedef {"edit"|"view-guides"|"view"} Mode
+   */
+
+  /**
+   * @param {Mode} mode
+   * @returns {void}
+   */
+  toggleTextDragRectangleByMode (mode) {
+    if (mode === 'edit') {
+      this.disableTextDragRectangle();
+    } else {
+      this.enableTextDragRectangle({
+        pos: this.getPosition(),
+        mode
+      });
+    }
   }
 };
 

@@ -1,6 +1,6 @@
 import {
   getBeginAndEndIndexes
-} from '../../views/view-components/FindImageRegionBar/mapTextSearch.js';
+} from '../../src/view-components/FindImageRegionBar/mapTextSearch.js';
 
 describe('getBeginAndEndIndexes', () => {
   it('getBeginAndEndIndexes (first)', () => {
