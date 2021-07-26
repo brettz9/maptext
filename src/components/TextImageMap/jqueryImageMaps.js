@@ -1,8 +1,8 @@
 /* globals jQuery */
 // NOTE: Our intended practice here to always get underlying DOM
 //   methods/properties except for plugin behaviors
-import imageMaps from '../../external/imagemaps/dist/index.esm.js';
-import {timeout} from '../../external/dom-behaviors/dom-behaviors.js';
+import imageMaps from '../../../external/imagemaps/dist/index.esm.js';
+import {timeout} from '../../../external/dom-behaviors/dom-behaviors.js';
 
 const jq = imageMaps(jQuery);
 

@@ -1,5 +1,5 @@
-import {jml, nbsp} from '../external/jamilih/dist/jml-es.js';
-import _ from '../external/i18n/i18n.js';
+import {jml, nbsp} from '../../external/jamilih/dist/jml-es.js';
+import _ from '../../external/i18n/i18n.js';
 
 const nbsp2 = nbsp.repeat(2);
 

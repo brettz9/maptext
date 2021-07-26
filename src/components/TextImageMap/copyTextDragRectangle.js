@@ -1,9 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {$} from '../../utils/DOMUtils.js';
+import {$} from '../../../external/query-dollar/dollar.js';
 // import _ from '../../external/i18n/i18n.js';
 import {
   Intersection, ShapeInfo
-} from '../../external/kld-intersections/dist/index-esm.js';
+} from '../../../external/kld-intersections/dist/index-esm.js';
 
 // Todo: If completed for more shapes, this could be usable as a
 //   utility on top of kld-intersections; svg-intersections?

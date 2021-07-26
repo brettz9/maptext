@@ -2,21 +2,14 @@ import '../components/TextImageMap/TextImageMap.js';
 import './view-components/FindImageRegionBar/FindImageRegionBar.js';
 import '../components/CopiedText/CopiedText.js';
 
-import {jml, body, nbsp} from '../external/jamilih/dist/jml-es.js';
-import _ from '../external/i18n/i18n.js';
+import {jml, body, nbsp} from '../../external/jamilih/dist/jml-es.js';
+import _ from '../../external/i18n/i18n.js';
 
 export {
   mainForm, formShapeSelection, polyXYDiv,
   formControlsRect, formControlsCircle, formControlsPoly,
   formText, makeFrom
 } from './view-formControls.js';
-
-export const findImageRegionBar = () => {
-  return jml('find-image-region-bar', {
-    // Point to our selector (could be a more precise selector)
-    textImageMap: 'text-image-map'
-  }, body);
-};
 
 export const title = () => _('MapText demo');
 

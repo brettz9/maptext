@@ -1,15 +1,18 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import {jml, $, $$} from './external/jamilih/dist/jml-es.js';
+import {jml, $, $$} from '../external/jamilih/dist/jml-es.js';
+// import {$, $$} from '../external/query-dollar/dollar.js';
 import {
   serialize, deserialize
-} from './external/form-serialization/dist/index-es.js';
-import tippy from './external/tippy.js/dist/tippy.esm.js';
+} from '../external/form-serialization/dist/index-es.js';
+import tippy from '../external/tippy.js/dist/tippy.esm.js';
 // Todo: Switch to npm version
-import _ from './external/i18n/i18n.js';
-import {empty, timeout} from './external/dom-behaviors/dom-behaviors.js';
-import {SimplePrefs} from './external/simple-prefs/dist/index.esm.js';
+import _ from '../external/i18n/i18n.js';
+import {empty, timeout} from '../external/dom-behaviors/dom-behaviors.js';
+import {SimplePrefs} from '../external/simple-prefs/dist/index.esm.js';
 
 import imageMapFormObjectInfo from './behaviors/imageMapFormObjectInfo.js';
+
+import findImageRegionBar from './model-views/findImageRegionBar.js';
 
 import * as Views from './views/view-index.js';
 import * as Styles from './styles/styles-index.js';
@@ -634,12 +637,5 @@ addImageRegion(imgRegionID++);
 
 await mapNameChange.call($('input[name="name"]'));
 
-const findImageRegionBar = Views.findImageRegionBar();
-// Supply our implementations (simpler than passing events around)
-findImageRegionBar.getFormObject = () => {
-  return getSerializedJSON();
-};
-findImageRegionBar.useViewMode = async () => {
-  return (await prefs.getPref('editMode')) === 'view';
-};
+findImageRegionBar({getSerializedJSON, prefs});
 })();

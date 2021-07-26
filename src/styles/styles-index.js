@@ -1,4 +1,4 @@
-import loadStylesheets from '../external/load-stylesheets/dist/index-es.js';
+import loadStylesheets from '../../external/load-stylesheets/dist/index-es.js';
 
 // Todo: Would ideally get ImageMaps to set a class instead so
 //    could set these in CSS

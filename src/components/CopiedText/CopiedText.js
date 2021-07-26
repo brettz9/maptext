@@ -1,6 +1,6 @@
-import _ from '../../external/i18n/i18n.js';
+import _ from '../../../external/i18n/i18n.js';
 
-import HyperHTMLElement from '../../external/hyperhtml-element/esm/index.js';
+import HyperHTMLElement from '../../../external/hyperhtml-element/esm/index.js';
 
 /**
  *

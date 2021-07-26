@@ -70,7 +70,7 @@
   'max', 'min', 'minLength', 'maxLength', 'title' // HTMLElement
   ];
 
-  const $ = sel => doc.querySelector(sel);
+  const $$1 = sel => doc.querySelector(sel);
 
   const $$ = sel => [...doc.querySelectorAll(sel)];
   /**
@@ -534,7 +534,7 @@
                 if (Array.isArray(template)) {
                   template = _getType(template[0]) === 'object' ? jml('template', ...template, doc.body) : jml('template', template, doc.body);
                 } else if (typeof template === 'string') {
-                  template = $(template);
+                  template = $$1(template);
                 }
 
                 jml(template.content.cloneNode(true), shadowRoot);
@@ -1719,7 +1719,7 @@
      * @returns {any}
      */
     get(elem) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return super.get.call(this, elem);
     }
     /**
@@ -1730,7 +1730,7 @@
 
 
     set(elem, value) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return super.set.call(this, elem, value);
     }
     /**
@@ -1742,7 +1742,7 @@
 
 
     invoke(elem, methodName, ...args) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return this.get(elem)[methodName](elem, ...args);
     }
 
@@ -1758,7 +1758,7 @@
      * @returns {any}
      */
     get(elem) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return super.get.call(this, elem);
     }
     /**
@@ -1769,7 +1769,7 @@
 
 
     set(elem, value) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return super.set.call(this, elem, value);
     }
     /**
@@ -1781,7 +1781,7 @@
 
 
     invoke(elem, methodName, ...args) {
-      elem = typeof elem === 'string' ? $(elem) : elem;
+      elem = typeof elem === 'string' ? $$1(elem) : elem;
       return this.get(elem)[methodName](elem, ...args);
     }
 
@@ -1830,7 +1830,7 @@
 
 
   jml.symbol = jml.sym = jml.for = function (elem, sym) {
-    elem = typeof elem === 'string' ? $(elem) : elem;
+    elem = typeof elem === 'string' ? $$1(elem) : elem;
     return elem[typeof sym === 'symbol' ? sym : Symbol.for(sym)];
   };
   /**
@@ -1844,7 +1844,7 @@
 
 
   jml.command = function (elem, symOrMap, methodName, ...args) {
-    elem = typeof elem === 'string' ? $(elem) : elem;
+    elem = typeof elem === 'string' ? $$1(elem) : elem;
     let func;
 
     if (['symbol', 'string'].includes(typeof symOrMap)) {
@@ -5804,58 +5804,40 @@
     });
   }
 
-  const getBeginAndEndIndexes = ({formObjectInfo, value, isFirstMode}) => {
-    const segmentIndexes = [];
-    let text = '';
-    formObjectInfo.some(({shape, alt, coords}, i) => {
-      segmentIndexes.push(text.length);
-      text += alt + ' ';
-      // Shortcut if only need the first match and we already match
-      return isFirstMode && text.includes(value);
+  /**
+  * @typedef {"circle"|"rect"|"polygon"} ImageDataShape
+  */
+  /**
+  * @param {FormObject} formObj
+  * @returns {{shape: ImageDataShape, alt: string, coords: string[]}}
+  */
+  function imageMapFormObjectInfo (formObj) {
+    const formObjKeys = Object.keys(formObj);
+    const shapeIDS = formObjKeys.filter((item) => {
+      return item.endsWith('_shape');
     });
-    // text = text.slice(0, -1);
-    const foundBeginStringIndex = text.indexOf(value);
-    if (foundBeginStringIndex === -1) {
-      // NOT FOUND
-      return [];
-    }
 
-    let tooFar = false;
-    let beginSegmentIndexIndex = segmentIndexes.findIndex(
-      (segmentIndex, i) => {
-        tooFar = segmentIndex > foundBeginStringIndex;
-        return tooFar || segmentIndex === foundBeginStringIndex;
-      }
-    );
-
-    let endSegmentIndexIndex = 0;
-    if (beginSegmentIndexIndex === -1) {
-      // Begins somewhere after beginning of last segment
-      beginSegmentIndexIndex = segmentIndexes.length - 1;
-      endSegmentIndexIndex = beginSegmentIndexIndex;
-    } else if (tooFar) {
-      // Begins somewhere before beginning of found segment
-      beginSegmentIndexIndex--;
-    }
-
-    // If haven't found ending yet, calculate the end
-    if (!endSegmentIndexIndex) {
-      const endIndex = foundBeginStringIndex + value.length;
-      endSegmentIndexIndex = segmentIndexes.slice(
-        beginSegmentIndexIndex
-      ).findIndex((segmentIndex) => {
-        return segmentIndex >= endIndex;
-      });
-      if (endSegmentIndexIndex === -1) {
-        // Ending must be after the beginning of the last segment
-        endSegmentIndexIndex = segmentIndexes.length - 1;
-      } else {
-        // We sliced this off for efficiency, so need to add back
-        endSegmentIndexIndex += beginSegmentIndexIndex - 1;
-      }
-    }
-    return [beginSegmentIndexIndex, endSegmentIndexIndex];
-  };
+    return shapeIDS.map((shapeID) => {
+      const shape = formObj[shapeID];
+      const setNum = shapeID.slice(0, -('_shape'.length));
+      const alt = formObj[setNum + '_text'];
+      const coords = shape === 'circle'
+        ? ['circlex', 'circley', 'circler'].map((item) => {
+          return formObj[setNum + '_' + item];
+        })
+        : shape === 'rect'
+          ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
+            return formObj[setNum + '_' + item];
+          })
+          // Poly
+          : formObjKeys.filter((item) => {
+            return item.startsWith(setNum) && item.endsWith('_xy');
+          }).map((item) => {
+            return formObj[item];
+          });
+      return {shape, alt, coords};
+    });
+  }
 
   /*! (c) Andrea Giammarchi - ISC */
   var self$3 = {};
@@ -10698,14 +10680,14 @@
       //   when following `removeAllShapes`?); try again in case
       //   `this.src` includes default now
       await timeout(200);
-      jq('.preview', this).setShapeStyle(
+      jq('img.textImageMap', this).setShapeStyle(
         this._shapeStrokeFillOptions
       ).addShape(
         coords, this.src, shape
       );
       if (sharedBehaviors) {
         const newIndex = Number.parseInt(
-          jq('.preview', this).imageMaps().shapeEl.data('index')
+          jq('img.textImageMap', this).imageMaps().shapeEl.data('index')
         );
         await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
           index: newIndex,
@@ -10734,7 +10716,7 @@
 
     async removeAllShapes ({sharedBehaviors} = {}) {
       try {
-        jq('.preview', this).removeAllShapes();
+        jq('img.textImageMap', this).removeAllShapes();
         this.setFormObject({
           name: this._formObj.name,
           mapURL: this._formObj.mapURL
@@ -10758,7 +10740,7 @@
     },
 
     async removeShape ({sharedBehaviors} = {}) {
-      const imageMap = jq('.preview', this).imageMaps();
+      const imageMap = jq('img.textImageMap', this).imageMaps();
       if (imageMap.svgEl.find('._shape_face').length <= 1) {
         // Follow this routine instead which will at least set
         //   a single empty rect set rather than removing the form
@@ -10771,9 +10753,9 @@
       );
       const {
         type: oldShapeToDelete
-      } = jq('.preview', this).imageMaps().getShapeInfo(oldIndex);
+      } = jq('img.textImageMap', this).imageMaps().getShapeInfo(oldIndex);
 
-      jq('.preview', this).removeShape();
+      jq('img.textImageMap', this).removeShape();
       if (sharedBehaviors) {
         await sharedBehaviors.setFormObjCoordsAndUpdateViewForMap({
           index: oldIndex,
@@ -10823,17 +10805,17 @@
         }
       };
 
-      jq('.preview', this).imageMaps(settings);
-      // jq('.preview', this)[editMode === 'edit' ? 'show' : 'hide']();
+      jq('img.textImageMap', this).imageMaps(settings);
+      // jq('img.textImageMap', this)[editMode === 'edit' ? 'show' : 'hide']();
 
       this.showGuidesUnlessViewMode(editMode);
     },
 
-    getPreviewInfo () {
-      const previewElement = jq('.preview', this);
-      const width = previewElement.width();
-      const height = previewElement.height();
-      const shapes = previewElement.getAllShapes();
+    getImageMapInfo () {
+      const imageMapElement = jq('img.textImageMap', this);
+      const width = imageMapElement.width();
+      const height = imageMapElement.height();
+      const shapes = imageMapElement.getAllShapes();
       return {width, height, shapes};
     },
 
@@ -10849,39 +10831,46 @@
      * @param {SourceInfo} sourceInfo
      * @returns {void}
      */
-    copyImageMapsToPreview (sourceInfo) {
-      jq.imageMaps.copyImageMaps(sourceInfo, jq('.preview', this));
+    copyImageMapsToImageMap (sourceInfo) {
+      jq.imageMaps.copyImageMaps(sourceInfo, jq('img.textImageMap', this));
     },
 
     showGuidesUnlessViewMode (editMode) {
-      this.querySelector('map[name] > svg').style.visibility =
-        editMode !== 'view' ? 'visible' : 'hidden';
+      const svg = this.querySelector('map[name] > svg');
+      if (svg) {
+        svg.style.visibility =
+          editMode !== 'view' ? 'visible' : 'hidden';
+      }
     },
 
-    zoomPreviewAndResize (val) {
-      const preview = jq('.preview', this);
-      preview.zoom([val]);
+    zoomImageMapAndResize (val) {
+      const imageMap = jq('img.textImageMap', this);
+      imageMap.zoom([val]);
 
       // for image resize
-      const imagePreview = this.querySelector('.imagePreview', this);
-      imagePreview.style.width = val * 0.01 * preview.width();
-      imagePreview.style.height = val * 0.01 * preview.height();
+      const textImageMap = this.querySelector('.textImageMap', this);
+      textImageMap.style.width = val * 0.01 * imageMap.width();
+      textImageMap.style.height = val * 0.01 * imageMap.height();
     },
 
     getPosition () {
-      return jq('.preview', this).position();
+      return jq('img.textImageMap', this).position();
     },
 
     getZoom () {
-      const preview = jq('.preview', this);
-      if (this.originalPreviewWidth === undefined) {
-        this.originalPreviewWidth = preview.width();
-        this.originalPreviewHeight = preview.height();
+      const imageMap = jq('img.textImageMap', this);
+      if (this.originalImageMapWidth === undefined) {
+        this.originalImageMapWidth = imageMap.width();
+        this.originalImageMapHeight = imageMap.height();
       }
-      const xZoom = preview.width() / this.originalPreviewWidth;
-      const yZoom = preview.height() / this.originalPreviewHeight;
+      const xZoom = imageMap.width() / this.originalImageMapWidth;
+      const yZoom = imageMap.height() / this.originalImageMapHeight;
       return [xZoom, yZoom];
     }
+  };
+
+  const $ = (sel) => {
+    return document.querySelector(sel);
   };
 
   function _typeof(obj) {
@@ -16273,24 +16262,24 @@
     return shapeInfo;
   }
 
-  const getOffsetAdjustedPropsObject = (svgEl) => {
-    function getOffsetAdjustedAnimVal (o, prop) {
+  function getOffsetAdjustedPropsObject (svgEl) {
+    const getOffsetAdjustedAnimVal = (o, prop) => {
       o[prop] = svgEl[prop].animVal.value;
 
       // Adjust for offsets
       if (prop === 'points') {
         o[prop] = o[prop].split(/,\s*/u).map((xOrY, i) => {
           return xOrY % 0
-            ? xOrY - this.previewOffsetLeft
-            : xOrY - this.previewOffsetTop;
+            ? xOrY - this.imageMapOffsetLeft
+            : xOrY - this.imageMapOffsetTop;
         }).join(',');
       } else if (['x', 'cx'].includes(prop)) {
-        o[prop] -= this.previewOffsetLeft;
+        o[prop] -= this.imageMapOffsetLeft;
       } else if (['y', 'cy'].includes(prop)) {
-        o[prop] -= this.previewOffsetTop;
+        o[prop] -= this.imageMapOffsetTop;
       }
       return o;
-    }
+    };
     let propArr;
     switch (svgEl.localName.toLowerCase()) {
     case 'rect':
@@ -16307,7 +16296,7 @@
     }
     // eslint-disable-next-line unicorn/no-array-callback-reference
     return propArr.reduce(getOffsetAdjustedAnimVal, {});
-  };
+  }
 
   /**
   * @typedef {PlainObject} Rectangle
@@ -16340,10 +16329,11 @@
    * @param {GenericArray} shapeInfo
    * @param {"rect"|"circle"|"polygon"} shapeInfo."0" The shape
    * @param {ShapeInfo} shapeInfo."1" The properties of the shape
+   * @throws {Error}
    * @returns {boolean}
    */
-  const svgContains = (rect, [shape, props]) => {
-    const rectProps = getOffsetAdjustedPropsObject(rect);
+  function svgContains (rect, [shape, props]) {
+    const rectProps = getOffsetAdjustedPropsObject.call(this, rect);
     const rectX2 = rectProps.x + rectProps.width;
     const rectY2 = rectProps.y + rectProps.height;
     switch (shape) {
@@ -16368,7 +16358,7 @@
     default:
       throw new Error('Unrecognized shape type');
     }
-  };
+  }
 
   function textDragRectangleMouseDown (e) {
     this.shapesAdded = new Map();
@@ -16410,7 +16400,7 @@
         return;
       }
     }
-    $('textarea.textToCopy').value = this.lastText;
+    $(this.copiedText).value = this.lastText;
     /*
     // Not yet supported
     const clipboardPermission =
@@ -16452,9 +16442,8 @@
       this.rect.setAttribute('height', e.pageY - this.originalY);
 
       const [xZoom, yZoom] = this.getZoom();
-
       this.lastText = [
-        ...this.querySelectorAll('.imagePreview > map > area')
+        ...this.querySelectorAll('.textImageMap > map > area')
       ].reduce((s, area) => {
         const {
           shape, coords, alt
@@ -16496,7 +16485,8 @@
         }
 
         const userRectInfo = getShapeInfoForShapeAndProps({
-          shape: 'rect', props: getOffsetAdjustedPropsObject(this.rect)
+          shape: 'rect',
+          props: getOffsetAdjustedPropsObject.call(this, this.rect)
         });
 
         const areaMapInfo = getShapeInfoForShapeAndProps({shape, props});
@@ -16508,7 +16498,7 @@
         );
 
         const areaMatched = intersection.points.length ||
-          svgContains(this.rect, [shape, props]);
+          svgContains.call(this, this.rect, [shape, props]);
         if (areaMatched) {
           const json = JSON.stringify([shape, {coords: coordArr}]);
           // Don't keep adding when reencountering same shape
@@ -16561,10 +16551,10 @@
 
     enableTextDragRectangle ({pos, editMode}) {
       const {left, top} = pos;
-      this.previewOffsetLeft = left;
-      this.previewOffsetTop = top;
+      this.imageMapOffsetLeft = left;
+      this.imageMapOffsetTop = top;
 
-      this.querySelector('.imagePreview').before(this.svg);
+      this.querySelector('.textImageMap').before(this.svg);
 
       this._editMode = editMode;
 
@@ -16575,7 +16565,7 @@
       window.addEventListener('mouseup', this.mouseupListener);
       window.addEventListener('mousemove', this.mousemoveListener);
 
-      this.querySelector('.imagePreview').addEventListener(
+      this.querySelector('.textImageMap').addEventListener(
         'mousedown', this.mousedownListener
       );
     },
@@ -16584,7 +16574,7 @@
       window.removeEventListener('mouseup', this.mouseupListener);
       window.removeEventListener('mousemove', this.mousemoveListener);
 
-      this.querySelector('.imagePreview').removeEventListener(
+      this.querySelector('.textImageMap').removeEventListener(
         'mousedown',
         this.mousedownListener
       );
@@ -16594,11 +16584,11 @@
   /**
    *
    */
-  class ImagePreview extends HyperHTMLElement {
+  class TextImageMap extends HyperHTMLElement {
     /**
      * @returns {string[]}
      */
-    static get observedAttributes () { return ['name', 'src']; }
+    static get observedAttributes () { return ['name', 'src', 'copiedText']; }
 
     /**
      * @returns {void}
@@ -16643,10 +16633,10 @@
           this.naturalWidth, this.naturalHeight;
         }}
       */
-      return this.html`<div class="imagePreview">
+      return this.html`<div class="textImageMap">
       <map name=${this.state.name} />
       <img
-        class="preview"
+        class="textImageMap"
         alt=${_('Selected image for map')}
         usemap=${'#' + this.state.name}
         src=${this.state.src}
@@ -16656,9 +16646,303 @@
   }
 
   // Mixin is for compartmentalization of jQuery, not based on unique features
-  Object.assign(ImagePreview.prototype, jqueryImageMaps, copyTextDragRectangle);
+  Object.assign(TextImageMap.prototype, jqueryImageMaps, copyTextDragRectangle);
 
-  ImagePreview.define('image-preview'); // {extends: 'ul'}
+  TextImageMap.define('text-image-map'); // {extends: 'ul'}
+
+  // Left-facing:
+  // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
+  // Or for right-facing:
+  // '\u{1F50E}' (or if necessary as surrogates: '\uD83D\uDD0E')
+  const magnifyingGlassText = '\u{1F50D}';
+
+  /**
+   *
+   */
+  class FindBar extends HyperHTMLElement {
+    /**
+     * @returns {void}
+     */
+    /*
+    created () {
+      // this.shadowRoot = this.attachShadow({mode: 'open'}); // `this.shadowRoot`
+      // this.shadowRoot.append();
+      // this.addEventListener();
+      // this.init_mixin1();
+    }
+    */
+
+    /**
+     * @returns {void}
+     */
+    created () {
+      this.addEventListener('find-bar-cancel', () => {
+        this.style.display = 'none';
+      });
+
+      body.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.style.display = 'none';
+          return;
+        }
+        if (!e.repeat && e.key === 'f' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          this.style.display = 'block';
+          const findBar = this.querySelector('input.findBar');
+          findBar.select();
+          findBar.focus();
+        }
+      });
+
+      this.render();
+    }
+
+    /**
+    * @param {Event} e
+    * @returns {void}
+    */
+    handleCancel (e) {
+      this.dispatchEvent(new CustomEvent('find-bar-cancel', {
+        bubbles: true,
+        cancelable: true,
+        // Triggers outside of shadowRoot
+        composed: true
+      }));
+    }
+
+    /**
+     * @returns {HTMLDivElement}
+     */
+    render () {
+      // type=search gives clear-results button
+      return this.html`<div class="findBar">
+      ${magnifyingGlassText}
+      ${nbsp.repeat(2)}
+      <input
+        type="search"
+        class="findBar"
+        placeholder=${_('Search for text')}
+      />
+      ${nbsp}
+      <button class="cancel" onclick=${this.handleCancel}>${_('x')}</button>
+    </div>`;
+    }
+  }
+
+  FindBar.define('find-bar'); // {extends: 'ul'}
+
+  const getBeginAndEndIndexes = ({formObjectInfo, value, isFirstMode}) => {
+    const segmentIndexes = [];
+    let text = '';
+    formObjectInfo.some(({shape, alt, coords}, i) => {
+      segmentIndexes.push(text.length);
+      text += alt + ' ';
+      // Shortcut if only need the first match and we already match
+      return isFirstMode && text.includes(value);
+    });
+    // text = text.slice(0, -1);
+    const foundBeginStringIndex = text.indexOf(value);
+    if (foundBeginStringIndex === -1) {
+      // NOT FOUND
+      return [];
+    }
+
+    let tooFar = false;
+    let beginSegmentIndexIndex = segmentIndexes.findIndex(
+      (segmentIndex, i) => {
+        tooFar = segmentIndex > foundBeginStringIndex;
+        return tooFar || segmentIndex === foundBeginStringIndex;
+      }
+    );
+
+    let endSegmentIndexIndex = 0;
+    if (beginSegmentIndexIndex === -1) {
+      // Begins somewhere after beginning of last segment
+      beginSegmentIndexIndex = segmentIndexes.length - 1;
+      endSegmentIndexIndex = beginSegmentIndexIndex;
+    } else if (tooFar) {
+      // Begins somewhere before beginning of found segment
+      beginSegmentIndexIndex--;
+    }
+
+    // If haven't found ending yet, calculate the end
+    if (!endSegmentIndexIndex) {
+      const endIndex = foundBeginStringIndex + value.length;
+      endSegmentIndexIndex = segmentIndexes.slice(
+        beginSegmentIndexIndex
+      ).findIndex((segmentIndex) => {
+        return segmentIndex >= endIndex;
+      });
+      if (endSegmentIndexIndex === -1) {
+        // Ending must be after the beginning of the last segment
+        endSegmentIndexIndex = segmentIndexes.length - 1;
+      } else {
+        // We sliced this off for efficiency, so need to add back
+        endSegmentIndexIndex += beginSegmentIndexIndex - 1;
+      }
+    }
+    return [beginSegmentIndexIndex, endSegmentIndexIndex];
+  };
+
+  // import _ from '../../../external/i18n/i18n.js';
+
+  /**
+   * @callback GetFormObject
+   * @returns {FormObject}
+   */
+
+  /**
+  * @callback UseViewMode
+  * @returns {Promise<boolean>}
+  */
+
+  /**
+   * Also has "abstract" methods `getFormObject` and `useViewMode` which user
+   *   must supply as well as a `textImageMap` string selector.
+   */
+  class FindImageRegionBar extends HyperHTMLElement {
+    /**
+     * @returns {string[]}
+     */
+    static get observedAttributes () { return ['textImageMap']; }
+
+    /**
+     * @returns {void}
+     */
+    created () {
+      this.render();
+      this.querySelector(
+        'input.findBar'
+      ).addEventListener('input', async (e) => {
+        // Function must be set by user
+        const formObj = this.getFormObject();
+
+        const {value} = e.target;
+
+        // Todo: Allow `all` mode
+        // Todo: Even for "first" mode, we need to get "next"
+        const mode = 'first';
+        const isFirstMode = mode === 'first';
+
+        const formObjectInfo = imageMapFormObjectInfo(formObj);
+        const [
+          beginSegmentIndexIndex, endSegmentIndexIndex
+        ] = getBeginAndEndIndexes({
+          formObjectInfo, value, isFirstMode
+        });
+
+        const viewMode = await this.useViewMode();
+
+        /**
+         * @param {{shape: ImageDataShape, coords}} cfg
+         * @returns {Promise<void>}
+         */
+        const blinkShape = async ({shape, coords}) => {
+          let attSel;
+          switch (shape) {
+          case 'rect': {
+            const [x, y, x2, y2] = coords;
+            const width = x2 - x;
+            const height = y2 - y;
+            attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
+            break;
+          }
+          case 'circle': {
+            const [cx, cy, r] = coords;
+            attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
+            break;
+          }
+          case 'polygon': {
+            attSel = `[points=${coords.join(',')}]`;
+            break;
+          }
+          default:
+            throw new Error('Unexpected shape ' + shape);
+          }
+
+          const matchedShape = $(`${this.textImageMap} svg ${shape}${attSel}`);
+          matchedShape.classList.add('borderBlink');
+          await timeout(3000);
+          matchedShape.classList.remove('borderBlink');
+          /*
+          // Gets correct <area>, but doesn't work to style apparently
+          const matchedArea =
+            $(`${this.textImageMap} area[coords="${coords.join(',')}"]`);
+          console.log('matchedArea', matchedArea);
+          matchedArea.classList.add('borderBlink');
+          await timeout(10000);
+          matchedArea.classList.remove('borderBlink');
+          */
+        };
+
+        const textImageMap = $(this.textImageMap);
+        formObjectInfo.slice(
+          beginSegmentIndexIndex, endSegmentIndexIndex + 1
+        ).forEach(async (
+          {shape, coords}
+        ) => {
+          // Todo: Highlight
+          // console.log('matching shape & coords', shape, coords);
+          if (viewMode) {
+            // We don't have displayed shapes now (with accurate dimensions),
+            //  so we have to build our own elements
+            textImageMap.addShape(shape, {coords});
+            await timeout(500);
+          }
+          blinkShape({shape, coords});
+          if (viewMode) {
+            await timeout(2000);
+            textImageMap.removeShape();
+          }
+        });
+      });
+    }
+
+    /**
+     * @returns {HTMLDivElement}
+     */
+    render () {
+      return this.html`<find-bar />`;
+    }
+  }
+
+  FindImageRegionBar.define('find-image-region-bar'); // {extends: 'ul'}
+
+  /**
+   *
+   */
+  class CopiedText extends HyperHTMLElement {
+    /**
+     * @returns {string}
+     */
+    get value () {
+      return this.querySelector('textarea.copiedText').value;
+    }
+
+    /**
+     * @param {string} val
+     * @returns {void}
+     */
+    set value (val) {
+      this.querySelector('textarea.copiedText').value = val;
+    }
+
+    /**
+     * @returns {HTMLFieldsetElement}
+     */
+    render () {
+      return this.html`<fieldset class="copiedText">
+      <legend>${_('Copied text')}</legend>
+      <textarea
+        class="copiedText"
+        aria-label=${_('Text to copy')}
+        placeholder=${_('Text to copy')}
+      />
+    </fieldset>`;
+    }
+  }
+
+  CopiedText.define('copied-text');
 
   const nbsp2 = nbsp.repeat(2);
 
@@ -16883,8 +17167,11 @@
     ], outputArea);
   };
 
-  const findBar = () => {
-    return jml('find-bar', body);
+  const findImageRegionBar = () => {
+    return jml('find-image-region-bar', {
+      // Point to our selector (could be a more precise selector)
+      textImageMap: 'text-image-map'
+    }, body);
   };
 
   const title = () => _('MapText demo');
@@ -16914,13 +17201,13 @@
             $on: {input: behaviors.serializedJSONInput}
           }]
         ]],
-        imagePreviewContainer({editMode, behaviors})
+        textImageMapContainer({editMode, behaviors})
       ]]
     ], body);
   };
 
-  const imagePreviewContainer = ({editMode, behaviors}) => ['section', [
-    ['h2', [_('Image preview')]],
+  const textImageMapContainer = ({editMode, behaviors}) => ['section', [
+    ['h2', [_('Image map')]],
     ['div', [
       ['div', [
         ['div', {class: 'shapeControls'}, [
@@ -16949,6 +17236,7 @@
             $on: {click: behaviors.removeAllClick}
           }, [_('Remove all shapes')]]
         ]],
+        ['br', 'br'],
         ['fieldset', {class: 'shapeControls'}, [
           ['legend', [_('Edit mode?')]],
           ...[
@@ -16987,16 +17275,11 @@
             _('zoom')
           ]]
         ]],
-        ['textarea', {
-          class: 'textToCopy',
-          'aria-label': _('Text to copy'),
-          placeholder: _('Text to copy')
-        }]
+        ['copied-text']
       ]],
-      ['br'],
-      ['div', {id: 'imagePreviewHolder'}, [
-        ['image-preview']
-      ]]
+      ['text-image-map', {
+        copiedText: 'copied-text'
+      }]
     ]]
   ]];
 
@@ -17214,14 +17497,14 @@
     editMode: 'edit'
   }});
 
-  async function setTextRectangleByEditMode (imagePreview) {
+  async function setTextRectangleByEditMode (textImageMap) {
     const editMode = await prefs.getPref('editMode');
     if (editMode !== 'edit') {
-      imagePreview.enableTextDragRectangle({
-        pos: imagePreview.getPosition(), editMode
+      textImageMap.enableTextDragRectangle({
+        pos: textImageMap.getPosition(), editMode
       });
     } else {
-      imagePreview.disableTextDragRectangle();
+      textImageMap.disableTextDragRectangle();
     }
   }
 
@@ -17296,7 +17579,7 @@
               },
               removeImageRegionClick (e) {
                 e.preventDefault();
-                const imageRegions = $('#imageRegions');
+                const imageRegions = $$1('#imageRegions');
                 if (imageRegions.children.length === 1) {
                   return;
                 }
@@ -17310,33 +17593,33 @@
     if (prevElement) {
       prevElement.after(li);
     } else {
-      jml(li, $('#imageRegions'));
+      jml(li, $$1('#imageRegions'));
     }
     li.firstElementChild.dispatchEvent(new Event('change'));
   }
 
   function updateSerializedHTML (removeAll) {
     if (removeAll) {
-      $('#serializedHTML').value = '';
+      $$1('#serializedHTML').value = '';
       return;
     }
-    const clonedImagePreview = $('.imagePreview').cloneNode(true);
-    clonedImagePreview.querySelector('svg').remove();
-    $('#serializedHTML').value =
-      clonedImagePreview.outerHTML;
+    const clonedTextImageMap = $$1('.textImageMap').cloneNode(true);
+    clonedTextImageMap.querySelector('svg').remove();
+    $$1('#serializedHTML').value =
+      clonedTextImageMap.outerHTML;
   }
 
   function getSerializedJSON () {
-    return JSON.parse($('#serializedJSON').value);
+    return JSON.parse($$1('#serializedJSON').value);
   }
 
   function updateSerializedJSON (formObj) {
-    $('#serializedJSON').value =
+    $$1('#serializedJSON').value =
       JSON.stringify(formObj, null, 2);
   }
 
   function deserializeForm (formObj) {
-    const imageRegions = $('#imageRegions');
+    const imageRegions = $$1('#imageRegions');
     empty$1(imageRegions);
     let highestID = -1;
     Object.entries(formObj).forEach(([key, shape]) => {
@@ -17354,7 +17637,7 @@
         const polySetsStart = formObj[currID + '_xy'].length / 2;
         let polySets = polySetsStart;
         while (polySets > 2) { // Always have at least 2
-          $('.polyDivHolder').append(
+          $$1('.polyDivHolder').append(
             makePolyXY(currID, polySets === polySetsStart)
           );
           polySets--;
@@ -17378,12 +17661,16 @@
     // this.reportValidity();
   }
 
+  /**
+  * @typedef {PlainObject<string, string>} FormObject
+  */
+
   // Todo: We could use OOP with polymorphic methods instead,
   //   avoiding its own instance method
   /**
    *
    * @param {"form"|"map"|"html"|"json"} type
-   * @param {PlainObject} formObj
+   * @param {FormObject} formObj
    * @param {HTMLElement} [formControl] Control on which to report errors in
    *   form-building. Not needed if this is a change to the whole form.
    * @param {boolean} removeAll
@@ -17393,16 +17680,16 @@
     if (type !== 'form') {
       deserializeForm.call(formControl, formObj);
     }
-    const imagePreview = $('image-preview');
+    const textImageMap = $$1('text-image-map');
     if (!removeAll) {
       // Don't actually set the map and update
       if (type !== 'map') {
-        await formToPreview(formObj); // Sets preview
+        await formToImageMap(formObj); // Sets text image map
       }
       // Even for map, we must update apparently because change in form
       //   control positions after adding controls changes positions within
       //   map as well
-      await updateMap(imagePreview, formObj);
+      await updateMap(textImageMap, formObj);
     }
     if (type !== 'html') {
       updateSerializedHTML(removeAll);
@@ -17410,46 +17697,18 @@
     if (type !== 'json') {
       updateSerializedJSON(removeAll ? {} : formObj);
     }
-    imagePreview.setFormObject(formObj);
+    textImageMap.setFormObject(formObj);
   }
 
-  async function updateMap (imagePreview, formObj) {
-    await imagePreview.removeAllShapes();
+  async function updateMap (textImageMap, formObj) {
+    await textImageMap.removeAllShapes();
     await Promise.all(
       imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-        return imagePreview.addShape(shape, {coords});
+        return textImageMap.addShape(shape, {coords});
       })
     );
     const editMode = await prefs.getPref('editMode');
-    imagePreview.showGuidesUnlessViewMode(editMode);
-  }
-
-  function imageMapFormObjectInfo (formObj) {
-    const formObjKeys = Object.keys(formObj);
-    const shapeIDS = formObjKeys.filter((item) => {
-      return item.endsWith('_shape');
-    });
-
-    return shapeIDS.map((shapeID) => {
-      const shape = formObj[shapeID];
-      const setNum = shapeID.slice(0, -('_shape'.length));
-      const alt = formObj[setNum + '_text'];
-      const coords = shape === 'circle'
-        ? ['circlex', 'circley', 'circler'].map((item) => {
-          return formObj[setNum + '_' + item];
-        })
-        : shape === 'rect'
-          ? ['leftx', 'topy', 'rightx', 'bottomy'].map((item) => {
-            return formObj[setNum + '_' + item];
-          })
-          // Poly
-          : formObjKeys.filter((item) => {
-            return item.startsWith(setNum) && item.endsWith('_xy');
-          }).map((item) => {
-            return formObj[item];
-          });
-      return {shape, alt, coords};
-    });
+    textImageMap.showGuidesUnlessViewMode(editMode);
   }
 
   function setFormObjCoords ({
@@ -17495,20 +17754,20 @@
     await updateViews('map', formObj, formControl, removeAll);
   }
 
-  async function formToPreview (formObj) {
+  async function formToImageMap (formObj) {
     const defaultImageSrc = await prefs.getPref('lastImageSrc');
-    const imagePreview = $('image-preview');
+    const textImageMap = $$1('text-image-map');
     const {name} = formObj;
 
-    imagePreview.name = name;
-    imagePreview.src = $('input[name=mapURL]').value || (
+    textImageMap.name = name;
+    textImageMap.src = $$1('input[name=mapURL]').value || (
       defaultImageSrc.startsWith('http')
         ? defaultImageSrc
         : location.href + '/' + defaultImageSrc
     );
 
-    imagePreview.setShapeStrokeFillOptions(shapeStyle);
-    imagePreview.setImageMaps({
+    textImageMap.setShapeStrokeFillOptions(shapeStyle);
+    textImageMap.setImageMaps({
       formObj,
       editMode: await prefs.getPref('editMode'),
       sharedBehaviors: {
@@ -17518,7 +17777,7 @@
 
     // Todo: Only build a new area if not one for the same coords already
     //   (in which case, supplement it with `alt` and `mouseover`)
-    const map = $(`map[name=${name}]`);
+    const map = $$1(`map[name=${name}]`);
     function mouseover () {
       this.dataset.tippyContent = this.alt;
       tippy('[data-tippy-content]', {
@@ -17528,7 +17787,7 @@
       });
     }
 
-    await setTextRectangleByEditMode(imagePreview);
+    await setTextRectangleByEditMode(textImageMap);
 
     // Todo: Should find a better way around this
     // Wait until SVG is built
@@ -17581,11 +17840,11 @@
     ]);
   }
 
-  async function mapNameChange (e, avoidSetting) {
-    const imagePreview = $('image-preview');
+  async function mapNameChange () {
+    const textImageMap = $$1('text-image-map');
     if (!this.value) {
       updateSerializedJSON({});
-      serializedJSONInput.call($('#serializedJSON'));
+      serializedJSONInput.call($$1('#serializedJSON'));
       return;
     }
     form.disabled = true;
@@ -17593,11 +17852,11 @@
     // eslint-disable-next-line no-console
     console.log('maps', map);
     if (map.name) {
-      await imagePreview.removeAllShapes({
+      await textImageMap.removeAllShapes({
         sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
       });
       updateSerializedJSON(map);
-      serializedJSONInput.call($('#serializedJSON'));
+      serializedJSONInput.call($$1('#serializedJSON'));
       await rememberLastMap(map);
     }
     form.disabled = false;
@@ -17621,7 +17880,7 @@
     behaviors: {
       async mapDelete (e) {
         e.preventDefault();
-        const mapName = $('input[name="name"]').value;
+        const mapName = $$1('input[name="name"]').value;
         if (!mapName) {
           // eslint-disable-next-line no-alert
           alert(_('You must provide a map name'));
@@ -17638,8 +17897,8 @@
           name: mapName, method: 'DELETE'
         });
 
-        const imagePreview = $('image-preview');
-        await imagePreview.removeAllShapes({
+        const textImageMap = $$1('text-image-map');
+        await textImageMap.removeAllShapes({
           sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
         });
         await rememberLastMap({
@@ -17661,7 +17920,7 @@
       async imageFormSubmit (e) {
         e.preventDefault();
         const formObj = serialize(this, {hash: true});
-        const mapName = $('input[name="name"]').value;
+        const mapName = $$1('input[name="name"]').value;
         if (!mapName) {
           // eslint-disable-next-line no-alert
           alert(_('You must provide a map name'));
@@ -17732,21 +17991,21 @@
         const editMode = e.target.value;
         await prefs.setPref('editMode', editMode);
 
-        const imagePreview = $('image-preview');
-        await setTextRectangleByEditMode(imagePreview);
+        const textImageMap = $$1('text-image-map');
+        await setTextRectangleByEditMode(textImageMap);
 
-        $('input.zoom').disabled = editMode === 'edit';
-        $('a.zoom').hidden = editMode === 'edit';
+        $$1('input.zoom').disabled = editMode === 'edit';
+        $$1('a.zoom').hidden = editMode === 'edit';
 
-        const {width, height, shapes} = imagePreview.getPreviewInfo();
+        const {width, height, shapes} = textImageMap.getImageMapInfo();
         if (!width || !height) { // Nothing else to do yet
           return;
         }
         // console.log('width', width, height, shapes, editMode);
 
-        await formToPreview(getSerializedJSON());
+        await formToImageMap(getSerializedJSON());
         /*
-        imagePreview.setImageMaps({
+        textImageMap.setImageMaps({
           formObj: getSerializedJSON(),
           editMode,
           sharedBehaviors: {
@@ -17755,9 +18014,9 @@
         });
         */
 
-        imagePreview.copyImageMapsToPreview({width, height, shapes});
+        textImageMap.copyImageMapsToImageMap({width, height, shapes});
 
-        imagePreview.showGuidesUnlessViewMode(editMode);
+        textImageMap.showGuidesUnlessViewMode(editMode);
       },
       async serializedHTMLInput () {
         const html = new DOMParser().parseFromString(this.value, 'text/html');
@@ -17794,22 +18053,22 @@
       serializedJSONInput,
       async rectClick (e) {
         e.preventDefault();
-        const imagePreview = $('image-preview');
-        await imagePreview.addRect({
+        const textImageMap = $$1('text-image-map');
+        await textImageMap.addRect({
           sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
         });
       },
       async circleClick (e) {
         e.preventDefault();
-        const imagePreview = $('image-preview');
-        await imagePreview.addCircle({
+        const textImageMap = $$1('text-image-map');
+        await textImageMap.addCircle({
           sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
         });
       },
       async removeClick (e) {
         e.preventDefault();
-        const imagePreview = $('image-preview');
-        await imagePreview.removeShape({
+        const textImageMap = $$1('text-image-map');
+        await textImageMap.removeShape({
           sharedBehaviors: {
             setFormObjCoordsAndUpdateViewForMap
           }
@@ -17817,15 +18076,15 @@
       },
       async removeAllClick (e) {
         e.preventDefault();
-        const imagePreview = $('image-preview');
-        await imagePreview.removeAllShapes({
+        const textImageMap = $$1('text-image-map');
+        await textImageMap.removeAllShapes({
           sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
         });
       },
       zoomClick (e) {
         e.preventDefault();
 
-        const zoomInput = $('input.zoom');
+        const zoomInput = $$1('input.zoom');
         const val = Number(zoomInput.value || 100);
 
         if (typeof val !== 'number' || Number.isNaN(val) || val <= 0) {
@@ -17835,92 +18094,24 @@
           return;
         }
 
-        const imagePreview = $('image-preview');
-        imagePreview.zoomPreviewAndResize(val);
+        const textImageMap = $$1('text-image-map');
+        textImageMap.zoomImageMapAndResize(val);
       }
     }
   });
 
   addImageRegion(imgRegionID++);
 
-  await mapNameChange.call($('input[name="name"]'), true);
+  await mapNameChange.call($$1('input[name="name"]'));
 
-  const findBar$1 = findBar();
-  findBar$1.addEventListener('input', async function () {
-    const {value} = this;
-    const formObj = getSerializedJSON();
-
-    // Todo: Allow `all` mode
-    // Todo: Even for "first" mode, we need to get "next"
-    const mode = 'first';
-    const isFirstMode = mode === 'first';
-
-    const formObjectInfo = imageMapFormObjectInfo(formObj);
-    const [
-      beginSegmentIndexIndex, endSegmentIndexIndex
-    ] = getBeginAndEndIndexes({
-      formObjectInfo, value, isFirstMode
-    });
-
-    const viewMode = (await prefs.getPref('editMode')) === 'view';
-
-    async function blinkShape ({shape, coords}) {
-      let attSel;
-      switch (shape) {
-      case 'rect': {
-        const [x, y, x2, y2] = coords;
-        const width = x2 - x;
-        const height = y2 - y;
-        attSel = `[x="${x}"][y="${y}"][width="${width}"][height="${height}"]`;
-        break;
-      }
-      case 'circle': {
-        const [cx, cy, r] = coords;
-        attSel = `[cx="${cx}"][cy="${cy}"][r="${r}"]`;
-        break;
-      }
-      case 'polygon': {
-        attSel = `[points=${coords.join(',')}]`;
-        break;
-      }
-      default:
-        throw new Error('Unexpected shape ' + shape);
-      }
-      const matchedShape = $(shape + attSel);
-      matchedShape.classList.add('borderBlink');
-      await timeout(3000);
-      matchedShape.classList.remove('borderBlink');
-      /*
-      // Gets correct <area>, but doesn't work to style apparently
-      const matchedArea = $(`area[coords="${coords.join(',')}"]`);
-      console.log('matchedArea', matchedArea);
-      matchedArea.classList.add('borderBlink');
-      await timeout(10000);
-      matchedArea.classList.remove('borderBlink');
-      */
-    }
-
-    const imagePreview = $('image-preview');
-    formObjectInfo.slice(
-      beginSegmentIndexIndex, endSegmentIndexIndex + 1
-    ).forEach(async (
-      {shape, coords}
-    ) => {
-      // Todo: Highlight
-      // console.log('matching shape & coords', shape, coords);
-      if (viewMode) {
-        // We don't have displayed shapes now (with accurate dimensions),
-        //  so we have to build our own elements
-        imagePreview.addShape(shape, {coords});
-        await timeout(500);
-      }
-      blinkShape({shape, coords});
-      if (viewMode) {
-        await timeout(2000);
-        imagePreview.removeShape();
-      }
-    });
-  });
+  const findImageRegionBar$1 = findImageRegionBar();
+  // Supply our implementations (simpler than passing events around)
+  findImageRegionBar$1.getFormObject = () => {
+    return getSerializedJSON();
+  };
+  findImageRegionBar$1.useViewMode = async () => {
+    return (await prefs.getPref('editMode')) === 'view';
+  };
   })();
 
 }());

@@ -1,7 +1,7 @@
-import _ from '../../external/i18n/i18n.js';
+import _ from '../../../external/i18n/i18n.js';
 
-import HyperHTMLElement from '../../external/hyperhtml-element/esm/index.js';
-import {nbsp, body} from '../../external/jamilih/dist/jml-es.js';
+import HyperHTMLElement from '../../../external/hyperhtml-element/esm/index.js';
+import {nbsp, body} from '../../../external/jamilih/dist/jml-es.js';
 
 // Left-facing:
 // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')

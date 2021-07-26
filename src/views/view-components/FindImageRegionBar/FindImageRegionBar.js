@@ -1,8 +1,9 @@
 // import _ from '../../../external/i18n/i18n.js';
-import {$} from '../../../utils/DOMUtils.js';
+import {$} from '../../../../external/query-dollar/dollar.js';
 
-import HyperHTMLElement from '../../../external/hyperhtml-element/esm/index.js';
-import {timeout} from '../../../external/dom-behaviors/dom-behaviors.js';
+import HyperHTMLElement from
+  '../../../../external/hyperhtml-element/esm/index.js';
+import {timeout} from '../../../../external/dom-behaviors/dom-behaviors.js';
 
 import imageMapFormObjectInfo from
   '../../../behaviors/imageMapFormObjectInfo.js';
