@@ -5,7 +5,7 @@ import imageMapModeChooser from './imageMapModeChooser.js';
 import shapeControls from './shapeControls.js';
 
 const textImageMapContainer = ({
-  mode, behaviors, prefs, getSerializedJSON, editableFormToImageMap,
+  mode, prefs, editableFormToImageMap,
   setFormObjCoordsAndUpdateViewForMap
 }) => ['section', [
   ['h2', [_('Image map')]],
@@ -15,7 +15,7 @@ const textImageMapContainer = ({
     }),
     ['br', 'br'],
     imageMapModeChooser({
-      mode, prefs, getSerializedJSON, editableFormToImageMap
+      mode, prefs, editableFormToImageMap
     }),
     zoomControl({mode, prefs}),
     ['copied-text'],

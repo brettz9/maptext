@@ -1,11 +1,11 @@
-import {jml} from '../../external/jamilih/dist/jml-es.js';
+import {jml, $} from '../../external/jamilih/dist/jml-es.js';
 
 const imageMapModeChooser = ({
   mode, prefs,
-  getSerializedJSON, editableFormToImageMap
+  editableFormToImageMap
 }) => {
   const formToImageMap = async function (e) {
-    const formObj = getSerializedJSON();
+    const formObj = $('serialized-json').getJSON();
     const {args, callback} = e.detail;
     await prefs.setPref('mode', args.mode);
     await editableFormToImageMap({...args, formObj});

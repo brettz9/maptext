@@ -4,12 +4,12 @@ import {$, nbsp} from '../../../external/jamilih/dist/jml-es.js';
 import _ from '../../../external/i18n/i18n.js';
 
 /**
-*
-*/
+ *
+ */
 class ImageMapModeChooser extends HyperHTMLElement {
   /**
-  * @returns {string[]}
-  */
+   * @returns {string[]}
+   */
   static get observedAttributes () {
     return ['mode', 'text-image-map', 'readonly'];
   }
@@ -58,7 +58,8 @@ class ImageMapModeChooser extends HyperHTMLElement {
     ['View with guides', 'view-guides'],
     ['View', 'view']
   ].map(([i18nKey, mode]) => {
-    return HyperHTMLElement.hyper`<label>
+    const html = HyperHTMLElement.hyper;
+    return html`<label>
       <input
         name="mode"
         type="radio"

@@ -21,6 +21,7 @@ npm i maptext
 
 ## Immediate to-dos
 
+1. Switch to **[µce](https://github.com/WebReflection/uce)**
 1. **Pages**
     1. **View map** (Just show the view, with find and copy-paste)
         1. Allow **URL params to designate map info to pre-load**

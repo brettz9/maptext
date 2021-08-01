@@ -1,6 +1,517 @@
 (function () {
   'use strict';
 
+  const $$1 = (sel) => {
+    return document.querySelector(sel);
+  };
+
+  const $$ = (sel) => {
+    return document.querySelectorAll(sel);
+  };
+
+  /**
+   *
+   * @param {string} s
+   * @param {Error} err Specific error message
+   * @todo Move to own class
+   * @returns {string}
+   */
+  function _ (s, err) {
+    return s + (err ? ` (${err.message})` : '');
+  }
+
+  function _classCallCheck$2(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$2(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$2(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$2(Constructor, staticProps);
+    return Constructor;
+  }
+
+  /**
+   * @module SimplePrefs
+   */
+
+  /**
+  * @typedef {PlainObject<{
+  * string: module:SimplePrefs.Value}>} module:SimplePrefs.Defaults
+  */
+
+  /**
+  * @typedef {boolean|number|string} module:SimplePrefs.Value
+  */
+
+  /**
+   * Preferences storage.
+   */
+  function _await(value, then, direct) {
+    if (direct) {
+      return then ? then(value) : value;
+    }
+
+    if (!value || !value.then) {
+      value = Promise.resolve(value);
+    }
+
+    return then ? value.then(then) : value;
+  }
+  /**
+   * Defaults for SimplePrefs.
+   */
+
+
+  var SimplePrefs = /*#__PURE__*/function () {
+    /**
+     * @param {PlainObject} cfg
+     * @param {string} cfg.namespace Avoid clashes with other apps
+     * @param {module:SimplePrefs.Defaults} cfg.defaults
+     * @param {module:SimplePrefs.SimplePrefsDefaults} cfg.prefDefaults
+     * @returns {void}
+     */
+    function SimplePrefs(cfg) {
+      _classCallCheck$2(this, SimplePrefs);
+
+      this.configurePrefs(cfg);
+      this.listeners = [];
+    }
+    /**
+     * @param {PlainObject} cfg
+     * @param {string} cfg.namespace Avoid clashes with other apps
+     * @param {module:SimplePrefs.Defaults} cfg.defaults
+     * @param {module:SimplePrefs.SimplePrefsDefaults} cfg.prefDefaults
+     * @returns {void}
+     */
+
+
+    _createClass$2(SimplePrefs, [{
+      key: "configurePrefs",
+      value: function configurePrefs(_ref) {
+        var namespace = _ref.namespace,
+            defaults = _ref.defaults,
+            _ref$prefDefaults = _ref.prefDefaults,
+            prefDefaults = _ref$prefDefaults === void 0 ? simplePrefsDefaults(defaults) : _ref$prefDefaults;
+        Object.assign(this, {
+          namespace: namespace,
+          prefDefaults: prefDefaults
+        });
+      }
+      /**
+       * Get parsed preference value; returns `Promise` in anticipation
+       * of https://domenic.github.io/async-local-storage/ .
+       * @param {string} key Preference key (for Chrome-Compatibility, only `\w+`)
+       * @returns {Promise<module:SimplePrefs.Value>} Resolves to the parsed
+       *   value (defaulting if necessary)
+       */
+
+    }, {
+      key: "getPref",
+      value: function getPref(key) {
+        try {
+          var _this2 = this;
+
+          var result = localStorage.getItem(_this2.namespace + key);
+          return _await(result === null ? _this2.prefDefaults.getPrefDefault(key) : JSON.parse(result), void 0, !(result === null));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+      /**
+       * Set a stringifiable preference value; returns `Promise` in anticipation
+       *   of https://domenic.github.io/async-local-storage/ .
+       * @param {string} key Preference key (for Chrome-Compatibility, only `\w+`)
+       * @param {module:SimplePrefs.Value} val Stringifiable value
+       * @returns {Promise<void>} Resolves after setting the item (Not currently
+       *    in use)
+       */
+
+    }, {
+      key: "setPref",
+      value: function setPref(key, val) {
+        try {
+          var _this4 = this;
+
+          return _await(localStorage.setItem(_this4.namespace + key, JSON.stringify(val)));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+      /**
+      * @typedef {PlainObject} GetPrefSetPref
+      * @property {module:SimplePrefs.SimplePrefs#getPref} getPref
+      * @property {module:SimplePrefs.SimplePrefs#setPref} setPref
+      */
+
+      /**
+       * Convenience utility to return two main methods `getPref` and
+       *   `setPref` bound to the current object.
+       * @returns {GetPrefSetPref}
+       */
+
+    }, {
+      key: "bind",
+      value: function bind() {
+        return {
+          getPref: this.getPref.bind(this),
+          setPref: this.setPref.bind(this)
+        };
+      }
+      /**
+      * @callback PreferenceCallback
+      * @returns {void}
+      */
+
+      /* eslint-disable promise/prefer-await-to-callbacks -- Repeating event */
+
+      /**
+      * @param {string} [key]
+      * @param {PreferenceCallback} cb
+      * @returns {void}
+      */
+
+    }, {
+      key: "listen",
+      value: function listen(key, cb) {
+        var _this5 = this;
+
+        if (typeof key === 'function') {
+          cb = key;
+          key = undefined;
+        }
+
+        var listener = function listener(e) {
+          if (e.key === null) {
+            // `null` for clear browser action or user `clear()`
+            if (key === undefined) {
+              // Only trigger when no key supplied
+              return;
+            }
+          } else {
+            if (!e.key.startsWith(_this5.namespace)) {
+              return;
+            }
+
+            if (key !== undefined && !e.key.startsWith(_this5.namespace + key)) {
+              return;
+            }
+          }
+
+          cb(e);
+        };
+
+        window.addEventListener('storage', listener);
+        this.listeners.push(listener);
+        return listener;
+      }
+      /**
+       * @param {EventListener} listener
+       * @returns {void}
+       */
+
+    }, {
+      key: "unlisten",
+      value: function unlisten(listener) {
+        if (listener) {
+          for (var i = 0; i < this.listeners.length; i++) {
+            if (listener === this.listeners[i]) {
+              this.listeners.splice(i, 1);
+              window.removeEventListener('storage', listener);
+              return;
+            }
+          }
+        }
+
+        this.listeners.forEach(function (listenerItem) {
+          window.removeEventListener('storage', listenerItem);
+        });
+      }
+      /* eslint-enable promise/prefer-await-to-callbacks -- Repeating event */
+
+    }]);
+
+    return SimplePrefs;
+  }();
+  var SimplePrefsDefaults = /*#__PURE__*/function () {
+    /**
+     *
+     * @param {module:SimplePrefs.Defaults} defaults
+     */
+    function SimplePrefsDefaults(_ref2) {
+      var defaults = _ref2.defaults;
+
+      _classCallCheck$2(this, SimplePrefsDefaults);
+
+      this.defaults = defaults;
+    }
+    /**
+     * Get parsed default value for a preference.
+     * @param {string} key Preference key
+     * @returns {Promise<module:SimplePrefs.Value>}
+     */
+
+
+    _createClass$2(SimplePrefsDefaults, [{
+      key: "getPrefDefault",
+      value: function getPrefDefault(key) {
+        try {
+          var _this7 = this;
+
+          return _await(_this7.defaults[key]);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+      /**
+       * Set parsed default value for a preference.
+       * @param {string} key Preference key
+       * @param {module:SimplePrefs.Value} value
+       * @returns {Promise<module:SimplePrefs.Value>} The old value
+       */
+
+    }, {
+      key: "setPrefDefault",
+      value: function setPrefDefault(key, value) {
+        try {
+          var _this9 = this;
+
+          var oldValue = _this9.defaults[key];
+          _this9.defaults[key] = value;
+          return _await(oldValue);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+    }]);
+
+    return SimplePrefsDefaults;
+  }();
+  /**
+   * Simplified factory for `SimplePrefsDefaults`
+   * @param {module:SimplePrefs.Defaults} defaults
+   * @returns {module:SimplePrefs.SimplePrefsDefaults}
+   */
+
+  function simplePrefsDefaults(defaults) {
+    return new SimplePrefsDefaults({
+      defaults: defaults
+    });
+  }
+
+  function _slicedToArray$3(arr, i) {
+    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$3(arr, i) || _nonIterableRest$3();
+  }
+
+  function _arrayWithHoles$3(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit$3(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _unsupportedIterableToArray$3(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray$3(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen);
+  }
+
+  function _arrayLikeToArray$3(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableRest$3() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function loadStylesheets(stylesheets) {
+    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        beforeDefault = _ref.before,
+        afterDefault = _ref.after,
+        faviconDefault = _ref.favicon,
+        canvasDefault = _ref.canvas,
+        _ref$image = _ref.image,
+        imageDefault = _ref$image === void 0 ? true : _ref$image,
+        acceptErrors = _ref.acceptErrors;
+
+    stylesheets = Array.isArray(stylesheets) ? stylesheets : [stylesheets];
+
+    function setupLink(stylesheetURL) {
+      var options = {};
+
+      if (Array.isArray(stylesheetURL)) {
+        var _stylesheetURL = stylesheetURL;
+
+        var _stylesheetURL2 = _slicedToArray$3(_stylesheetURL, 2);
+
+        stylesheetURL = _stylesheetURL2[0];
+        var _stylesheetURL2$ = _stylesheetURL2[1];
+        options = _stylesheetURL2$ === void 0 ? {} : _stylesheetURL2$;
+      }
+
+      var _options = options,
+          _options$favicon = _options.favicon,
+          favicon = _options$favicon === void 0 ? faviconDefault : _options$favicon;
+      var _options2 = options,
+          _options2$before = _options2.before,
+          before = _options2$before === void 0 ? beforeDefault : _options2$before,
+          _options2$after = _options2.after,
+          after = _options2$after === void 0 ? afterDefault : _options2$after,
+          _options2$canvas = _options2.canvas,
+          canvas = _options2$canvas === void 0 ? canvasDefault : _options2$canvas,
+          _options2$image = _options2.image,
+          image = _options2$image === void 0 ? imageDefault : _options2$image;
+
+      function addLink() {
+        if (before) {
+          before.before(link);
+        } else if (after) {
+          after.after(link);
+        } else {
+          document.head.appendChild(link);
+        }
+      }
+
+      var link = document.createElement('link'); // eslint-disable-next-line promise/avoid-new -- No native option
+
+      return new Promise(function (resolve, reject) {
+        var rej = reject;
+
+        if (acceptErrors) {
+          rej = typeof acceptErrors === 'function' ? function (error) {
+            acceptErrors({
+              error: error,
+              stylesheetURL: stylesheetURL,
+              options: options,
+              resolve: resolve,
+              reject: reject
+            });
+          } : resolve;
+        }
+
+        if (stylesheetURL.endsWith('.css')) {
+          favicon = false;
+        } else if (stylesheetURL.endsWith('.ico')) {
+          favicon = true;
+        }
+
+        if (favicon) {
+          link.rel = 'shortcut icon';
+          link.type = 'image/x-icon';
+
+          if (image === false) {
+            link.href = stylesheetURL;
+            addLink();
+            resolve(link);
+            return;
+          }
+
+          var cnv = document.createElement('canvas');
+          cnv.width = 16;
+          cnv.height = 16;
+          var context = cnv.getContext('2d');
+          var img = document.createElement('img'); // eslint-disable-next-line promise/prefer-await-to-callbacks -- No API
+
+          img.addEventListener('error', function (error) {
+            reject(error);
+          });
+          img.addEventListener('load', function () {
+            context.drawImage(img, 0, 0);
+            link.href = canvas ? cnv.toDataURL('image/x-icon') : stylesheetURL;
+            addLink();
+            resolve(link);
+          });
+          img.src = stylesheetURL;
+          return;
+        }
+
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = stylesheetURL;
+        addLink(); // eslint-disable-next-line promise/prefer-await-to-callbacks -- No API
+
+        link.addEventListener('error', function (error) {
+          rej(error);
+        });
+        link.addEventListener('load', function () {
+          resolve(link);
+        });
+      });
+    }
+
+    return Promise.all(stylesheets.map(function (stylesheetURL) {
+      return setupLink(stylesheetURL);
+    }));
+  }
+
+  /**
+   * @param {string[]} stylesheets
+   * @returns {PlainObject}
+   */
+  function styles$1 (stylesheets) {
+    return {
+      async load () {
+        return await loadStylesheets(stylesheets);
+      },
+      cloneStylesOfRuleSelector (selector) {
+        const targetObject = {};
+        const ruleList = [...document.styleSheets].find(({href}) => {
+          return href.endsWith(`/${stylesheets[0]}`);
+        }).cssRules;
+        for (const rule of ruleList) {
+          if (rule.selectorText === selector) {
+            [...rule.style].forEach((prop) => {
+              targetObject[prop] = rule.style[prop];
+            });
+          }
+        }
+        return targetObject;
+      }
+    };
+  }
+
   /*
   Possible todos:
   0. Add XSLT to JML-string stylesheet (or even vice versa)
@@ -70,9 +581,7 @@
   'max', 'min', 'minLength', 'maxLength', 'title' // HTMLElement
   ];
 
-  const $$1 = sel => doc.querySelector(sel);
-
-  const $$ = sel => [...doc.querySelectorAll(sel)];
+  const $ = sel => doc.querySelector(sel);
   /**
   * Retrieve the (lower-cased) HTML name of a node.
   * @static
@@ -534,7 +1043,7 @@
                 if (Array.isArray(template)) {
                   template = _getType(template[0]) === 'object' ? jml('template', ...template, doc.body) : jml('template', template, doc.body);
                 } else if (typeof template === 'string') {
-                  template = $$1(template);
+                  template = $(template);
                 }
 
                 jml(template.content.cloneNode(true), shadowRoot);
@@ -1719,7 +2228,7 @@
      * @returns {any}
      */
     get(elem) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return super.get.call(this, elem);
     }
     /**
@@ -1730,7 +2239,7 @@
 
 
     set(elem, value) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return super.set.call(this, elem, value);
     }
     /**
@@ -1742,7 +2251,7 @@
 
 
     invoke(elem, methodName, ...args) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return this.get(elem)[methodName](elem, ...args);
     }
 
@@ -1758,7 +2267,7 @@
      * @returns {any}
      */
     get(elem) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return super.get.call(this, elem);
     }
     /**
@@ -1769,7 +2278,7 @@
 
 
     set(elem, value) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return super.set.call(this, elem, value);
     }
     /**
@@ -1781,7 +2290,7 @@
 
 
     invoke(elem, methodName, ...args) {
-      elem = typeof elem === 'string' ? $$1(elem) : elem;
+      elem = typeof elem === 'string' ? $(elem) : elem;
       return this.get(elem)[methodName](elem, ...args);
     }
 
@@ -1830,7 +2339,7 @@
 
 
   jml.symbol = jml.sym = jml.for = function (elem, sym) {
-    elem = typeof elem === 'string' ? $$1(elem) : elem;
+    elem = typeof elem === 'string' ? $(elem) : elem;
     return elem[typeof sym === 'symbol' ? sym : Symbol.for(sym)];
   };
   /**
@@ -1844,7 +2353,7 @@
 
 
   jml.command = function (elem, symOrMap, methodName, ...args) {
-    elem = typeof elem === 'string' ? $$1(elem) : elem;
+    elem = typeof elem === 'string' ? $(elem) : elem;
     let func;
 
     if (['symbol', 'string'].includes(typeof symOrMap)) {
@@ -1897,6 +2406,339 @@
 
   const nbsp = '\u00A0'; // Very commonly needed in templates
 
+  const findImageRegionBar = ({
+    getJSON, prefs
+  }) => {
+    return jml('find-image-region-bar', {
+      // Point to our selector (could be a more precise selector)
+      textImageMap: 'text-image-map',
+      $on: {
+        'get-form-object' (e) {
+          e.detail($('serialized-json').getJSON());
+        },
+        async 'use-view-mode' (e) {
+          e.detail((await prefs.getPref('mode')) === 'view');
+        }
+      }
+    }, body);
+  };
+
+  const empty$1 = (el) => {
+    while (el.firstChild) {
+      el.firstChild.remove();
+    }
+  };
+
+  const timeout = (delay) => {
+    // eslint-disable-next-line promise/avoid-new
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, delay || 0);
+    });
+  };
+
+  const nbsp2$4 = nbsp.repeat(2);
+
+  const formControlsRect = ({currentImageRegionID, outputArea}) => {
+    return jml('div', [
+      ['label', [
+        _('Left x'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_leftx`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]], nbsp2$4,
+      ['label', [
+        _('Top y'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_topy`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]], nbsp2$4,
+      ['label', [
+        _('Right x'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_rightx`,
+          type: 'number', size: 5, required: true, value: 300
+        }]
+      ]], nbsp2$4,
+      ['label', [
+        _('Bottom y'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_bottomy`,
+          type: 'number', size: 5, required: true, value: 300
+        }]
+      ]], nbsp2$4
+    ], outputArea);
+  };
+
+  const nbsp2$3 = nbsp.repeat(2);
+
+  const formControlsCircle = ({currentImageRegionID, outputArea}) => {
+    return jml('div', [
+      ['label', [
+        _('x'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_circlex`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]], nbsp2$3,
+      ['label', [
+        _('y'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_circley`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]], nbsp2$3,
+      ['label', [
+        _('r'),
+        nbsp,
+        ['input', {
+          name: `${currentImageRegionID}_circler`,
+          type: 'number', size: 5, required: true, value: 30
+        }]
+      ]]
+    ], outputArea);
+  };
+
+  const nbsp2$2 = nbsp.repeat(2);
+
+  const makeFrom = () => {
+    return ['span', {class: 'from'}, [_('From:')]];
+  };
+  const makeTo = () => ['span', [_('To:')]];
+
+  /**
+   * @param {Integer} currImageRegionID
+   * @param {boolean} from
+   * @returns {HTMLDivElement}
+   */
+  function editPolyXY (currImageRegionID, from = false) {
+    /**
+     * @param {Event} e
+     * @returns {void}
+     */
+    function addPolyClick (e) {
+      e.preventDefault();
+      polyDiv.after(editPolyXY(currImageRegionID));
+    }
+    /**
+     * @param {Event} e
+     * @returns {void}
+     */
+    function removePolyClick (e) {
+      e.preventDefault();
+      const buttonSets = polyDiv.parentElement;
+      if (buttonSets.children.length <= 2) {
+        return;
+      }
+      polyDiv.remove();
+      const firstButtonSet = buttonSets.firstElementChild;
+      const fromOrTo = firstButtonSet.firstElementChild;
+      if (fromOrTo.className !== 'from') {
+        fromOrTo.replaceWith(jml(...makeFrom()));
+      }
+    }
+
+    const polyDiv = jml('div', [
+      from
+        ? makeFrom()
+        : makeTo(),
+      nbsp2$2,
+      ['label', [
+        _('x'),
+        nbsp,
+        ['input', {
+          name: `${currImageRegionID}_xy`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]], nbsp2$2,
+      ['label', [
+        _('y'),
+        nbsp,
+        ['input', {
+          name: `${currImageRegionID}_xy`,
+          type: 'number', size: 5, required: true, value: 1
+        }]
+      ]],
+      nbsp2$2,
+      ['button', {class: 'addPoly', $on: {
+        click: addPolyClick
+      }}, [
+        '+'
+      ]],
+      ['button', {class: 'removePoly', $on: {
+        click: removePolyClick
+      }}, [
+        '-'
+      ]]
+    ]);
+    return polyDiv;
+  }
+
+  const formControlsPoly = ({
+    outputArea, currentImageRegionID
+  }) => {
+    return jml('div', {class: 'polyDivHolder'}, [
+      editPolyXY(currentImageRegionID, true)
+    ], outputArea);
+  };
+
+  const nbsp2$1 = nbsp.repeat(2);
+
+  const formText = ({
+    formShapeSelection,
+    currentImageRegionID, outputArea,
+    requireText, prefs, li
+  }) => {
+    /**
+     * @param {Event} e
+     * @returns {void}
+     */
+    function addImageRegionClick (e) {
+      e.preventDefault();
+      formShapeSelection({
+        requireText,
+        prevElement: li,
+        prefs
+      });
+    }
+    /**
+     * @param {Event} e
+     * @returns {void}
+     */
+    function removeImageRegionClick (e) {
+      e.preventDefault();
+      const imageRegions = $$1('#imageRegions');
+      if (imageRegions.children.length === 1) {
+        return;
+      }
+      li.remove();
+    }
+    return jml('div', [
+      ['div', [
+        ['label', [
+          _('Text'), nbsp2$1,
+          ['textarea', {
+            class: 'requireText',
+            name: `${currentImageRegionID}_text`,
+            required: requireText
+          }]
+        ]]
+      ]],
+      ['button', {class: 'addRegion', dataset: {
+        regionId: currentImageRegionID
+      }, $on: {
+        click: addImageRegionClick
+      }}, [
+        _('+')
+      ]],
+      ['button', {class: 'removeRegion', dataset: {
+        regionId: currentImageRegionID
+      }, $on: {
+        click: removeImageRegionClick
+      }}, [
+        _('-')
+      ]],
+      ['br'],
+      ['br']
+    ], outputArea);
+  };
+
+  // Todo: Make this an instance of this element
+  let imgRegionID = 0;
+
+  /**
+  * @param {Integer} imageRegionID
+  * @returns {void}
+  */
+  function setImageRegionID (imageRegionID) {
+    imgRegionID = imageRegionID;
+  }
+
+  let requireText$1;
+  /**
+   * @param {string} reqText
+   * @returns {void}
+   */
+  function setRequireText$1 (reqText) {
+    requireText$1 = reqText;
+  }
+
+  /**
+   * @param {PlainObject} cfg
+   * @param {Integer} cfg.imageRegionID
+   * @param {HTMLElement} cfg.prevElement
+   * @param {SimplePrefs} cfg.prefs
+   * @returns {void}
+   */
+  function formShapeSelection ({
+    imageRegionID = imgRegionID++, prevElement, prefs
+  }) {
+    const currentImageRegionID = imageRegionID;
+
+    /**
+    * @param {Event} e
+    * @returns {void}
+    */
+    function shapeSelectionChange ({target}) {
+      const outputArea = this.nextElementSibling;
+      empty$1(outputArea);
+      switch (target.value) {
+      case 'rect':
+        formControlsRect({currentImageRegionID, outputArea});
+        break;
+      case 'circle':
+        formControlsCircle({currentImageRegionID, outputArea});
+        break;
+      case 'poly': {
+        const div = formControlsPoly({
+          outputArea,
+          currentImageRegionID
+        });
+        div.querySelector('button.addPoly').click();
+        break;
+      }    }
+      formText({
+        formShapeSelection,
+        prefs,
+        li,
+        requireText: requireText$1,
+        currentImageRegionID,
+        outputArea
+      });
+    }
+
+    const li = jml('li', [
+      ['select', {
+        name: `${currentImageRegionID}_shape`,
+        'aria-label': _('Shape'),
+        $on: {change: shapeSelectionChange}
+      }, [
+        ['option', {value: 'rect'}, [_('Rectangle')]],
+        ['option', {value: 'circle'}, [_('Circle')]],
+        // Todo: Disable after testing!
+        // Todo: https://github.com/naver/image-maps/issues/9
+        ['option', {value: 'poly'}, [_('Polygon')]]
+      ]],
+      ['div']
+    ]);
+
+    if (prevElement) {
+      prevElement.after(li);
+    } else {
+      jml(li, $('#imageRegions'));
+    }
+    li.firstElementChild.dispatchEvent(new Event('change'));
+  }
+
   function _typeof$1(obj) {
     "@babel/helpers - typeof";
 
@@ -1913,19 +2755,19 @@
     return _typeof$1(obj);
   }
 
-  function _slicedToArray$3(arr, i) {
-    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$3(arr, i) || _nonIterableRest$3();
+  function _slicedToArray$2(arr, i) {
+    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2();
   }
 
   function _toConsumableArray$2(arr) {
-    return _arrayWithoutHoles$2(arr) || _iterableToArray$2(arr) || _unsupportedIterableToArray$3(arr) || _nonIterableSpread$2();
+    return _arrayWithoutHoles$2(arr) || _iterableToArray$2(arr) || _unsupportedIterableToArray$2(arr) || _nonIterableSpread$2();
   }
 
   function _arrayWithoutHoles$2(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray$3(arr);
+    if (Array.isArray(arr)) return _arrayLikeToArray$2(arr);
   }
 
-  function _arrayWithHoles$3(arr) {
+  function _arrayWithHoles$2(arr) {
     if (Array.isArray(arr)) return arr;
   }
 
@@ -1933,7 +2775,7 @@
     if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
   }
 
-  function _iterableToArrayLimit$3(arr, i) {
+  function _iterableToArrayLimit$2(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
@@ -1960,16 +2802,16 @@
     return _arr;
   }
 
-  function _unsupportedIterableToArray$3(o, minLen) {
+  function _unsupportedIterableToArray$2(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$3(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$2(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen);
   }
 
-  function _arrayLikeToArray$3(arr, len) {
+  function _arrayLikeToArray$2(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
@@ -1981,7 +2823,7 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _nonIterableRest$3() {
+  function _nonIterableRest$2() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
@@ -2125,7 +2967,7 @@
 
     if (options.empty) {
       Object.entries(radioStore).forEach(function (_ref) {
-        var _ref2 = _slicedToArray$3(_ref, 2),
+        var _ref2 = _slicedToArray$2(_ref, 2),
             key = _ref2[0],
             value = _ref2[1];
 
@@ -2290,7 +3132,7 @@
   function deserialize(form, hash) {
     // input(text|radio|checkbox)|select(multiple)|textarea|keygen
     Object.entries(hash).forEach(function (_ref3) {
-      var _ref4 = _slicedToArray$3(_ref3, 2),
+      var _ref4 = _slicedToArray$2(_ref3, 2),
           name = _ref4[0],
           value = _ref4[1];
 
@@ -2383,523 +3225,61 @@
     });
   }
 
-  /**
-   *
-   * @param {string} s
-   * @param {Error} err Specific error message
-   * @todo Move to own class
-   * @returns {string}
-   */
-  function _ (s, err) {
-    return s + (err ? ` (${err.message})` : '');
-  }
+  const getFormToImageMap = ({
+    prefs, styles,
+    setFormObjCoordsAndUpdateViewForMap
+  }) => {
+    const defaultShapeStyles = styles.cloneStylesOfRuleSelector(
+      '.shape-style-defaults'
+    );
 
-  const empty$1 = (el) => {
-    while (el.firstChild) {
-      el.firstChild.remove();
-    }
-  };
+    // Todo: Move out editable-related code to editable function
+    // Move more of this into `text-image-map` itself?
+    const formToImageMap = async ({
+      textImageMap, formObj, mode, defaultImageSrc
+    }) => {
+      const {name} = formObj;
 
-  const timeout = (delay) => {
-    // eslint-disable-next-line promise/avoid-new
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, delay || 0);
-    });
-  };
+      textImageMap.name = name;
 
-  function _classCallCheck$2(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
+      textImageMap.src = /* $('input[name=mapURL]').value */ formObj.mapURL ||
+        defaultImageSrc;
 
-  function _defineProperties$2(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass$2(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$2(Constructor, staticProps);
-    return Constructor;
-  }
-
-  /**
-   * @module SimplePrefs
-   */
-
-  /**
-  * @typedef {PlainObject<{
-  * string: module:SimplePrefs.Value}>} module:SimplePrefs.Defaults
-  */
-
-  /**
-  * @typedef {boolean|number|string} module:SimplePrefs.Value
-  */
-
-  /**
-   * Preferences storage.
-   */
-  function _await(value, then, direct) {
-    if (direct) {
-      return then ? then(value) : value;
-    }
-
-    if (!value || !value.then) {
-      value = Promise.resolve(value);
-    }
-
-    return then ? value.then(then) : value;
-  }
-  /**
-   * Defaults for SimplePrefs.
-   */
-
-
-  var SimplePrefs = /*#__PURE__*/function () {
-    /**
-     * @param {PlainObject} cfg
-     * @param {string} cfg.namespace Avoid clashes with other apps
-     * @param {module:SimplePrefs.Defaults} cfg.defaults
-     * @param {module:SimplePrefs.SimplePrefsDefaults} cfg.prefDefaults
-     * @returns {void}
-     */
-    function SimplePrefs(cfg) {
-      _classCallCheck$2(this, SimplePrefs);
-
-      this.configurePrefs(cfg);
-      this.listeners = [];
-    }
-    /**
-     * @param {PlainObject} cfg
-     * @param {string} cfg.namespace Avoid clashes with other apps
-     * @param {module:SimplePrefs.Defaults} cfg.defaults
-     * @param {module:SimplePrefs.SimplePrefsDefaults} cfg.prefDefaults
-     * @returns {void}
-     */
-
-
-    _createClass$2(SimplePrefs, [{
-      key: "configurePrefs",
-      value: function configurePrefs(_ref) {
-        var namespace = _ref.namespace,
-            defaults = _ref.defaults,
-            _ref$prefDefaults = _ref.prefDefaults,
-            prefDefaults = _ref$prefDefaults === void 0 ? simplePrefsDefaults(defaults) : _ref$prefDefaults;
-        Object.assign(this, {
-          namespace: namespace,
-          prefDefaults: prefDefaults
-        });
-      }
-      /**
-       * Get parsed preference value; returns `Promise` in anticipation
-       * of https://domenic.github.io/async-local-storage/ .
-       * @param {string} key Preference key (for Chrome-Compatibility, only `\w+`)
-       * @returns {Promise<module:SimplePrefs.Value>} Resolves to the parsed
-       *   value (defaulting if necessary)
-       */
-
-    }, {
-      key: "getPref",
-      value: function getPref(key) {
-        try {
-          var _this2 = this;
-
-          var result = localStorage.getItem(_this2.namespace + key);
-          return _await(result === null ? _this2.prefDefaults.getPrefDefault(key) : JSON.parse(result), void 0, !(result === null));
-        } catch (e) {
-          return Promise.reject(e);
+      textImageMap.setShapeStrokeFillOptions(defaultShapeStyles);
+      textImageMap.setImageMaps({
+        formObj,
+        mode,
+        sharedBehaviors: {
+          setFormObjCoordsAndUpdateViewForMap
         }
-      }
-      /**
-       * Set a stringifiable preference value; returns `Promise` in anticipation
-       *   of https://domenic.github.io/async-local-storage/ .
-       * @param {string} key Preference key (for Chrome-Compatibility, only `\w+`)
-       * @param {module:SimplePrefs.Value} val Stringifiable value
-       * @returns {Promise<void>} Resolves after setting the item (Not currently
-       *    in use)
-       */
-
-    }, {
-      key: "setPref",
-      value: function setPref(key, val) {
-        try {
-          var _this4 = this;
-
-          return _await(localStorage.setItem(_this4.namespace + key, JSON.stringify(val)));
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      }
-      /**
-      * @typedef {PlainObject} GetPrefSetPref
-      * @property {module:SimplePrefs.SimplePrefs#getPref} getPref
-      * @property {module:SimplePrefs.SimplePrefs#setPref} setPref
-      */
-
-      /**
-       * Convenience utility to return two main methods `getPref` and
-       *   `setPref` bound to the current object.
-       * @returns {GetPrefSetPref}
-       */
-
-    }, {
-      key: "bind",
-      value: function bind() {
-        return {
-          getPref: this.getPref.bind(this),
-          setPref: this.setPref.bind(this)
-        };
-      }
-      /**
-      * @callback PreferenceCallback
-      * @returns {void}
-      */
-
-      /* eslint-disable promise/prefer-await-to-callbacks -- Repeating event */
-
-      /**
-      * @param {string} [key]
-      * @param {PreferenceCallback} cb
-      * @returns {void}
-      */
-
-    }, {
-      key: "listen",
-      value: function listen(key, cb) {
-        var _this5 = this;
-
-        if (typeof key === 'function') {
-          cb = key;
-          key = undefined;
-        }
-
-        var listener = function listener(e) {
-          if (e.key === null) {
-            // `null` for clear browser action or user `clear()`
-            if (key === undefined) {
-              // Only trigger when no key supplied
-              return;
-            }
-          } else {
-            if (!e.key.startsWith(_this5.namespace)) {
-              return;
-            }
-
-            if (key !== undefined && !e.key.startsWith(_this5.namespace + key)) {
-              return;
-            }
-          }
-
-          cb(e);
-        };
-
-        window.addEventListener('storage', listener);
-        this.listeners.push(listener);
-        return listener;
-      }
-      /**
-       * @param {EventListener} listener
-       * @returns {void}
-       */
-
-    }, {
-      key: "unlisten",
-      value: function unlisten(listener) {
-        if (listener) {
-          for (var i = 0; i < this.listeners.length; i++) {
-            if (listener === this.listeners[i]) {
-              this.listeners.splice(i, 1);
-              window.removeEventListener('storage', listener);
-              return;
-            }
-          }
-        }
-
-        this.listeners.forEach(function (listenerItem) {
-          window.removeEventListener('storage', listenerItem);
-        });
-      }
-      /* eslint-enable promise/prefer-await-to-callbacks -- Repeating event */
-
-    }]);
-
-    return SimplePrefs;
-  }();
-  var SimplePrefsDefaults = /*#__PURE__*/function () {
-    /**
-     *
-     * @param {module:SimplePrefs.Defaults} defaults
-     */
-    function SimplePrefsDefaults(_ref2) {
-      var defaults = _ref2.defaults;
-
-      _classCallCheck$2(this, SimplePrefsDefaults);
-
-      this.defaults = defaults;
-    }
-    /**
-     * Get parsed default value for a preference.
-     * @param {string} key Preference key
-     * @returns {Promise<module:SimplePrefs.Value>}
-     */
-
-
-    _createClass$2(SimplePrefsDefaults, [{
-      key: "getPrefDefault",
-      value: function getPrefDefault(key) {
-        try {
-          var _this7 = this;
-
-          return _await(_this7.defaults[key]);
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      }
-      /**
-       * Set parsed default value for a preference.
-       * @param {string} key Preference key
-       * @param {module:SimplePrefs.Value} value
-       * @returns {Promise<module:SimplePrefs.Value>} The old value
-       */
-
-    }, {
-      key: "setPrefDefault",
-      value: function setPrefDefault(key, value) {
-        try {
-          var _this9 = this;
-
-          var oldValue = _this9.defaults[key];
-          _this9.defaults[key] = value;
-          return _await(oldValue);
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      }
-    }]);
-
-    return SimplePrefsDefaults;
-  }();
-  /**
-   * Simplified factory for `SimplePrefsDefaults`
-   * @param {module:SimplePrefs.Defaults} defaults
-   * @returns {module:SimplePrefs.SimplePrefsDefaults}
-   */
-
-  function simplePrefsDefaults(defaults) {
-    return new SimplePrefsDefaults({
-      defaults: defaults
-    });
-  }
-
-  function _slicedToArray$2(arr, i) {
-    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2();
-  }
-
-  function _arrayWithHoles$2(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
-  function _iterableToArrayLimit$2(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  function _unsupportedIterableToArray$2(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$2(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen);
-  }
-
-  function _arrayLikeToArray$2(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
-
-  function _nonIterableRest$2() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function loadStylesheets(stylesheets) {
-    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        beforeDefault = _ref.before,
-        afterDefault = _ref.after,
-        faviconDefault = _ref.favicon,
-        canvasDefault = _ref.canvas,
-        _ref$image = _ref.image,
-        imageDefault = _ref$image === void 0 ? true : _ref$image,
-        acceptErrors = _ref.acceptErrors;
-
-    stylesheets = Array.isArray(stylesheets) ? stylesheets : [stylesheets];
-
-    function setupLink(stylesheetURL) {
-      var options = {};
-
-      if (Array.isArray(stylesheetURL)) {
-        var _stylesheetURL = stylesheetURL;
-
-        var _stylesheetURL2 = _slicedToArray$2(_stylesheetURL, 2);
-
-        stylesheetURL = _stylesheetURL2[0];
-        var _stylesheetURL2$ = _stylesheetURL2[1];
-        options = _stylesheetURL2$ === void 0 ? {} : _stylesheetURL2$;
-      }
-
-      var _options = options,
-          _options$favicon = _options.favicon,
-          favicon = _options$favicon === void 0 ? faviconDefault : _options$favicon;
-      var _options2 = options,
-          _options2$before = _options2.before,
-          before = _options2$before === void 0 ? beforeDefault : _options2$before,
-          _options2$after = _options2.after,
-          after = _options2$after === void 0 ? afterDefault : _options2$after,
-          _options2$canvas = _options2.canvas,
-          canvas = _options2$canvas === void 0 ? canvasDefault : _options2$canvas,
-          _options2$image = _options2.image,
-          image = _options2$image === void 0 ? imageDefault : _options2$image;
-
-      function addLink() {
-        if (before) {
-          before.before(link);
-        } else if (after) {
-          after.after(link);
-        } else {
-          document.head.appendChild(link);
-        }
-      }
-
-      var link = document.createElement('link'); // eslint-disable-next-line promise/avoid-new -- No native option
-
-      return new Promise(function (resolve, reject) {
-        var rej = reject;
-
-        if (acceptErrors) {
-          rej = typeof acceptErrors === 'function' ? function (error) {
-            acceptErrors({
-              error: error,
-              stylesheetURL: stylesheetURL,
-              options: options,
-              resolve: resolve,
-              reject: reject
-            });
-          } : resolve;
-        }
-
-        if (stylesheetURL.endsWith('.css')) {
-          favicon = false;
-        } else if (stylesheetURL.endsWith('.ico')) {
-          favicon = true;
-        }
-
-        if (favicon) {
-          link.rel = 'shortcut icon';
-          link.type = 'image/x-icon';
-
-          if (image === false) {
-            link.href = stylesheetURL;
-            addLink();
-            resolve(link);
-            return;
-          }
-
-          var cnv = document.createElement('canvas');
-          cnv.width = 16;
-          cnv.height = 16;
-          var context = cnv.getContext('2d');
-          var img = document.createElement('img'); // eslint-disable-next-line promise/prefer-await-to-callbacks -- No API
-
-          img.addEventListener('error', function (error) {
-            reject(error);
-          });
-          img.addEventListener('load', function () {
-            context.drawImage(img, 0, 0);
-            link.href = canvas ? cnv.toDataURL('image/x-icon') : stylesheetURL;
-            addLink();
-            resolve(link);
-          });
-          img.src = stylesheetURL;
-          return;
-        }
-
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = stylesheetURL;
-        addLink(); // eslint-disable-next-line promise/prefer-await-to-callbacks -- No API
-
-        link.addEventListener('error', function (error) {
-          rej(error);
-        });
-        link.addEventListener('load', function () {
-          resolve(link);
-        });
       });
-    }
+      textImageMap.toggleTextDragRectangleByMode(mode);
 
-    return Promise.all(stylesheets.map(function (stylesheetURL) {
-      return setupLink(stylesheetURL);
-    }));
-  }
+      // Todo: Should find a better way around this
+      // Wait until SVG is built
+      await timeout(500);
 
-  /**
-   * @param {string[]} stylesheets
-   * @returns {PlainObject}
-   */
-  function styles$1 (stylesheets) {
-    return {
-      async load () {
-        return await loadStylesheets(stylesheets);
-      },
-      cloneStylesOfRuleSelector (selector) {
-        const targetObject = {};
-        const ruleList = [...document.styleSheets].find(({href}) => {
-          return href.endsWith(`/${stylesheets[0]}`);
-        }).cssRules;
-        for (const rule of ruleList) {
-          if (rule.selectorText === selector) {
-            [...rule.style].forEach((prop) => {
-              targetObject[prop] = rule.style[prop];
-            });
-          }
-        }
-        return targetObject;
-      }
+      // This could have since been modified but not yet saved
+      textImageMap.setFormObject(formObj);
+      textImageMap.buildImageMapAreasForFormObject();
     };
-  }
+
+    const editableFormToImageMap = async ({textImageMap, formObj, mode}) => {
+      const defaultImageSrc = await prefs.getPref('lastImageSrc');
+
+      return await formToImageMap({
+        textImageMap, formObj, mode,
+        defaultImageSrc: defaultImageSrc.startsWith('http')
+          ? defaultImageSrc
+          : location.href + '/' + defaultImageSrc
+      });
+    };
+
+    return {
+      editableFormToImageMap,
+      formToImageMap
+    };
+  };
 
   /**
   * @typedef {"circle"|"rect"|"polygon"} ImageDataShape
@@ -2935,104 +3315,6 @@
       return {shape, alt, coords};
     });
   }
-
-  /**
-   * @param {PlainObject} cfg
-   * @param {string} cfg.mode
-   * @param {TextImageMap} cfg.textImageMap
-   * @returns {void}
-   */
-  function setTextRectangleByMode ({mode, textImageMap}) {
-    if (mode === 'edit') {
-      textImageMap.disableTextDragRectangle();
-    } else {
-      textImageMap.enableTextDragRectangle({
-        pos: textImageMap.getPosition(), mode
-      });
-    }
-  }
-
-  const getFormToImageMap = ({
-    prefs, styles,
-    setFormObjCoordsAndUpdateViewForMap
-  }) => {
-    const defaultShapeStyles = styles.cloneStylesOfRuleSelector(
-      '.shape-style-defaults'
-    );
-
-    // Todo: Move out editable-related code to editable function
-    // Move more of this into `text-image-map` itself?
-    const formToImageMap = async ({
-      textImageMap, formObj, mode, defaultImageSrc
-    }) => {
-      const {name} = formObj;
-
-      textImageMap.name = name;
-
-      textImageMap.src = /* $('input[name=mapURL]').value */ formObj.mapURL ||
-        defaultImageSrc;
-
-      textImageMap.setShapeStrokeFillOptions(defaultShapeStyles);
-      textImageMap.setImageMaps({
-        formObj,
-        mode,
-        sharedBehaviors: {
-          setFormObjCoordsAndUpdateViewForMap
-        }
-      });
-
-      await setTextRectangleByMode({mode, textImageMap});
-
-      // Todo: Should find a better way around this
-      // Wait until SVG is built
-      await timeout(500);
-
-      // Todo: Is this needed or is the internal copy already ok?
-      textImageMap.setFormObject(formObj);
-      textImageMap.buildImageMapAreasForFormObject();
-    };
-
-    const editableFormToImageMap = async ({textImageMap, formObj}) => {
-      const mode = await prefs.getPref('mode');
-      const defaultImageSrc = await prefs.getPref('lastImageSrc');
-
-      return formToImageMap({
-        textImageMap, formObj, mode,
-        defaultImageSrc: defaultImageSrc.startsWith('http')
-          ? defaultImageSrc
-          : location.href + '/' + defaultImageSrc
-      });
-    };
-
-    return {
-      editableFormToImageMap,
-      formToImageMap
-    };
-  };
-
-  const modelWrap$1 = ({
-    getSerializedJSON, prefs
-  }, findImageRegionBarView) => {
-    // Supply our implementations (simpler than passing events around)
-    findImageRegionBarView.getFormObject = () => {
-      return getSerializedJSON();
-    };
-    findImageRegionBarView.useViewMode = async () => {
-      return (await prefs.getPref('mode')) === 'view';
-    };
-  };
-
-  const findImageRegionBar = ({
-    getSerializedJSON, prefs
-  }) => {
-    return modelWrap$1(
-      {getSerializedJSON, prefs},
-      jml('find-image-region-bar', {
-        // Point to our selector (could be a more precise selector)
-        textImageMap: 'text-image-map'
-      }, body)
-    );
-  };
 
   /*! (c) Andrea Giammarchi - ISC */
   var self$3 = {};
@@ -5287,20 +5569,21 @@
       // while truthy values will be set as is.
       // Boolean attributes are also automatically observed.
       const booleanAttributes = Class.booleanAttributes || [];
-      booleanAttributes.forEach(name => {
+      booleanAttributes.forEach(attribute => {
+        const name = camel(attribute);
         if (!(name in proto)) defineProperty(
           proto,
-          camel(name),
+          name,
           {
             configurable: true,
             get() {
-              return this.hasAttribute(name);
+              return this.hasAttribute(attribute);
             },
             set(value) {
               if (!value || value === 'false')
-                this.removeAttribute(name);
+                this.removeAttribute(attribute);
               else
-                this.setAttribute(name, '');
+                this.setAttribute(attribute, '');
             }
           }
         );
@@ -5317,22 +5600,23 @@
       const observedAttributes = (Class.observedAttributes || []).filter(
         attribute => booleanAttributes.indexOf(attribute) < 0
       );
-      observedAttributes.forEach(name => {
+      observedAttributes.forEach(attribute => {
         // it is possible to redefine the behavior at any time
         // simply overwriting get prop() and set prop(value)
+        const name = camel(attribute);
         if (!(name in proto)) defineProperty(
           proto,
-          camel(name),
+          name,
           {
             configurable: true,
             get() {
-              return this.getAttribute(name);
+              return this.getAttribute(attribute);
             },
             set(value) {
               if (value == null)
-                this.removeAttribute(name);
+                this.removeAttribute(attribute);
               else
-                this.setAttribute(name, value);
+                this.setAttribute(attribute, value);
             }
           }
         );
@@ -11243,10 +11527,6 @@
     }
   };
 
-  const $ = (sel) => {
-    return document.querySelector(sel);
-  };
-
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -16792,7 +17072,7 @@
         return;
       }
     }
-    $(this.copiedText).value = this.lastText;
+    $$1(this.copiedText).value = this.lastText;
     /*
     // Not yet supported
     const clipboardPermission =
@@ -16974,6 +17254,25 @@
         'mousedown',
         this.mousedownListener
       );
+    },
+
+    /**
+     * @typedef {"edit"|"view-guides"|"view"} Mode
+     */
+
+    /**
+     * @param {Mode} mode
+     * @returns {void}
+     */
+    toggleTextDragRectangleByMode (mode) {
+      if (mode === 'edit') {
+        this.disableTextDragRectangle();
+      } else {
+        this.enableTextDragRectangle({
+          pos: this.getPosition(),
+          mode
+        });
+      }
     }
   };
 
@@ -16991,11 +17290,11 @@
     });
   }
 
-  const buildArea = ({shape, alt, coords, behaviors}) => {
+  const buildArea = ({shape, alt, coords}) => {
     const atts = {
       shape,
       coords,
-      $on: {mouseover: behaviors.mouseover}
+      $on: {mouseover}
     };
     if (alt !== undefined) { // Todo: Make this a nullable type for Jamilih
       atts.alt = alt;
@@ -17065,8 +17364,7 @@
         jml(...buildArea({
           shape,
           alt,
-          coords,
-          behaviors: {mouseover}
+          coords
         }), map);
       });
     }
@@ -17141,7 +17439,12 @@
     /**
      * @returns {string[]}
      */
-    static get observedAttributes () { return ['mode', 'value']; }
+    static get booleanAttributes () { return ['disabled']; }
+
+    /**
+     * @returns {string[]}
+     */
+    static get observedAttributes () { return ['value']; }
 
     static formAssociated = true;
 
@@ -17214,16 +17517,14 @@
     * @returns {void}
     */
     disable () {
-      this.querySelector('input.zoom').disabled = true;
-      this.querySelector('a.zoom').hidden = true;
+      this.disabled = true;
     }
 
     /**
     * @returns {void}
     */
     enable () {
-      this.querySelector('input.zoom').disabled = false;
-      this.querySelector('a.zoom').hidden = false;
+      this.disabled = false;
     }
 
     /**
@@ -17242,6 +17543,7 @@
       <input
         type="number"
         class="zoom"
+        disabled=${this.disabled}
         onchange=${this.handleChange}
         aria-label=${_('zoom')}
         placeholder=${_('zoom percentage')}
@@ -17249,10 +17551,9 @@
       ${nbsp}
       <a
         href="#"
+        hidden=${this.disabled}
         class="zoom btn"
-        id="map-zoom"
         onclick=${this.handleClick}
-        hidden=${this.mode === 'edit'}
       >
         ${_('zoom')}
       </a>
@@ -17263,12 +17564,12 @@
   ZoomControl.define('zoom-control');
 
   /**
-  *
-  */
+   *
+   */
   class ImageMapModeChooser extends HyperHTMLElement {
     /**
-    * @returns {string[]}
-    */
+     * @returns {string[]}
+     */
     static get observedAttributes () {
       return ['mode', 'text-image-map', 'readonly'];
     }
@@ -17279,11 +17580,11 @@
     * @param {Event} e
     * @returns {void}
     */
-    async handleClick (e) {
+    handleClick (e) {
       const mode = e.target.value;
 
-      const textImageMap = $$1(this.textImageMap);
-      await setTextRectangleByMode({mode, textImageMap});
+      const textImageMap = $(this.textImageMap);
+      textImageMap.toggleTextDragRectangleByMode(mode);
 
       const {width, height, shapes} = textImageMap.getImageMapInfo();
       if (!width || !height) { // Nothing else to do yet
@@ -17291,23 +17592,19 @@
       }
       // console.log('width', width, height, shapes, mode);
 
-      await this.formToImageMap({
-        textImageMap,
-        formObj: this.getFormObject()
-      });
-      /*
-      textImageMap.setImageMaps({
-        formObj: getSerializedJSON(),
-        mode,
-        sharedBehaviors: {
-          setFormObjCoordsAndUpdateViewForMap
+      this.dispatchEvent(new CustomEvent('form-to-image-map', {
+        bubbles: true,
+        detail: {
+          args: {
+            mode,
+            textImageMap
+          },
+          callback () {
+            textImageMap.copyImageMapsToImageMap({width, height, shapes});
+            textImageMap.showGuidesUnlessViewMode(mode);
+          }
         }
-      });
-      */
-
-      textImageMap.copyImageMapsToImageMap({width, height, shapes});
-
-      textImageMap.showGuidesUnlessViewMode(mode);
+      }));
     }
 
     /**
@@ -17321,7 +17618,8 @@
     ['View with guides', 'view-guides'],
     ['View', 'view']
   ].map(([i18nKey, mode]) => {
-    return HyperHTMLElement.hyper`<label>
+    const html = HyperHTMLElement.hyper;
+    return html`<label>
       <input
         name="mode"
         type="radio"
@@ -17339,6 +17637,417 @@
   }
 
   ImageMapModeChooser.define('image-map-mode-chooser');
+
+  const nbsp2 = nbsp.repeat(2);
+
+  /**
+   * @returns {Promise<void>}
+   */
+  async function requireTextBehavior () {
+    requireText = this.checked;
+    setRequireText(requireText);
+    $$('.requireText').forEach((textarea) => {
+      textarea.required = requireText;
+    });
+    await prefs.setPref('requireText', requireText);
+  }
+
+  /**
+   * @typedef {GenericArray} LastPrefs
+   * @property {string} 0
+   * @property {string} 1
+   */
+
+  /**
+   * @param {FormData} map
+   * @returns {Promise<LastPrefs>}
+   */
+  function rememberLastMap (map) {
+    return Promise.all([
+      prefs.setPref('lastMapName', map.name),
+      prefs.setPref('lastImageSrc', map.mapURL)
+    ]);
+  }
+
+  /**
+   * @param {PlainObject} cfg
+   * @param {string} cfg.url
+   * @param {"GET"|"DELETE"} cfg.method
+   * @returns {JSON}
+   */
+  async function fetchJSON ({url, method}) {
+    const response = await fetch(url, {method});
+    return response.json();
+  }
+
+  /**
+  * @param {PlainObject} cfg
+  * @param {string} cfg.name
+  * @param {"GET"|"DELETE"} [cfg.method="GET"]
+  * @returns {FormObject}
+  */
+  function getMapDataByName ({name, method = 'GET'}) {
+    return fetchJSON({
+      method,
+      url: '/maps/maps/' + encodeURIComponent(name)
+    });
+  }
+
+  /**
+  * @param {PlainObject} cfg
+  * @param {string} cfg.url
+  * @param {"PUT"|"POST"} cfg.method
+  * @param {FormObject} cfg.data
+  * @returns {JSON} Unused
+  */
+  async function updateServerJSON ({url, method, data}) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    return response.json();
+  }
+
+  /**
+   *
+   */
+  class TextImageMapForm extends HyperHTMLElement {
+    static get observedAttributes () {
+      return [
+        'text-image-map',
+        'last-map-name',
+        'last-image-src',
+        'require-text'
+      ];
+    }
+
+    /**
+     * @returns {void}
+     */
+    submitFormClick () {
+      // To try again, we reset invalid forms, e.g., from previous bad JSON
+      [...this.querySelector('form').elements].forEach((ctrl) => {
+        ctrl.setCustomValidity('');
+      });
+    }
+
+    /**
+     * @param {event} e
+     * @returns {Promise<void>}
+     */
+    async mapDelete (e) {
+      e.preventDefault();
+      const mapName = this.querySelector('input[name="name"]').value;
+      if (!mapName) {
+        // eslint-disable-next-line no-alert -- Temporary
+        alert(_('You must provide a map name'));
+        return;
+      }
+      // eslint-disable-next-line no-alert -- Temporary
+      const ok = confirm(
+        _(`Are you sure you wish to delete the map: ${mapName} ?`)
+      );
+      if (!ok) {
+        return;
+      }
+      /* const results = */ await getMapDataByName({
+        name: mapName, method: 'DELETE'
+      });
+
+      const textImageMap = this.querySelector(this.textImageMap);
+      await textImageMap.removeAllShapes({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
+      await rememberLastMap({
+        name: null,
+        mapURL: null
+      });
+
+      // eslint-disable-next-line no-alert -- Temporary
+      alert(_('Map deleted!'));
+    }
+
+    /**
+     * @param {event} e
+     * @returns {Promise<void>}
+     */
+    async imageFormSubmit (e) {
+      e.preventDefault();
+      const formObj = serialize(this.querySelector('form'), {hash: true});
+      const mapName = this.querySelector('input[name="name"]').value;
+      if (!mapName) {
+        // eslint-disable-next-line no-alert -- Temporary
+        alert(_('You must provide a map name'));
+        return;
+      }
+      const map = await getMapDataByName({name: mapName});
+      if (map.name) {
+        // eslint-disable-next-line no-alert -- Temporary
+        const ok = confirm(
+          _(`Do you wish to overwrite the existing map: ${mapName}?`)
+        );
+        if (!ok) {
+          return;
+        }
+      }
+
+      const cfg = map.name
+        // Overwrite
+        ? {
+          url: '/maps/maps/' + encodeURIComponent(mapName),
+          method: 'PUT'
+        }
+        // Create new
+        : {
+          url: '/maps/maps/',
+          method: 'POST'
+        };
+
+      await updateServerJSON({...cfg, data: formObj});
+      this.dispatchEvent(new CustomEvent('form-view-update', {
+        bubbles: true,
+        detail: {
+          type: 'form',
+          formObj
+        }
+      }));
+      await rememberLastMap(formObj);
+
+      // eslint-disable-next-line no-alert -- Temporary
+      alert(map.name ? _('Map overwritten!') : _('Map created!'));
+    }
+
+    /**
+     * @returns {Promise<void>}
+     */
+    async mapNameChange () {
+      const form = this.querySelector('form');
+      const textImageMap = this.querySelector(this.textImageMap);
+      const el = form.querySelector('input[name="name"]');
+      if (!el.value) {
+        this.dispatchEvent(new CustomEvent('form-update', {
+          detail: {}
+        }));
+        return;
+      }
+      form.disabled = true;
+      const map = await getMapDataByName({name: el.value});
+      // eslint-disable-next-line no-console -- Debugging
+      console.log('maps', map);
+      if (map.name) {
+        await textImageMap.removeAllShapes({
+          sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+        });
+        this.dispatchEvent(new CustomEvent('form-update', {
+          detail: map
+        }));
+        await rememberLastMap(map);
+      }
+      form.disabled = false;
+    }
+
+    render () {
+      return this.html`<form
+      id="imageForm"
+      onsubmit=${this.imageFormSubmit}
+    >
+      ${
+  // Todo: Add placeholder by inserting object with `html` and `placeholder`
+  (async () => {
+    // Let user set values asynchronously (e.g., getting async prefs to
+    //   set properties), without our needing here to bake in, or accept
+    //   binding for, storage preferences
+    await this.customLoader;
+
+    // https://github.com/WebReflection/hyperHTML-Element/pull/76
+    const html = HyperHTMLElement.hyper;
+
+    return html`
+    <label>
+      ${_('Image map name') + nbsp2}
+      <input
+        name="name"
+        size="100"
+        value=${this.defaultMapName}
+        onchange=${this.mapNameChange}
+      />
+      ${nbsp2}
+      <button onclick=${this.mapDelete}>${_('x')}</button>
+    </label>
+    <br />
+    <label>
+      ${_('Image map URL') + nbsp2}
+      <input
+        name="mapURL"
+        size="100"
+        required="required"
+        value=${this.defaultImageSrc}
+      />
+    </label>
+    `;
+  })()}
+      <br />
+      <fieldset>
+        <div>
+          <div class="imageRegions">
+            <h1 id="imageAreas">${_('Image areas')}</h1>
+            <ol id="imageRegions"></ol>
+          </div>
+          <div>
+            <h2 class="preferences">${_('Preferences')}</h2>
+            <label>
+              <input
+                type="checkbox"
+                checked=${this.requireText}
+                onclick=${requireTextBehavior}
+              />
+              ${nbsp2 + _('Require text')}
+            </label>
+          </div>
+        </div>
+      </fieldset>
+      <input
+        type="submit"
+        value=${_('Save')}
+        onclick=${this.submitFormClick}
+      />
+    ]);
+    `;
+    }
+  }
+
+  TextImageMapForm.define('text-image-map-form');
+
+  /**
+   *
+   */
+  class SerializedJSON extends HyperHTMLElement {
+    static get observedAttributes () { return ['form-id']; }
+
+    /**
+     * @param {FormObject} formObj
+     * @returns {void}
+     */
+    updateSerializedJSON (formObj) {
+      this.querySelector('#serializedJSON').value =
+        JSON.stringify(formObj, null, 2);
+    }
+
+    /**
+     * @returns {void}
+     */
+    serializedJSONInput () {
+      let formObj;
+      const textarea = this.querySelector('textarea');
+      try {
+        formObj = JSON.parse(textarea.value);
+      } catch (err) {
+        textarea.setCustomValidity(_('JSON Did not parse', err));
+        textarea.reportValidity();
+        return;
+      }
+      textarea.setCustomValidity('');
+
+      this.dispatchEvent(new CustomEvent('form-view-update', {
+        bubbles: true,
+        detail: {
+          type: 'json',
+          formObj,
+          formControl: textarea
+        }
+      }));
+    }
+
+    /**
+     * @returns {FormObject}
+     */
+    getJSON () {
+      return JSON.parse(this.querySelector('textarea').value);
+    }
+
+    render () {
+      return this.html`<section class="serialized">
+      <h2>${_('Serialized JSON')}</h2>
+      <textarea
+        id="serializedJSON"
+        form=${this.formId}
+        'aria-label'=${_('Serialized JSON')}
+        oninput=${this.serializedJSONInput}
+      >
+      </textarea>
+    </section>`;
+    }
+  }
+
+  SerializedJSON.define('serialized-json');
+
+  /**
+   *
+   */
+  class SerializedHTML extends HyperHTMLElement {
+    static get observedAttributes () { return ['form-id']; }
+
+    /**
+    * @returns {void}
+    */
+    serializedHTMLInput () {
+      const textarea = this.querySelector('textarea');
+      const html = new DOMParser().parseFromString(textarea.value, 'text/html');
+      const map = html.querySelector('map[name]');
+      const img = html.querySelector(
+        `img[usemap="#${map.name}"][src]`
+      );
+      const areas = [...map.querySelectorAll('area')];
+      if (!map || !areas.length || !img) {
+        textarea.setCustomValidity(!map
+          ? _('Missing <map name=> element ')
+          : (!areas.length)
+            ? _('Missing <area>')
+            : _('Missing matching <img usemap= src=>'));
+        textarea.reportValidity();
+        return;
+      }
+      textarea.setCustomValidity('');
+
+      const formObj = {
+        name: map.name,
+        mapURL: img.src
+      };
+      areas.forEach(({shape, coords, alt}, index) => {
+        if (!shape || !coords) {
+          return;
+        }
+        coords = coords.split(/,\s*/u);
+        setFormObjCoords({index, shape, coords, text: alt || '', formObj});
+      });
+      // alert(JSON.stringify(formObj, null, 2));
+      this.dispatchEvent(new CustomEvent('form-view-update', {
+        bubbles: true,
+        detail: {
+          type: 'html',
+          formObj,
+          formControl: textarea
+        }
+      }));
+    }
+
+    render () {
+      return this.html`<section class="serialized">
+      <h2>${_('Serialized HTML')}</h2>
+      <textarea
+        id="serializedHTML"
+        form=${this.formId}
+        'aria-label'=${_('Serialized HTML')}
+        oninput=${this.serializedHTMLInput}
+      />
+    </section>`;
+    }
+  }
+
+  SerializedHTML.define('serialized-html');
 
   // Left-facing:
   // '\u{1F50D}' (or if necessary as surrogates: '\uD83D\uDD0D')
@@ -17503,9 +18212,14 @@
       this.render();
       this.querySelector(
         'input.findBar'
-      ).addEventListener('input', async (e) => {
+      ).addEventListener('input', (e) => {
         // Function must be set by user
-        const formObj = this.getFormObject();
+        let formObj;
+        this.dispatchEvent(new CustomEvent('get-form-object', {
+          detail (obj) {
+            formObj = obj;
+          }
+        }));
 
         const {value} = e.target;
 
@@ -17520,8 +18234,6 @@
         ] = getBeginAndEndIndexes({
           formObjectInfo, value, isFirstMode
         });
-
-        const viewMode = await this.useViewMode();
 
         /**
          * @param {{shape: ImageDataShape, coords}} cfg
@@ -17550,7 +18262,7 @@
             throw new Error('Unexpected shape ' + shape);
           }
 
-          const matchedShape = $(`${this.textImageMap} svg ${shape}${attSel}`);
+          const matchedShape = $$1(`${this.textImageMap} svg ${shape}${attSel}`);
           matchedShape.classList.add('borderBlink');
           await timeout(3000);
           matchedShape.classList.remove('borderBlink');
@@ -17565,26 +18277,32 @@
           */
         };
 
-        const textImageMap = $(this.textImageMap);
-        formObjectInfo.slice(
-          beginSegmentIndexIndex, endSegmentIndexIndex + 1
-        ).forEach(async (
-          {shape, coords}
-        ) => {
-          // Todo: Highlight
-          // console.log('matching shape & coords', shape, coords);
-          if (viewMode) {
-            // We don't have displayed shapes now (with accurate dimensions),
-            //  so we have to build our own elements
-            textImageMap.addShape(shape, {coords});
-            await timeout(500);
+        let viewMode;
+        this.dispatchEvent(new CustomEvent('use-view-mode', {
+          detail: (obj) => {
+            viewMode = obj;
+            const textImageMap = $$1(this.textImageMap);
+            formObjectInfo.slice(
+              beginSegmentIndexIndex, endSegmentIndexIndex + 1
+            ).forEach(async (
+              {shape, coords}
+            ) => {
+              // Todo: Highlight
+              // console.log('matching shape & coords', shape, coords);
+              if (viewMode) {
+                // We don't have displayed shapes now (with accurate
+                //  dimensions), so we have to build our own elements
+                textImageMap.addShape(shape, {coords});
+                await timeout(500);
+              }
+              blinkShape({shape, coords});
+              if (viewMode) {
+                await timeout(2000);
+                textImageMap.removeShape();
+              }
+            });
           }
-          blinkShape({shape, coords});
-          if (viewMode) {
-            await timeout(2000);
-            textImageMap.removeShape();
-          }
-        });
+        }));
       });
     }
 
@@ -17600,355 +18318,142 @@
 
   const zoomControl = ({mode, prefs}) => {
     // Triggerable by image-map-mode-chooser
-    prefs.listen('mode', ({newValue}) => {
-      if (newValue === 'edit') {
-        $('zoom-control').disable();
+    const toggleZoomByMode = ({newValue: newMode}) => {
+      if (newMode === 'edit') {
+        zc.disable();
       } else {
-        $('zoom-control').enable();
+        zc.enable();
       }
-    });
+    };
+    prefs.listen('mode', toggleZoomByMode);
 
     const zoomClick = (e) => {
-      const textImageMap = $('text-image-map');
+      const textImageMap = $$1('text-image-map');
       textImageMap.zoomImageMapAndResize(Number(e.target.value));
     };
 
-    return ['zoom-control', {
-      mode,
+    const zc = jml('zoom-control', {
       $on: {click: zoomClick}
-    }];
-  };
+    });
 
-  const setMode = async (prefs, e) => {
-    const mode = e.target.localName === 'input'
-      ? e.target.value
-      : e.target.control?.value; // Clicked on label
-    if (!mode) {
-      return;
-    }
-    await prefs.setPref('mode', mode);
-  };
+    toggleZoomByMode({newValue: mode});
 
-  const modelWrap = ({
-    getSerializedJSON,
-    editableFormToImageMap
-  }, imageMapModeChooserView) => {
-    imageMapModeChooserView.getFormObject = getSerializedJSON;
-    imageMapModeChooserView.formToImageMap = editableFormToImageMap;
-
-    return imageMapModeChooserView;
+    return zc;
   };
 
   const imageMapModeChooser = ({
     mode, prefs,
-    getSerializedJSON, editableFormToImageMap
+    editableFormToImageMap
   }) => {
-    return modelWrap({
-      getSerializedJSON, editableFormToImageMap
-    }, jml('image-map-mode-chooser', {
+    const formToImageMap = async function (e) {
+      const formObj = $('serialized-json').getJSON();
+      const {args, callback} = e.detail;
+      await prefs.setPref('mode', args.mode);
+      await editableFormToImageMap({...args, formObj});
+      // eslint-disable-next-line promise/prefer-await-to-callbacks -- Easier
+      callback();
+    };
+
+    return jml('image-map-mode-chooser', {
       mode,
       // Could give more precise selector on right side
       'text-image-map': 'text-image-map',
-      $on: {click: setMode.bind(null, prefs)}
-    }));
+      $on: {
+        'form-to-image-map': formToImageMap
+      }
+    });
   };
 
-  const nbsp2 = nbsp.repeat(2);
-
-  const mainForm = ({
-    defaultMapName, initialPrefs, defaultImageSrc, behaviors
+  const shapeControls = ({
+    setFormObjCoordsAndUpdateViewForMap
   }) => {
-    const form = jml('form', {
-      id: 'imageForm',
-      $on: {submit: behaviors.imageFormSubmit}
-    }, [
-      ['label', [
-        _('Image map name'), nbsp2,
-        ['input', {
-          name: 'name', size: 100,
-          value: defaultMapName,
-          $on: {change: behaviors.mapNameChange}
-        }],
-        nbsp2,
-        ['button', {$on: {click: behaviors.mapDelete}}, [_('x')]]
-      ]],
-      ['br'],
-      ['label', [
-        _('Image map URL'), nbsp2,
-        ['input', {
-          name: 'mapURL', size: 100, required: true,
-          value: defaultImageSrc
-        }]
-      ]],
-      ['br'],
-      ['fieldset', [
-        ['div', [
-          ['div', {class: 'imageRegions'}, [
-            ['h1', {id: 'imageAreas'}, [_('Image areas')]],
-            ['ol', {id: 'imageRegions'}]
-          ]],
-          ['div', [
-            ['h2', {class: 'preferences'}, [_('Preferences')]],
-            ['label', [
-              ['input', {
-                type: 'checkbox',
-                checked: initialPrefs.requireText,
-                $on: {
-                  click: behaviors.requireText
-                }
-              }], nbsp2,
-              _('Require text')
-            ]]
-          ]]
-        ]]
-      ]],
-      ['input', {type: 'submit', value: _('Save'), $on: {
-        click: behaviors.submitFormClick
-      }}]
+    /**
+     * @param {Event} e
+     * @returns {Promise<void>}
+     */
+    async function rectClick (e) {
+      e.preventDefault();
+      const textImageMap = $$1('text-image-map');
+      await textImageMap.addRect({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
+    }
+    /**
+     * @param {Event} e
+     * @returns {Promise<void>}
+     */
+    async function circleClick (e) {
+      e.preventDefault();
+      const textImageMap = $$1('text-image-map');
+      await textImageMap.addCircle({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
+    }
+    /**
+     * @param {Event} e
+     * @returns {Promise<void>}
+     */
+    async function removeClick (e) {
+      e.preventDefault();
+      const textImageMap = $$1('text-image-map');
+      await textImageMap.removeShape({
+        sharedBehaviors: {
+          setFormObjCoordsAndUpdateViewForMap
+        }
+      });
+    }
+    /**
+     * @param {Event} e
+     * @returns {Promise<void>}
+     */
+    async function removeAllClick (e) {
+      e.preventDefault();
+      const textImageMap = $$1('text-image-map');
+      await textImageMap.removeAllShapes({
+        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
+      });
+    }
+
+    return jml('div', {class: 'shapeControls'}, [
+      ['a', {
+        href: '#',
+        id: 'rect',
+        class: 'btn',
+        $on: {click: rectClick}
+      }, [_('Add rectangle')]],
+      ['a', {
+        href: '#',
+        id: 'circle',
+        class: 'btn',
+        $on: {click: circleClick}
+      }, [_('Add circle')]],
+      ['a', {
+        href: '#',
+        id: 'remove',
+        class: 'btn',
+        $on: {click: removeClick}
+      }, [_('Remove shape')]],
+      ['a', {
+        href: '#',
+        id: 'remove-all',
+        class: 'btn',
+        $on: {click: removeAllClick}
+      }, [_('Remove all shapes')]]
     ]);
-    return form;
-  };
-
-  const formShapeSelection = ({currentImageRegionID, behaviors}) => {
-    return jml('li', [
-      ['select', {
-        name: `${currentImageRegionID}_shape`,
-        'aria-label': _('Shape'),
-        $on: {change: behaviors.shapeSelectionChange}
-      }, [
-        ['option', {value: 'rect'}, [_('Rectangle')]],
-        ['option', {value: 'circle'}, [_('Circle')]],
-        // Todo: Disable after testing!
-        // Todo: https://github.com/naver/image-maps/issues/9
-        ['option', {value: 'poly'}, [_('Polygon')]]
-      ]],
-      ['div']
-    ]);
-  };
-
-  const formControlsRect = ({currentImageRegionID, outputArea}) => {
-    return jml('div', [
-      ['label', [
-        _('Left x'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_leftx`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('Top y'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_topy`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('Right x'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_rightx`,
-          type: 'number', size: 5, required: true, value: 300
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('Bottom y'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_bottomy`,
-          type: 'number', size: 5, required: true, value: 300
-        }]
-      ]], nbsp2
-    ], outputArea);
-  };
-
-  const formControlsCircle = ({currentImageRegionID, outputArea}) => {
-    return jml('div', [
-      ['label', [
-        _('x'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_circlex`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('y'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_circley`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('r'),
-        nbsp,
-        ['input', {
-          name: `${currentImageRegionID}_circler`,
-          type: 'number', size: 5, required: true, value: 30
-        }]
-      ]]
-    ], outputArea);
-  };
-
-  const formControlsPoly = ({
-    outputArea, behaviors
-  }) => {
-    return jml('div', {class: 'polyDivHolder'}, [
-      behaviors.makePolyXY()
-    ], outputArea);
-  };
-
-  const makeFrom = () => {
-    return ['span', {class: 'from'}, [_('From:')]];
-  };
-  const makeTo = () => ['span', [_('To:')]];
-
-  const polyXYDiv = ({from, currImageRegionID, behaviors}) => {
-    return jml('div', [
-      from
-        ? makeFrom()
-        : makeTo(),
-      nbsp2,
-      ['label', [
-        _('x'),
-        nbsp,
-        ['input', {
-          name: `${currImageRegionID}_xy`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]], nbsp2,
-      ['label', [
-        _('y'),
-        nbsp,
-        ['input', {
-          name: `${currImageRegionID}_xy`,
-          type: 'number', size: 5, required: true, value: 1
-        }]
-      ]],
-      nbsp2,
-      ['button', {class: 'addPoly', $on: {
-        click: behaviors.addPolyClick
-      }}, [
-        '+'
-      ]],
-      ['button', {class: 'removePoly', $on: {
-        click: behaviors.removePolyClick
-      }}, [
-        '-'
-      ]]
-    ]);
-  };
-
-  const formText = ({
-    currentImageRegionID, outputArea,
-    requireText,
-    behaviors
-  }) => {
-    return jml('div', [
-      ['div', [
-        ['label', [
-          _('Text'), nbsp2,
-          ['textarea', {
-            class: 'requireText',
-            name: `${currentImageRegionID}_text`,
-            required: requireText
-          }]
-        ]]
-      ]],
-      ['button', {class: 'addRegion', dataset: {
-        regionId: currentImageRegionID
-      }, $on: {
-        click: behaviors.addImageRegionClick
-      }}, [
-        _('+')
-      ]],
-      ['button', {class: 'removeRegion', dataset: {
-        regionId: currentImageRegionID
-      }, $on: {
-        click: behaviors.removeImageRegionClick
-      }}, [
-        _('-')
-      ]],
-      ['br'],
-      ['br']
-    ], outputArea);
-  };
-
-  const title = () => _('MapText demo');
-
-  const main = ({
-    form, mode, prefs, behaviors,
-    getSerializedJSON, editableFormToImageMap
-  }) => {
-    return jml('div', {
-      role: 'main' // For Axe tests (Accessbility)
-    }, [
-      ['div', [
-        ['h1', [_('MapText')]],
-        form,
-        ['section', {class: 'serialized'}, [
-          ['h2', [_('Serialized HTML')]],
-          ['textarea', {
-            id: 'serializedHTML',
-            form: form.id,
-            'aria-label': _('Serialized HTML'),
-            $on: {input: behaviors.serializedHTMLInput}
-          }]
-        ]],
-        ['section', {class: 'serialized'}, [
-          ['h2', [_('Serialized JSON')]],
-          ['textarea', {
-            id: 'serializedJSON',
-            form: form.id,
-            'aria-label': _('Serialized JSON'),
-            $on: {input: behaviors.serializedJSONInput}
-          }]
-        ]],
-        textImageMapContainer({
-          mode, behaviors, prefs, getSerializedJSON, editableFormToImageMap
-        })
-      ]]
-    ], body);
   };
 
   const textImageMapContainer = ({
-    mode, behaviors, prefs, getSerializedJSON, editableFormToImageMap
+    mode, prefs, editableFormToImageMap,
+    setFormObjCoordsAndUpdateViewForMap
   }) => ['section', [
     ['h2', [_('Image map')]],
     ['div', [
-      ['div', [
-        ['div', {class: 'shapeControls'}, [
-          ['a', {
-            href: '#',
-            id: 'rect',
-            class: 'btn',
-            $on: {click: behaviors.rectClick}
-          }, [_('Add rectangle')]],
-          ['a', {
-            href: '#',
-            id: 'circle',
-            class: 'btn',
-            $on: {click: behaviors.circleClick}
-          }, [_('Add circle')]],
-          ['a', {
-            href: '#',
-            id: 'remove',
-            class: 'btn',
-            $on: {click: behaviors.removeClick}
-          }, [_('Remove shape')]],
-          ['a', {
-            href: '#',
-            id: 'remove-all',
-            class: 'btn',
-            $on: {click: behaviors.removeAllClick}
-          }, [_('Remove all shapes')]]
-        ]]
-      ]],
+      shapeControls({
+        setFormObjCoordsAndUpdateViewForMap
+      }),
       ['br', 'br'],
       imageMapModeChooser({
-        mode, prefs, getSerializedJSON, editableFormToImageMap
+        mode, prefs, editableFormToImageMap
       }),
       zoomControl({mode, prefs}),
       ['copied-text'],
@@ -17958,232 +18463,11 @@
     ]]
   ]];
 
-  /* eslint-disable jsdoc/require-jsdoc -- Temporary */
-
-  let editableFormToImageMap;
-  let requireText;
-
-  const styles = styles$1([
-    'index.css'
-  ]);
-
-  // Todo: Could allow for multiple image maps
-  const mapID = 0;
-
-  const prefs = new SimplePrefs({namespace: 'maptext-', defaults: {
-    lastMapName: `map${mapID}`,
-    lastImageSrc: 'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg',
-    requireText: true,
-    mode: 'edit'
-  }});
-
-  // Todo: Detect locale and use https://github.com/brettz9/i18nizeElement
-  document.documentElement.lang = 'en-US';
-  document.documentElement.dir = 'ltr';
-
-  let imgRegionID = 0;
-  let form;
-
-  function makePolyXY (currImageRegionID, from = false) {
-    const polyDiv = polyXYDiv({
-      from,
-      currImageRegionID,
-      behaviors: {
-        addPolyClick (e) {
-          e.preventDefault();
-          polyDiv.after(makePolyXY(currImageRegionID));
-        },
-        removePolyClick (e) {
-          e.preventDefault();
-          const buttonSets = polyDiv.parentElement;
-          if (buttonSets.children.length <= 2) {
-            return;
-          }
-          polyDiv.remove();
-          const firstButtonSet = buttonSets.firstElementChild;
-          const fromOrTo = firstButtonSet.firstElementChild;
-          if (fromOrTo.className !== 'from') {
-            fromOrTo.replaceWith(jml(...makeFrom()));
-          }
-        }
-      }
-    });
-    return polyDiv;
-  }
-
-  function addImageRegion (imageRegionID, prevElement) {
-    const currentImageRegionID = imageRegionID;
-    const li = formShapeSelection({
-      currentImageRegionID,
-      behaviors: {
-        shapeSelectionChange ({target}) {
-          const outputArea = this.nextElementSibling;
-          empty$1(outputArea);
-          switch (target.value) {
-          case 'rect':
-            formControlsRect({currentImageRegionID, outputArea});
-            break;
-          case 'circle':
-            formControlsCircle({currentImageRegionID, outputArea});
-            break;
-          case 'poly': {
-            const div = formControlsPoly({
-              outputArea, li,
-              behaviors: {
-                makePolyXY () {
-                  return makePolyXY(currentImageRegionID, true);
-                }
-              }
-            });
-            div.querySelector('button.addPoly').click();
-            break;
-          }        }
-          formText({
-            requireText,
-            currentImageRegionID, outputArea,
-            behaviors: {
-              addImageRegionClick (e) {
-                e.preventDefault();
-                addImageRegion(imgRegionID++, li);
-              },
-              removeImageRegionClick (e) {
-                e.preventDefault();
-                const imageRegions = $$1('#imageRegions');
-                if (imageRegions.children.length === 1) {
-                  return;
-                }
-                li.remove();
-              }
-            }
-          });
-        }
-      }
-    });
-    if (prevElement) {
-      prevElement.after(li);
-    } else {
-      jml(li, $$1('#imageRegions'));
-    }
-    li.firstElementChild.dispatchEvent(new Event('change'));
-  }
-
-  function updateSerializedHTML (removeAll) {
-    if (removeAll) {
-      $$1('#serializedHTML').value = '';
-      return;
-    }
-    const clonedTextImageMap = $$1('.textImageMap').cloneNode(true);
-    clonedTextImageMap.querySelector('svg').remove();
-    $$1('#serializedHTML').value =
-      clonedTextImageMap.outerHTML;
-  }
-
-  function getSerializedJSON () {
-    return JSON.parse($$1('#serializedJSON').value);
-  }
-
-  function updateSerializedJSON (formObj) {
-    $$1('#serializedJSON').value =
-      JSON.stringify(formObj, null, 2);
-  }
-
-  function deserializeForm (formObj) {
-    const imageRegions = $$1('#imageRegions');
-    empty$1(imageRegions);
-    let highestID = -1;
-    Object.entries(formObj).forEach(([key, shape]) => {
-      if (!key.endsWith('_shape')) {
-        return;
-      }
-      const currID = Number.parseInt(key.slice(0, -('_shape'.length)));
-      addImageRegion(currID);
-      const lastRegion = imageRegions.lastElementChild;
-      const shapeSelector = lastRegion.querySelector('select');
-      shapeSelector.name = key; // Number in key may differ
-      shapeSelector.selectedIndex = {rect: 0, circle: 1, poly: 2}[shape];
-      shapeSelector.dispatchEvent(new Event('change'));
-      if (shape === 'poly') {
-        const polySetsStart = formObj[currID + '_xy'].length / 2;
-        let polySets = polySetsStart;
-        while (polySets > 2) { // Always have at least 2
-          $$1('.polyDivHolder').append(
-            makePolyXY(currID, polySets === polySetsStart)
-          );
-          polySets--;
-        }
-      }
-      if (currID > highestID) {
-        highestID = currID;
-      }
-    });
-    imgRegionID = highestID + 1;
-    try {
-      deserialize(form, formObj);
-    } catch (err) {
-      this.setCustomValidity(_('Could not deserialize', err));
-      this.reportValidity();
-      return;
-    }
-    this.setCustomValidity('');
-    // Bad values from JSON not allowed to even be set, so
-    //   this is not activating
-    // this.reportValidity();
-  }
-
   /**
-  * @typedef {PlainObject<string, string>} FormObject
-  */
-
-  // Todo: We could use OOP with polymorphic methods instead,
-  //   avoiding its own instance method
-  /**
-   *
-   * @param {"form"|"map"|"html"|"json"} type
-   * @param {FormObject} formObj
-   * @param {HTMLElement} [formControl] Control on which to report errors in
-   *   form-building. Not needed if this is a change to the whole form.
-   * @param {boolean} removeAll
+   * @param {FormObjectInfo} cfg
    * @returns {void}
    */
-  async function updateViews (type, formObj, formControl, removeAll) {
-    if (type !== 'form') {
-      deserializeForm.call(formControl, formObj);
-    }
-    const textImageMap = $$1('text-image-map');
-    if (!removeAll) {
-      // Don't actually set the map and update
-      if (type !== 'map') {
-        await editableFormToImageMap({
-          formObj,
-          textImageMap: $$1('text-image-map')
-        }); // Sets text image map
-      }
-      // Even for map, we must update apparently because change in form
-      //   control positions after adding controls changes positions within
-      //   map as well
-      await updateMap(textImageMap, formObj);
-    }
-    if (type !== 'html') {
-      updateSerializedHTML(removeAll);
-    }
-    if (type !== 'json') {
-      updateSerializedJSON(removeAll ? {} : formObj);
-    }
-    textImageMap.setFormObject(formObj);
-  }
-
-  async function updateMap (textImageMap, formObj) {
-    await textImageMap.removeAllShapes();
-    await Promise.all(
-      imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
-        return textImageMap.addShape(shape, {coords});
-      })
-    );
-    const mode = await prefs.getPref('mode');
-    textImageMap.showGuidesUnlessViewMode(mode);
-  }
-
-  function setFormObjCoords ({
+  function setFormObjCoords$1 ({
     index, shape, coords, text, formObj, oldShapeToDelete
   }) {
     if (shape === undefined) {
@@ -18196,6 +18480,12 @@
     } else {
       formObj[index + '_text'] = text;
     }
+
+    /**
+     * @param {string} item
+     * @param {Integer} i
+     * @returns {void}
+     */
     function circleOrRect (item, i) {
       if (coords[i] === undefined) {
         delete formObj[index + '_' + item];
@@ -18218,265 +18508,274 @@
     }
   }
 
-  async function setFormObjCoordsAndUpdateViewForMap ({
-    index, shape, coords, text, formObj, formControl, oldShapeToDelete,
-    removeAll
-  }) {
-    setFormObjCoords({index, shape, coords, text, formObj, oldShapeToDelete});
-    await updateViews('map', formObj, formControl, removeAll);
-  }
+  const main = ({
+    formID, prefs,
+    mode, styles,
+    behaviors,
+    requireText
+  }) => {
+    const {editableFormToImageMap} = getFormToImageMap({
+      prefs, styles, setFormObjCoordsAndUpdateViewForMap
+    });
+    /**
+    * @typedef {PlainObject} FormObjectInfo
+    * @todo Complete
+    * @property {Integer} index
+    * @property {ImageDataShape} shape
+    * @property {Integer[]} coords
+    * @property {string} text
+    * @property {FormObject} formObj
+    * @property {ImageDataShape} oldShapeToDelete
+    */
 
-  document.title = title();
+    /**
+    * @typedef {FormObjectInfo} FormObjectEditInfo
+    * @property {HTMLElement} formControl
+    * @property {boolean} removeAll
+    */
+
+    /**
+     * @param {FormObjectInfo} cfg
+     * @returns {void}
+    */
+    function setFormObjCoordsAndUpdateViewForMap ({
+      index, shape, coords, text, formObj, oldShapeToDelete,
+      formControl, removeAll
+    }) {
+      setFormObjCoords$1({index, shape, coords, text, formObj, oldShapeToDelete});
+      this.dispatchEvent(new CustomEvent('form-view-update', {
+        detail: {
+          type: 'map',
+          formObj,
+          formControl,
+          removeAll
+        }
+      }));
+    }
+
+    /**
+     * @returns {void}
+     */
+    function formOnconnected () {
+      this.customLoader = (async () => {
+        const [
+          lastMapName,
+          lastImageSrc
+        ] = await Promise.all([
+          this.prefs.getPref('lastMapName'),
+          this.prefs.getPref('lastImageSrc')
+        ]);
+
+        this.defaultMapName = lastMapName;
+        this.defaultImageSrc = lastImageSrc;
+      })();
+    }
+
+    /**
+     * @todo Change to instance of `TextImageMap` component
+     * @param {TextImageMap} textImageMap
+     * @param {FormObject} formObj
+     * @returns {Promise<void>}
+     */
+    async function updateMap (textImageMap, formObj) {
+      await textImageMap.removeAllShapes();
+      await Promise.all(
+        imageMapFormObjectInfo(formObj).map(({shape, alt, coords}) => {
+          return textImageMap.addShape(shape, {coords});
+        })
+      );
+      const newMode = await prefs.getPref('mode');
+      textImageMap.showGuidesUnlessViewMode(newMode);
+    }
+
+    /**
+     * @param {FormObject} formObj
+     * @returns {void}
+     */
+    function deserializeForm (formObj) {
+      const imageRegions = $('#imageRegions');
+      empty$1(imageRegions);
+      let highestID = -1;
+      Object.entries(formObj).forEach(([key, shape]) => {
+        if (!key.endsWith('_shape')) {
+          return;
+        }
+        const currID = Number.parseInt(key.slice(0, -('_shape'.length)));
+        formShapeSelection({
+          requireText,
+          prefs,
+          imageRegionID: currID
+        });
+        const lastRegion = imageRegions.lastElementChild;
+        const shapeSelector = lastRegion.querySelector('select');
+        shapeSelector.name = key; // Number in key may differ
+        shapeSelector.selectedIndex = ['rect', 'circle', 'poly'].indexOf(shape);
+        shapeSelector.dispatchEvent(new Event('change'));
+        if (shape === 'poly') {
+          const polySetsStart = formObj[currID + '_xy'].length / 2;
+          let polySets = polySetsStart;
+          while (polySets > 2) { // Always have at least 2
+            $('.polyDivHolder').append(
+              editPolyXY(currID, polySets === polySetsStart)
+            );
+            polySets--;
+          }
+        }
+        if (currID > highestID) {
+          highestID = currID;
+        }
+      });
+      setImageRegionID(highestID + 1);
+      try {
+        deserialize(form, formObj);
+      } catch (err) {
+        this.setCustomValidity(_('Could not deserialize', err));
+        this.reportValidity();
+        return;
+      }
+      this.setCustomValidity('');
+      // Bad values from JSON not allowed to even be set, so
+      //   this is not activating
+      // this.reportValidity();
+    }
+
+    /**
+     * @param {boolean} removeAll
+     * @returns {void}
+     */
+    function updateSerializedHTML (removeAll) {
+      if (removeAll) {
+        $('#serializedHTML').value = '';
+        return;
+      }
+      const clonedTextImageMap = $('.textImageMap').cloneNode(true);
+      clonedTextImageMap.querySelector('svg').remove();
+      $('#serializedHTML').value =
+        clonedTextImageMap.outerHTML;
+    }
+
+    /**
+     * @typedef {PlainObject<string, string>} FormObject
+     */
+
+    /**
+     * @param {PlainObject} cfg
+     * @param {"form"|"map"|"html"|"json"} cfg.type
+     * @param {FormObject} cfg.formObj
+     * @param {HTMLElement} [cfg.formControl] Control on which to report errors in
+     *   form-building. Not needed if this is a change to the whole form.
+     * @param {boolean} cfg.removeAll
+     * @returns {void}
+     */
+    async function updateViews ({type, formObj, formControl, removeAll}) {
+      if (type !== 'form') {
+        deserializeForm.call(formControl, formObj);
+      }
+      const textImageMap = $('text-image-map');
+      if (!removeAll) {
+        // Don't actually set the map and update
+        if (type !== 'map') {
+          await editableFormToImageMap({
+            formObj,
+            textImageMap: $('text-image-map')
+          }); // Sets text image map
+        }
+        // Even for map, we must update apparently because change in form
+        //   control positions after adding controls changes positions within
+        //   map as well
+        await updateMap(textImageMap, formObj);
+      }
+      if (type !== 'html') {
+        updateSerializedHTML(removeAll);
+      }
+      if (type !== 'json') {
+        $('serialized-json').updateSerializedJSON(removeAll ? {} : formObj);
+      }
+      textImageMap.setFormObject(formObj);
+    }
+
+    return jml('div', {
+      role: 'main' // For Axe tests (Accessbility)
+    }, [
+      ['div', {$on: {
+        // Triggered by `text-image-map-form`, `serialized-html`, and
+        //   `serialized-json`
+        'form-view-update' ({detail}) {
+          updateViews(detail);
+        }
+      }}, [
+        ['h1', [_('MapText')]],
+        ['text-image-map-form', {
+          id: formID,
+          $on: {
+            'form-update' ({detail: updatedValue}) {
+              $('serialized-json').updateSerializedJSON(updatedValue);
+              $('serialized-json').serializedJSONInput();
+            }
+          },
+          // Todo: Fix this
+          onconnected: formOnconnected,
+          // Could define more specific selector
+          'text-image-map': 'text-image-map',
+          'require-text': requireText
+        }],
+        ['serialized-html', {
+          'form-id': formID
+        }],
+        ['serialized-json', {
+          'form-id': formID
+        }],
+        textImageMapContainer({
+          mode, prefs, editableFormToImageMap,
+          setFormObjCoordsAndUpdateViewForMap
+        })
+      ]]
+    ], body);
+  };
+
+  const styles = styles$1([
+    'index.css'
+  ]);
+
+  const prefs$1 = new SimplePrefs({namespace: 'maptext-', defaults: {
+    lastMapName: `map0`,
+    lastImageSrc: 'sample-image-texts/Handwriting_of_Shoghi_Effendi_1919-1.jpg',
+    requireText: true,
+    mode: 'edit'
+  }});
+
+  document.title = _('MapText demo');
+  // Todo: Detect locale and use https://github.com/brettz9/i18nizeElement
+  document.documentElement.lang = 'en-US';
+  document.documentElement.dir = 'ltr';
 
   (async () => {
-  await styles.load();
+  const [
+    requireText,
+    mode
+  ] = await Promise.all([
+    prefs$1.getPref('requireText'),
+    prefs$1.getPref('mode'),
+    styles.load()
+  ]);
 
-  ({editableFormToImageMap} = getFormToImageMap({
-    prefs, styles, setFormObjCoordsAndUpdateViewForMap
-  }));
+  setRequireText$1(requireText);
 
-  requireText = await prefs.getPref('requireText');
-
-  async function fetchJSON ({url, method}) {
-    const response = await fetch(url, {method});
-    return response.json();
-  }
-
-  function getMapDataByName ({name, method = 'GET'}) {
-    return fetchJSON({
-      method,
-      url: '/maps/maps/' + encodeURIComponent(name)
-    });
-  }
-
-  function rememberLastMap (map) {
-    return Promise.all([
-      prefs.setPref('lastMapName', map.name),
-      prefs.setPref('lastImageSrc', map.mapURL)
-    ]);
-  }
-
-  async function mapNameChange () {
-    const textImageMap = $$1('text-image-map');
-    if (!this.value) {
-      updateSerializedJSON({});
-      serializedJSONInput.call($$1('#serializedJSON'));
-      return;
-    }
-    form.disabled = true;
-    const map = await getMapDataByName({name: this.value});
-    // eslint-disable-next-line no-console -- Debugging
-    console.log('maps', map);
-    if (map.name) {
-      await textImageMap.removeAllShapes({
-        sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-      });
-      updateSerializedJSON(map);
-      serializedJSONInput.call($$1('#serializedJSON'));
-      await rememberLastMap(map);
-    }
-    form.disabled = false;
-  }
-
-  async function saveMapData ({url, method, data}) {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    return response.json();
-  }
-
-  form = mainForm({
-    defaultMapName: await prefs.getPref('lastMapName'),
-    defaultImageSrc: await prefs.getPref('lastImageSrc'),
-    initialPrefs: {requireText},
-    behaviors: {
-      async mapDelete (e) {
-        e.preventDefault();
-        const mapName = $$1('input[name="name"]').value;
-        if (!mapName) {
-          // eslint-disable-next-line no-alert -- Temporary
-          alert(_('You must provide a map name'));
-          return;
-        }
-        // eslint-disable-next-line no-alert -- Temporary
-        const ok = confirm(
-          _(`Are you sure you wish to delete the map: ${mapName} ?`)
-        );
-        if (!ok) {
-          return;
-        }
-        /* const results = */ await getMapDataByName({
-          name: mapName, method: 'DELETE'
-        });
-
-        const textImageMap = $$1('text-image-map');
-        await textImageMap.removeAllShapes({
-          sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-        });
-        await rememberLastMap({
-          name: null,
-          mapURL: null
-        });
-
-        // eslint-disable-next-line no-alert -- Temporary
-        alert(_('Map deleted!'));
-      },
-      mapNameChange,
-      async requireText () {
-        requireText = this.checked;
-        $$('.requireText').forEach((textarea) => {
-          textarea.required = requireText;
-        });
-        await prefs.setPref('requireText', requireText);
-      },
-      async imageFormSubmit (e) {
-        e.preventDefault();
-        const formObj = serialize(this, {hash: true});
-        const mapName = $$1('input[name="name"]').value;
-        if (!mapName) {
-          // eslint-disable-next-line no-alert -- Temporary
-          alert(_('You must provide a map name'));
-          return;
-        }
-        const map = await getMapDataByName({name: mapName});
-        if (map.name) {
-          // eslint-disable-next-line no-alert -- Temporary
-          const ok = confirm(
-            _(`Do you wish to overwrite the existing map: ${mapName}?`)
-          );
-          if (!ok) {
-            return;
-          }
-        }
-
-        const cfg = map.name
-          // Overwrite
-          ? {
-            url: '/maps/maps/' + encodeURIComponent(mapName),
-            method: 'PUT'
-          }
-          // Create new
-          : {
-            url: '/maps/maps/',
-            method: 'POST'
-          };
-
-        await saveMapData({...cfg, data: formObj});
-        await updateViews('form', formObj);
-        await rememberLastMap(formObj);
-
-        // eslint-disable-next-line no-alert -- Temporary
-        alert(map.name ? _('Map overwritten!') : _('Map created!'));
-      },
-      submitFormClick () {
-        // To try again, we reset invalid forms, e.g., from previous bad JSON
-        [...form.elements].forEach((ctrl) => {
-          ctrl.setCustomValidity('');
-        });
-      }
-    }
-  });
-
-  async function serializedJSONInput () {
-    let formObj;
-    try {
-      formObj = JSON.parse(this.value);
-    } catch (err) {
-      this.setCustomValidity(_('JSON Did not parse', err));
-      this.reportValidity();
-      return;
-    }
-    this.setCustomValidity('');
-
-    await updateViews('json', formObj, this);
-  }
-
-  // const imageHeightWidthRatio = 1001 / 1024;
-  // const width = 450; // 1024;
-  // const height = width * imageHeightWidthRatio;
-
+  const formID = 'main-text-image-map-form';
   main({
-    form,
-    prefs,
-    mode: await prefs.getPref('mode'),
-    getSerializedJSON,
-    editableFormToImageMap,
-    behaviors: {
-      async serializedHTMLInput () {
-        const html = new DOMParser().parseFromString(this.value, 'text/html');
-        const map = html.querySelector('map[name]');
-        const img = html.querySelector(
-          `img[usemap="#${map.name}"][src]`
-        );
-        const areas = [...map.querySelectorAll('area')];
-        if (!map || !areas.length || !img) {
-          this.setCustomValidity(!map
-            ? _('Missing <map name=> element ')
-            : (!areas.length)
-              ? _('Missing <area>')
-              : _('Missing matching <img usemap= src=>'));
-          this.reportValidity();
-          return;
-        }
-        this.setCustomValidity('');
-
-        const formObj = {
-          name: map.name,
-          mapURL: img.src
-        };
-        areas.forEach(({shape, coords, alt}, index) => {
-          if (!shape || !coords) {
-            return;
-          }
-          coords = coords.split(/,\s*/u);
-          setFormObjCoords({index, shape, coords, text: alt || '', formObj});
-        });
-        // alert(JSON.stringify(formObj, null, 2));
-        await updateViews('html', formObj, this);
-      },
-      serializedJSONInput,
-      async rectClick (e) {
-        e.preventDefault();
-        const textImageMap = $$1('text-image-map');
-        await textImageMap.addRect({
-          sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-        });
-      },
-      async circleClick (e) {
-        e.preventDefault();
-        const textImageMap = $$1('text-image-map');
-        await textImageMap.addCircle({
-          sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-        });
-      },
-      async removeClick (e) {
-        e.preventDefault();
-        const textImageMap = $$1('text-image-map');
-        await textImageMap.removeShape({
-          sharedBehaviors: {
-            setFormObjCoordsAndUpdateViewForMap
-          }
-        });
-      },
-      async removeAllClick (e) {
-        e.preventDefault();
-        const textImageMap = $$1('text-image-map');
-        await textImageMap.removeAllShapes({
-          sharedBehaviors: {setFormObjCoordsAndUpdateViewForMap}
-        });
-      }
-    }
+    formID,
+    prefs: prefs$1,
+    mode,
+    styles,
+    requireText
   });
 
-  addImageRegion(imgRegionID++);
+  formShapeSelection({prefs: prefs$1, requireText});
 
-  await mapNameChange.call($$1('input[name="name"]'));
+  // Is this necessary now?
+  $$1(`#${formID}`).mapNameChange();
 
-  findImageRegionBar({getSerializedJSON, prefs});
+  findImageRegionBar({prefs: prefs$1});
   })();
 
 }());

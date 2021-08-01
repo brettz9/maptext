@@ -65,6 +65,13 @@ module.exports = {
     {
       files: ['src/components/**', 'src/view-components/**'],
       rules: {
+        // Define a snippet to add this until may fully automate with
+        //   name of file
+        'no-restricted-syntax': ['error', {
+          selector: 'Literal[value="my-element"]:matches(' +
+            'CallExpression > Literal)',
+          message: 'Replace this placeholder with your own element name'
+        }],
         'jsdoc/require-jsdoc': ['error', {
           require: {
             // ArrowFunctionExpression: true,
