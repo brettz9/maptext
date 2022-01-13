@@ -63,7 +63,7 @@
     "eslint-plugin-testcafe": "^0.2.1",
     "eslint-plugin-unicorn": "^9.0.0",
     "json-server": "^0.15.0",
-    "kld-intersections": "^0.6.0",
+    "kld-intersections": "https://github.com/thelonious/kld-intersections#development",
     "mocha": "^6.1.4",
     "open-cli": "^5.0.0",
     "regenerator-runtime": "^0.13.2",
