@@ -2,3 +2,8 @@ node_modules
 snapshots
 !snapshots.README.md
 maptext.json
+.idea
+coverage
+db
+cypress/screenshots
+nogin.js
